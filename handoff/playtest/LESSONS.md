@@ -20,3 +20,5 @@ See `handoff/gameplay/LESSONS.md` "Who owns what".
 ## Round log
 - 25 Oct 2026: role split from Build (owner).
 - 25 Oct 2026, pass 1: main after #19, #20 (good), #21 (5 findings); 7 faults logged; playtest drivers added.
+- 25 Oct 2026, pass 2: main with #22-#26; 4 of pass 1's faults fixed, 5 small ones logged for the next threads.
+  `pgrep -f pattern` in a wait loop matches the loop's own shell: wait on the PID (`wait $!`) instead.
