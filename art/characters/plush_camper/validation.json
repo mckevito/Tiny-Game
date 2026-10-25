@@ -1,0 +1,9 @@
+{
+  "glb_header_valid": true,
+  "declared_size_matches": true,
+  "all_names_snake_case": true,
+  "idle_walk_endpoints_match": true,
+  "valid_indices_and_weights": true,
+  "external_resources": false,
+  "preview": "software-rendered from exported glb; not a Godot screenshot"
+}

@@ -1,0 +1,68 @@
+{
+  "triangles": 3324,
+  "height_m": 1.0,
+  "bounds": [
+    [
+      -0.296,
+      0.0,
+      -0.218
+    ],
+    [
+      0.296,
+      1.0,
+      0.22577641290737885
+    ]
+  ],
+  "fps": 30,
+  "animations": {
+    "idle": {
+      "frame_start": 0,
+      "frame_end": 60,
+      "samples": 61,
+      "duration_seconds": 2.0,
+      "loop": true
+    },
+    "walk": {
+      "frame_start": 0,
+      "frame_end": 30,
+      "samples": 31,
+      "duration_seconds": 1.0,
+      "loop": true
+    },
+    "wave": {
+      "frame_start": 0,
+      "frame_end": 60,
+      "samples": 61,
+      "duration_seconds": 2.0,
+      "loop": false
+    },
+    "sit": {
+      "frame_start": 0,
+      "frame_end": 45,
+      "samples": 46,
+      "duration_seconds": 1.5,
+      "loop": false
+    },
+    "carry": {
+      "frame_start": 0,
+      "frame_end": 60,
+      "samples": 61,
+      "duration_seconds": 2.0,
+      "loop": true
+    }
+  },
+  "palette": {
+    "body": "EEE3CB",
+    "clothing": "6B929C",
+    "hat": "BB704C",
+    "boots": "536B50",
+    "thread": "D6AF66"
+  },
+  "accessory_bones": {
+    "hair": "hair_socket",
+    "hat": "hat_socket",
+    "backpack": "backpack_socket"
+  },
+  "source": "plush_camper.gltf",
+  "generator": "build_plush_camper.py"
+}
