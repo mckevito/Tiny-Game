@@ -13,6 +13,8 @@ var display_name := ""
 ## Where a remote camper should be, in its parent's space; null for a camper nobody steers from afar.
 var remote_target: Variant = null
 var remote_yaw := 0.0
+## The devices this camper listens to on a shared PC (couch play); null reads every device.
+var input: PlayerInput
 
 var _body: Node3D
 var _walk_phase := 0.0
@@ -50,8 +52,10 @@ func _physics_process(delta: float) -> void:
 	if not controlled and remote_target is Vector3:
 		_glide(delta)
 		return
-	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back") if controlled else Vector2.ZERO
-	var target := wish_velocity(input, camera.global_rotation.y if camera else 0.0)
+	var stick := Vector2.ZERO
+	if controlled:
+		stick = input.move() if input else Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var target := wish_velocity(stick, camera.global_rotation.y if camera else 0.0)
 	var accel := Tuning.num("tuning", "movement.acceleration_mps2") * delta
 	velocity.x = move_toward(velocity.x, target.x, accel)
 	velocity.z = move_toward(velocity.z, target.z, accel)

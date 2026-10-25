@@ -10,4 +10,4 @@ Every third-party file gets a row here before it is committed. Only licences tha
 
 | File | Source | Author | Licence | Changes | AI-generated |
 |---|---|---|---|---|---|
-| *(none yet)* | | | | | |
+| `scripts/camp/couch_view.gd`, `scripts/camp/split.gdshader` (idea only, no code copied) | [Godot demo projects: 3D Dynamic Split Screen](https://github.com/godotengine/godot-demo-projects/tree/master/3d/dynamic_split_screen) | Godot Engine contributors | MIT | Written fresh from the demo's idea: a split line at right angles to the players that appears when they are far apart | Yes (our version, written with Claude) |

@@ -8,12 +8,15 @@
     "dusk": "Dusk"
   },
   "profile": {
-    "default_name": "Camper"
+    "default_name": "Camper",
+    "couch_name": "Couch friend"
   },
   "prompt": {
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
-    "controls": "{move} to walk · {camera} turn the camera · {interact} pick up or put down · {menu} for the menu"
+    "controls": "{move} to walk · {camera} turn the camera · {interact} pick up or put down · {menu} for the menu",
+    "drop_in": "A friend can drop in: {menu} on a second controller",
+    "for_player": "%s: %s"
   },
   "menu": {
     "title": "Our Little Campground",
@@ -26,6 +29,10 @@
     "connecting": "Knocking on the camp gate…",
     "resume": "Back to camp",
     "leave": "Leave camp",
+    "leave_couch": "Hop off the couch",
+    "quality": "Picture: %s",
+    "link_code": "Link code (only to bring a couch camper to this PC)",
+    "link_info": "To play %s on their own PC, join this camp there with the link code %s.",
     "hosting": "Hosting camp %d. Your friend can join now."
   },
   "join": {
@@ -35,7 +42,15 @@
     "unreachable": "Could not reach that camp. Check the address and that the host is in the camp.",
     "host_left": "The host closed the camp. Your camper waits safely in their save.",
     "no_address": "Type your friend's address first.",
+    "bad_link": "That link code does not match a couch camper in that camp.",
     "host_failed": "Could not open the camp for a friend. Is another copy of the game already hosting?"
+  },
+  "quality": {
+    "normal": "Sharp",
+    "low": "Light, for laptops"
+  },
+  "dev": {
+    "stats": "%d fps · picture %s · %s at %d%%"
   },
   "save": {
     "too_new": "That camp was saved by a newer version of the game.",
@@ -52,6 +67,11 @@
   },
   "toast": {
     "joined": "%s joined the camp.",
-    "left": "%s headed home. Their camper is safe in this camp's save."
+    "left": "%s headed home. Their camper is safe in this camp's save.",
+    "dropped_in": "%s dropped in.",
+    "dropped_out": "%s hopped off the couch. Their camper is safe in this camp's save.",
+    "pad_asleep": "%s's controller went quiet. Their camper waits.",
+    "pad_back": "%s's controller is back.",
+    "linked": "You are playing %s from this PC now. It stays yours here."
   }
 }

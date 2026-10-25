@@ -12,6 +12,8 @@ owner something these files should answer, add the answer here.
 - **Reference repos are read-only, ideas only.** They are the owner's private projects.
 - **Online on two PCs first; two players in total.** That's how the owner wants to play.
 - **Both input methods are first-class.** The owner plays with a DualSense; others use keyboard and mouse.
+- **Performance floor: the weakest PC.** A Ryzen 7 5825U laptop with built-in graphics must hold 30 fps (aim 60),
+  split screen included (owner, 25 Oct 2026). Anything that draws more gets a setting in `data/graphics.json`.
 - **Small PRs, never stacked; the owner merges.** Stacked PRs once merged into a branch instead of `main`.
 
 ## Who owns what
@@ -52,3 +54,8 @@ Build owns how the game loads them.
   a carried chair hid the player's name (why: label behind the chair; stops it: names draw on top); a network test
   passed with pick-up broken (why: an unchecked wait; stops it: check each step, rule in HANDOFF traps).
 - 25 Oct 2026: Milestone 2 signed off by the owner after two-PC play on the home network (firewall prompt allowed).
+- 25 Oct 2026: Milestone 3 couch and link codes: drop-in/drop-out by controller, LEGO-style split screen (fresh code
+  from the MIT demo's idea), one-use link codes, two-player total across couch and online, picture presets and an
+  F1 fps readout for the weakest laptop. Fault found: the split-side test passed with the halves swapped (why: it
+  checked only which side of the line, not that the player was on screen; stops it: it checks bounds too, rule in
+  HANDOFF traps).

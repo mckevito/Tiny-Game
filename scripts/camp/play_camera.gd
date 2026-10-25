@@ -1,12 +1,19 @@
 class_name PlayCamera
 extends Camera3D
 ## The elevated third-person play camera: follows a target, turns with camera_left/right, zooms within limits and
-## dithers away trees that hide the target. Numbers: data/tuning.json "camera".
+## dithers away trees that hide the target. On a couch the split screen (CouchView) moves its aim, and a second camera
+## copies this one's turn and zoom. Numbers: data/tuning.json "camera".
 
 var target: Node3D
 var yaw := 0.0
 var distance := 11.0
 var _want_distance := 11.0
+## Where to look instead of the target (the couch split screen sets it), or null.
+var aim: Variant = null
+## Added to the zoom distance, so the shared couch view backs off to fit both players.
+var extra_distance := 0.0
+## The camera whose turn and zoom this one copies (the couch view's second camera), or null.
+var leader: PlayCamera
 var _focus := Vector3.ZERO
 var _faders: Array[MeshInstance3D] = []
 var _fade: Dictionary = {}
@@ -22,7 +29,9 @@ func _ready() -> void:
 
 ## Jumps straight to the target, without easing (on spawn and for screenshots).
 func snap() -> void:
-	if target:
+	if aim is Vector3:
+		_focus = aim
+	elif target:
 		_focus = target.global_position
 	_place()
 
@@ -37,16 +46,22 @@ func set_faders(meshes: Array[MeshInstance3D]) -> void:
 
 
 func _process(delta: float) -> void:
-	yaw += (Input.get_action_strength("camera_right") - Input.get_action_strength("camera_left")) \
-			* deg_to_rad(_num("yaw_speed_deg_s", 90.0)) * delta
-	if Input.is_action_just_pressed("zoom_in"):
-		_want_distance -= _num("zoom_step_m", 1.0)
-	if Input.is_action_just_pressed("zoom_out"):
-		_want_distance += _num("zoom_step_m", 1.0)
-	_want_distance = clampf(_want_distance, _num("min_distance_m", 7.0), _num("max_distance_m", 15.0))
-	distance = lerpf(distance, _want_distance, 1.0 - exp(-_num("zoom_rate", 8.0) * delta))
-	if target:
-		_focus = _focus.lerp(target.global_position, 1.0 - exp(-_num("follow_rate", 6.0) * delta))
+	if leader:
+		yaw = leader.yaw
+		distance = leader.distance
+		extra_distance = leader.extra_distance
+	else:
+		yaw += (Input.get_action_strength("camera_right") - Input.get_action_strength("camera_left")) \
+				* deg_to_rad(_num("yaw_speed_deg_s", 90.0)) * delta
+		if Input.is_action_just_pressed("zoom_in"):
+			_want_distance -= _num("zoom_step_m", 1.0)
+		if Input.is_action_just_pressed("zoom_out"):
+			_want_distance += _num("zoom_step_m", 1.0)
+		_want_distance = clampf(_want_distance, _num("min_distance_m", 7.0), _num("max_distance_m", 15.0))
+		distance = lerpf(distance, _want_distance, 1.0 - exp(-_num("zoom_rate", 8.0) * delta))
+	var want: Variant = aim if aim is Vector3 else (target.global_position if target else null)
+	if want is Vector3:
+		_focus = _focus.lerp(want, 1.0 - exp(-_num("follow_rate", 6.0) * delta))
 	_place()
 	_update_fades(delta)
 
@@ -55,7 +70,7 @@ func _process(delta: float) -> void:
 func _place() -> void:
 	var pitch := deg_to_rad(_num("pitch_deg", 42.0))
 	var look_at_point := _focus + Vector3(0, _num("target_height_m", 0.7), 0)
-	var offset := Vector3(0, sin(pitch), cos(pitch)).rotated(Vector3.UP, yaw) * distance
+	var offset := Vector3(0, sin(pitch), cos(pitch)).rotated(Vector3.UP, yaw) * (distance + extra_distance)
 	global_position = look_at_point + offset
 	look_at(look_at_point)
 

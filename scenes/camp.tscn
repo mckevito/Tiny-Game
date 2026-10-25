@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/camp/camp.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/camp/clearing.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/camp/play_camera.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/camp/camp_menu.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/camp/couch_view.gd" id="5"]
 
 [sub_resource type="Environment" id="env"]
 
@@ -24,6 +25,9 @@ include_objects = false
 [node name="PlayCamera" type="Camera3D" parent="."]
 script = ExtResource("3")
 current = true
+
+[node name="Couch" type="Node" parent="."]
+script = ExtResource("5")
 
 [node name="Hud" type="CanvasLayer" parent="."]
 
@@ -46,6 +50,7 @@ offset_left = -400.0
 offset_top = -140.0
 offset_right = 400.0
 offset_bottom = -100.0
+grow_vertical = 0
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 30
 theme_override_colors/font_outline_color = Color(0.17, 0.13, 0.1, 1)
@@ -66,3 +71,17 @@ theme_override_constants/outline_size = 8
 
 [node name="Menu" type="PanelContainer" parent="Hud"]
 script = ExtResource("4")
+
+[node name="Dev" type="Label" parent="Hud"]
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -720.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 60.0
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_outline_color = Color(0.17, 0.13, 0.1, 1)
+theme_override_constants/outline_size = 8

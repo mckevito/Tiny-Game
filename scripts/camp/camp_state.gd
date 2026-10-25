@@ -33,6 +33,7 @@ func join(profile_id: String, display_name: String) -> Dictionary:
 		profiles[profile_id] = character
 	elif display_name != "":
 		profiles[profile_id]["name"] = display_name
+	profiles[profile_id]["last_seen"] = int(Time.get_unix_time_from_system())
 	if not online.has(profile_id):
 		online.append(profile_id)
 	return profiles[profile_id]
@@ -47,6 +48,58 @@ func leave(profile_id: String) -> Array[String]:
 			dropped.append(id)
 	online.erase(profile_id)
 	return dropped
+
+
+## Who drops in on the host's couch: the character that played here most recently and is not in the camp now
+## (never the host's own), or "" when there is none and a new couch character is needed.
+func couch_candidate(host_id: String) -> String:
+	var best := ""
+	var best_seen := -1
+	for id: String in camp["profiles"]:
+		var seen := int(camp["profiles"][id].get("last_seen", 0))
+		if id != host_id and not online.has(id) and seen > best_seen:
+			best = id
+			best_seen = seen
+	return best
+
+
+## A fresh link code that no character in this camp has (data/net.json "link_code_*").
+func new_link_code() -> String:
+	var letters := str(Tuning.value("net", "link_code_letters", "ACDEFGHJKMNPQRTUVWXY34679"))
+	var code := ""
+	while code == "" or find_link(code) != "":
+		code = ""
+		for i in int(Tuning.num("net", "link_code_length", 6)):
+			code += letters[randi() % letters.length()]
+	return code
+
+
+## The couch character a link code belongs to, or "". Spaces, dashes and lower case are ignored.
+func find_link(code: String) -> String:
+	var want := normalize_code(code)
+	if want == "":
+		return ""
+	for id: String in camp["profiles"]:
+		var p: Dictionary = camp["profiles"][id]
+		if bool(p.get("couch", false)) and normalize_code(str(p.get("link_code", ""))) == want:
+			return id
+	return ""
+
+
+## A link code as typed, reduced to its letters: upper case, without spaces or dashes.
+static func normalize_code(code: String) -> String:
+	var letters := str(Tuning.value("net", "link_code_letters", "ACDEFGHJKMNPQRTUVWXY34679"))
+	var out := ""
+	for ch in code.to_upper():
+		if letters.contains(ch):
+			out += ch
+	return out
+
+
+## A link code split in two halves for reading aloud, such as "KQ7-M3P".
+static func show_code(code: String) -> String:
+	var half := code.length() / 2
+	return code.left(half) + "-" + code.substr(half)
 
 
 func _least_used_look() -> String:
