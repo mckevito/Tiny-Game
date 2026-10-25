@@ -22,3 +22,7 @@ See `handoff/gameplay/LESSONS.md` "Who owns what". `camp.gd` and `data/text.json
 ## Round log
 - 25 Oct 2026: role split from Build (owner). Interface work so far (HUD fix, Pack, dock, menu, Apply) is in
   `handoff/build/LESSONS.md`.
+- 25 Oct 2026, round 1: `test_hud` (couch split layout) failed on `main`: the couch clipboard covered the clock and
+  the clipboards and docks covered the prompts. Why it got through: the only layout test was solo. What stops it:
+  the couch test opens every pair of panels with a full HUD at 1920 x 1080 and at the biggest interface size, and
+  each fix was proved by putting the fault back. Then the dock's neighbours and the Pack's tokens and name tag.

@@ -33,10 +33,13 @@ script = ExtResource("5")
 [node name="Hud" type="CanvasLayer" parent="."]
 
 [node name="Hint" type="Label" parent="Hud"]
+anchors_preset = 10
+anchor_right = 1.0
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 1150.0
+offset_right = -608.0
 offset_bottom = 60.0
+grow_horizontal = 2
 autowrap_mode = 3
 theme_override_font_sizes/font_size = 26
 theme_override_colors/font_outline_color = Color(0.17, 0.13, 0.1, 1)

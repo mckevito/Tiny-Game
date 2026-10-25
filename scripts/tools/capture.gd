@@ -33,6 +33,7 @@ func _run() -> void:
 	var stage_a := false
 	var stage_b := false
 	var menus := false
+	var hud := false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -41,6 +42,7 @@ func _run() -> void:
 		stage_a = stage_a or arg == "--stage-a"
 		stage_b = stage_b or arg == "--stage-b"
 		menus = menus or arg == "--menus"
+		hud = hud or arg == "--hud"
 	DirAccess.make_dir_recursive_absolute(out)
 	await process_frame
 	if couch:
@@ -57,6 +59,10 @@ func _run() -> void:
 		return
 	if menus:
 		await _menus(out)
+		quit(0)
+		return
+	if hud:
+		await _hud(out)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -379,3 +385,67 @@ func _menus(out: String) -> void:
 	menu.show_options("controls", "pause")
 	await _settle()
 	_save(out + "/options_in_camp.png")
+
+
+## The interface: alone, the dock and the open Pack; then on the couch, split, both docks, both clipboards and both
+## Packs, with the HUD as full as play makes it (guests' wishes, a build prompt each, the bed line).
+func _hud(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.start_solo(1)
+	var s: CampState = camp.state
+	for kind in ["water_point", "lantern_post", "log_bench"]:
+		s.camp["kit"][kind] = 1
+	for item in ["grilled_trout", "perch", "berries", "sapling", "stick", "wood"]:
+		s.pack.add("p_capture_one", item, 5)
+	camp.hold_tool("p_capture_one", "axe")
+	await _settle()
+	_save(out + "/hud_dock.png")
+	camp.open_pack("p_capture_one")
+	camp._packs["p_capture_one"]["pick"] = 3
+	camp._refresh_boards()
+	await _settle()
+	_save(out + "/hud_pack.png")
+	camp.close_pack("p_capture_one")
+	var pad := InputEventJoypadButton.new()
+	pad.device = 1
+	pad.button_index = 6
+	pad.pressed = true
+	camp._input(pad)
+	var two: String = camp.couch_id
+	s.camp["profiles"][two]["name"] = "Clover"
+	camp.campers[two].get_node("Name").text = "Clover"
+	camp.campers[two].position = camp.campers["p_capture_one"].position + Vector3(12, 0, 4)
+	for item in ["trout", "berries", "wood"]:
+		s.pack.add(two, item, 3)
+	var wishes := ["fish", "meal", "chair"]
+	for i in wishes.size():
+		s.camp["stays"]["capture_%d" % i] = {"name": ["Fern", "Basil", "Hazel"][i], "pitch": "", "look": "camper_a",
+				"request": {"kind": wishes[i], "done": false}}
+	s.camp["calendar"]["minute"] = (Tuning.num("day", "clock.evening_hour") + 0.5
+			- Tuning.num("day", "clock.start_hour")) * 60.0
+	for who in camp.local_ids():
+		camp.toggle_build(who)
+	for f in 30:
+		await process_frame
+	await _settle()
+	_save(out + "/couch_docks.png")
+	camp.toggle_clipboard("p_capture_one")
+	camp.toggle_clipboard(two)
+	camp._refresh_boards()
+	await _settle()
+	_save(out + "/couch_clipboards.png")
+	camp.toggle_clipboard("p_capture_one")
+	camp.toggle_clipboard(two)
+	camp.open_pack("p_capture_one")
+	camp.open_pack(two)
+	await _settle()
+	_save(out + "/couch_packs.png")
+	camp.stop("")
+	CampSave.dir = ""

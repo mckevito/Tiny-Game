@@ -365,13 +365,24 @@
     "coins": "Coins: %d",
     "box": "Camp box: %s",
     "kit": "Build kit: %s",
-    "pack": "%s's Pack: %s"
+    "pack": "%s's Pack: %s",
+    "more": "…more: a smaller interface size shows it all"
   },
   "pack": {
     "slot": "%s ×%d",
     "slot_open": "%s\n×%d",
     "title": "%s's Pack",
-    "hint": "{tabs} or {move} pick · {interact} drop it here · {pack} close"
+    "hint": "{tabs} or {move} pick · {interact} drop it here · {pack} close",
+    "count": "×%d",
+    "tag": "%s ×%d: %s",
+    "tag_empty": "An empty slot: anything you pick up goes here.",
+    "about": {
+      "fish": "fresh from the pond; grill it at the fire or give it to a guest",
+      "meal": "a hot meal guests love",
+      "fruit": "a snack guests enjoy",
+      "plant": "plant it by a stump and a tree grows back",
+      "material": "for the fire and the workbench; the camp box keeps it"
+    }
   },
   "tool": {
     "hands": "Hands",
@@ -396,7 +407,9 @@
     "build": "Build · {next_kind} pick · {build} place",
     "pack": "Pack %d/%d · {pack} open",
     "dot": "●",
-    "dot_off": "○"
+    "dot_off": "○",
+    "prev": "‹ %s",
+    "next": "%s ›"
   },
   "bench": {
     "title": "Workbench",

@@ -163,7 +163,8 @@ here; open work moved to `handoff/gameplay/`, `handoff/interface/` and `handoff/
    from the play camera (and `clip_###.png` walking frames with `--clip`; make a GIF with ffmpeg). `--couch` instead
    plays a couch walk that splits and merges (`couch_###.png`, about 3 minutes on lavapipe). `--stage-a` saves
    `day_11/18/21.png`: a pitch, its guest and tent, and a build ghost at three hours of the day. `--menus` saves the title, the start page, each
-   Options tab and Options from the in-camp menu. `--stage-b` saves
+   Options tab and Options from the in-camp menu. `--hud` saves the dock and the open Pack alone, then on the couch both docks,
+   both clipboards and both Packs (`hud_*.png`, `couch_*.png`). `--stage-b` saves
    `camp_day.png`, `camp_dusk.png` (three pitches, guests with requests, water point, lantern), `fishing.png` and
    `report.png`, plus `welcome.png`, `chop.png` and `stump_log_clipboard.png` (round 2) and `bench_pack.png` (round 3). It uses Forward+
    on software Vulkan (lavapipe, installed by the start-up script), so frames match the owner's renderer.

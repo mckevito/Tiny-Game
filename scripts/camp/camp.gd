@@ -95,6 +95,9 @@ func _ready() -> void:
 	LightMoods.apply("day", $Sun, $World.environment, clearing.fire_lights)
 	$Hud/Night.color = FeltBuilder.swatch(str(Tuning.value("day", "night.swatch", "ink_brown")))
 	$Hud/Night.color.a = 0.0
+	# The prompts keep to a centre column, clear of the clipboards and Packs at the sides (hud.prompt_width_px).
+	$Hud/Prompt.offset_left = -Tuning.num("tuning", "hud.prompt_width_px", 640.0) * 0.5
+	$Hud/Prompt.offset_right = -$Hud/Prompt.offset_left
 	couch.main = camera
 	camera.set_faders(clearing.faders)
 	menu.chose.connect(_on_menu)
@@ -437,6 +440,8 @@ func _process(delta: float) -> void:
 	var lines: PackedStringArray = []
 	if state and not menu.visible and not report.visible:
 		for id in local_ids():
+			if _packs.has(id) or _bench.has(id):
+				continue
 			var line := _build_prompt(id) if _building.has(id) else _carry_prompt(id)
 			if line == "":
 				continue
@@ -447,7 +452,7 @@ func _process(delta: float) -> void:
 		if bed != "":
 			lines.append(Prompts.fill(bed, _pad))
 	$Hud/Prompt.text = "\n".join(lines)
-	$Hud/Clock.text = clock_line() + today_lines() if state else ""
+	_update_clock()
 	_update_hint()
 	_show_hud()
 	if $Hud/Dev.visible:
@@ -1752,6 +1757,7 @@ func _refresh_boards() -> void:
 		var board: Clipboard = _boards[who]
 		board.show_text(clipboard_text(who, board.tab_name()), Prompts.fill(Tuning.text("clipboard.hint"),
 				_pad if who == profile["id"] else true))
+		_fit_panel(board, who)
 
 
 ## A clipboard tab's text for a player: "today" (the task list with places, goals and tomorrow), "bookings" (the
@@ -1866,29 +1872,59 @@ func _refresh_docks() -> void:
 		dock.dock(couch_id != "" and who != couch_id)
 		var pad: Variant = _pad if who == profile["id"] else true
 		var kinds := state.build.available()
+		var tool_names: Array[String] = []
+		for t in tools():
+			tool_names.append(Tuning.text("tool." + str(t)))
+		var piece_names: Array[String] = []
+		for k in kinds:
+			piece_names.append(Tuning.text("build." + k))
 		var kind := piece(who)
-		var name := Tuning.text("build." + kind)
+		var label := Tuning.text("build." + kind)
 		if not CampBuild.is_free(kind):
-			name = Tuning.text("pack.slot") % [name, state.build.in_kit(kind)]
-		dock.show_dock(Tuning.text("tool." + tool_of(who)), int(_tools.get(who, 0)), tools().size(), name,
-				kinds.find(kind), kinds.size(), [Prompts.fill(Tuning.text("dock.tool"), pad),
+			label = Tuning.text("pack.slot") % [label, state.build.in_kit(kind)]
+		dock.show_dock(tool_names, posmod(int(_tools.get(who, 0)), tools().size()), piece_names, kinds.find(kind), label,
+				[Prompts.fill(Tuning.text("dock.tool"), pad),
 				Prompts.fill(Tuning.text("dock.build"), pad), Prompts.fill(Tuning.text("dock.pack"), pad)
 				% [state.pack.slots(who).size(), int(Tuning.num("items", "pack_slots", 8))]])
 
 
-## Shows or hides the HUD's parts: the menu and the morning report cover the hint and the docks, and an open Pack
-## covers its player's dock.
+## Shows or hides the HUD's parts: the menu and the morning report cover the hint and the docks, and an open Pack,
+## clipboard or workbench covers its player's dock.
 func _show_hud() -> void:
 	var covered := menu.visible or report.visible
 	$Hud/Hint.visible = not covered
 	$Hud/Toast.visible = not menu.visible
 	for who: String in _docks:
-		_docks[who].visible = not covered and not _packs.has(who)
+		_docks[who].visible = not covered and not (_packs.has(who) or _boards.has(who) or _bench.has(who))
 	for who: String in _boards:
 		_boards[who].visible = not menu.visible
 	for panels: Dictionary in [_packs, _bench]:
 		for who: String in panels:
 			panels[who]["panel"].visible = not menu.visible
+
+
+## The top right: the clock line, then guests' wishes and odd jobs (just the clock line under the couch player's
+## clipboard or workbench).
+func _update_clock() -> void:
+	$Hud/Clock.text = (clock_line() + ("" if _right_panel_open() else today_lines())) if state else ""
+
+
+## Fits a clipboard or workbench panel between the hint (left) or the clock (right) and the bottom of the screen
+## (data/tuning.json clipboard.top_px and gap_px).
+func _fit_panel(panel: Clipboard, who: String) -> void:
+	_update_clock()
+	var gap := Tuning.num("tuning", "clipboard.gap_px", 24.0)
+	var above: Label = $Hud/Clock if who == couch_id else $Hud/Hint
+	var top := Tuning.num("tuning", "clipboard.top_px", 150.0)
+	if above.visible and above.text != "":
+		top = maxf(top, above.position.y + above.get_combined_minimum_size().y + gap)
+	panel.fit(top, get_viewport().get_visible_rect().size.y - gap)
+
+
+## True while the couch player's clipboard or workbench is open on the right, under the clock: the clock then shows
+## only its own line (the wishes and odd jobs are on the clipboard's Today page).
+func _right_panel_open() -> bool:
+	return couch_id != "" and (_boards.has(couch_id) or _bench.has(couch_id))
 
 
 ## Keeps the turn buttons off the camera while any panel that uses them is open.
@@ -2040,6 +2076,7 @@ func _refresh_bench() -> void:
 		var panel: Clipboard = _bench[who]["panel"]
 		panel.show_text(bench_text(who, int(_bench[who]["pick"])), Prompts.fill(Tuning.text("bench.hint"),
 				_pad if who == profile["id"] else true))
+		_fit_panel(panel, who)
 
 
 # --- Round 5: tents to sleep in, guests asleep in theirs, name bubbles -------------------------------------------
