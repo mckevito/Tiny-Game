@@ -1,4 +1,7 @@
-# Build hand-off, 25 Oct 2026 (Stage B round 4 built, waiting on the owner's play)
+# Build hand-off, 25 Oct 2026 (split into gameplay, interface and playtest after Stage B round 5)
+
+This role ended with round 5 (owner, 25 Oct 2026). Every role reads sections 2 (architecture), 5 (art) and 6 (traps)
+here; open work moved to `handoff/gameplay/`, `handoff/interface/` and `handoff/playtest/`.
 
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
@@ -83,14 +86,9 @@
      registers the input actions. Remaps live in `binds` and come through `InputSetup.row(action)`, which
      `PlayerInput` (couch) and `Prompts` (glyphs) read, so read bindings through it, never from data/input.json
      directly. `UiLook` (`scripts/ui/ui_look.gd`) is the shared menu theme with the focus ring.
-3. **Open work, in order:**
-   1. Stage B round 3: the owner plays days 1 to 3 and signs off (or asks for changes); approve the Proposed numbers
-      in `docs/STATUS.md`. Record the sign-off in the next build PR (no sign-off PR).
-   2. Next round (owner's pick, 25 Oct): a sell crate, camp projects, a field guide and the star rating (the research
-      report "Cozy inventory and crafting" in the project files has the ranked list), then the clipboard's map tab.
-   3. Still unconfirmed from Milestone 3: two-DualSense couch, a link code, a Tailscale join, and the fps on the
-      weakest laptop (tune `data/graphics.json` from that). Ask at Stage B's sign-off.
-   4. Stage C (autumn chapter) when the owner says go.
+3. **Open work:** moved to the three role folders (`handoff/gameplay/`, `handoff/interface/`, `handoff/playtest/`).
+   Round 5 (bed open all day, guests who ask again, odd jobs, tents, camera and field guide, the Options Apply
+   button) is described in `docs/STATUS.md` and in the gameplay and interface hand-offs.
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
    - `data/palette.json`: named swatches (the plan's five plus Proposed shades). Models use only these names.

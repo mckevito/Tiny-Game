@@ -196,3 +196,12 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   and the tools cycled near it, both shown; window modes (borderless, full screen, windowed). **Proposed** (built):
   the Pack opens as a grid, a corner dock shows the tool (hands, axe, rod; chopping needs the axe, fishing the rod)
   and the build piece, the menu hides the HUD and scales to fit, and Options gains a window size.
+- 25 Oct 2026, owner (round 4 play): an Apply button in Options; go inside your tent and sleep the day away in a
+  sleeping bag; guests go inside their tents and players can see them, with a name bubble over each occupied tent;
+  day 1 must be finishable on day 1 and the day never stuck; gathering never gates progress (easy money any time)
+  while guests' requests are the core loop that ramps up; binoculars or a camera to photograph and track animals.
+  **Proposed** (built): bed open all day, guests ask again through the day with a growing daily share, odd jobs for
+  coins, the camp's tent and guest tents open like a doll's house, a camera tool and a field guide tab.
+- 25 Oct 2026, owner: after round 5, the work splits into three threads started from the hand-off files: Gameplay,
+  Interface (HUD, Pack, cyclers, menus, settings) and Playtest/QA (`handoff/README.md`).
+

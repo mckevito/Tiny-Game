@@ -66,7 +66,12 @@ static func num(key: String) -> float:
 
 
 ## Sets, saves and applies one setting. A choice must be one of its options and a slider stays inside its range.
-static func set_value(key: String, v: Variant) -> void:
+## Settings whose change waits for Options' Apply button (data/settings.json apply_on_button).
+static func apply_on_button() -> Array:
+	return Tuning.value("settings", "apply_on_button", [])
+
+
+static func set_value(key: String, v: Variant, apply_now: bool = true) -> void:
 	load_file()
 	var row: Dictionary = rows().get(key, {})
 	match str(row.get("kind", "")):
@@ -79,7 +84,8 @@ static func set_value(key: String, v: Variant) -> void:
 				v = row.get("default")
 	_data[key] = v
 	save()
-	apply(key)
+	if apply_now:
+		apply(key)
 
 
 ## The options of a choice row (picture takes the presets in data/graphics.json).

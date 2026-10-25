@@ -121,3 +121,16 @@ func _move(a: Dictionary, delta: float, players: Array[Vector3]) -> void:
 	node.rotation.y = lerp_angle(node.rotation.y, atan2(-step.x, -step.z), minf(delta * 8.0, 1.0))
 	if bool(row.get("hop", false)):
 		node.get_child(0).position.y = absf(sin(_time * PI * float(_v("hop_hz", 3.0)))) * float(_v("hop_m", 0.1))
+
+
+## The kind (model) of the nearest animal out now within `max_m` of a spot, or "".
+func nearest(pos: Vector3, max_m: float) -> String:
+	var best := ""
+	var best_d := max_m
+	for a in animals:
+		var node: Node3D = a["node"]
+		if node.visible and node.position.distance_to(pos) <= best_d:
+			best_d = node.position.distance_to(pos)
+			best = str(a["row"]["model"])
+	return best
+

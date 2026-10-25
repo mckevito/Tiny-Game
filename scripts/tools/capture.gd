@@ -12,7 +12,9 @@ extends SceneTree
 ## animals in the day and dusk shots (day 3: rabbits, squirrels, deer, the bear by the fire), chop.png, and
 ## stump_log_clipboard.png (a felled tree's stump and sapling, a planted sapling, the long log carried and the
 ## clipboard open on Supplies). Round 3 adds bench.png (the workbench panel and a dropped bundle); round 4 adds
-## pack_dock.png (the open Pack and the corner dock with a tool in hand) and menu.png (the in-camp menu over the HUD).
+## pack_dock.png (the open Pack and the corner dock with a tool in hand) and menu.png (the in-camp menu over the HUD);
+## round 5 adds guest_tent.png (a guest asleep in their opened tent with its name bubble, at night), home_tent.png (the
+## player in the camp's tent) and guide.png (the clipboard's field guide).
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
@@ -309,6 +311,38 @@ func _stage_b(out: String) -> void:
 	await _settle()
 	await _settle()
 	_save(out + "/fishing.png")
+	if camp._busy.has("p_capture_one"):
+		camp._end_busy("p_capture_one")
+	s.camp["calendar"]["minute"] = (Tuning.num("guests", "tent.in_hour") + 0.5 - start) * 60.0
+	if not camp._tents.is_empty():
+		var tent: Node3D = camp._tents.values()[0]
+		me.position = tent.position + Vector3(1.9, 0, -0.6)
+		s.set_player_pos("p_capture_one", Vector2(me.position.x, me.position.z), 0.0)
+		camp.camera.yaw = deg_to_rad(30.0)
+		camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m") + 1.0
+		await _settle()
+		await _settle()
+		_save(out + "/guest_tent.png")
+	s.join("p_capture_hold", "Ash")
+	var home: Vector2 = camp.home_tent_pos()
+	me.position = Vector3(home.x + 1.6, 0, home.y)
+	s.set_player_pos("p_capture_one", home + Vector2(1.6, 0), 0.0)
+	camp.enter_tent("p_capture_one")
+	camp.camera.yaw = deg_to_rad(-20.0)
+	await _settle()
+	await _settle()
+	_save(out + "/home_tent.png")
+	camp.leave_tent("p_capture_one")
+	s.leave("p_capture_hold")
+	s.camp["journal"]["photos"] = {"rabbit": 2, "deer": 1}
+	if not (s.camp["journal"]["wildlife"] as Array).has("squirrel"):
+		s.camp["journal"]["wildlife"].append("squirrel")
+	camp.toggle_clipboard("p_capture_one")
+	camp._boards["p_capture_one"].tab = Clipboard.tabs().find("guide")
+	camp._refresh_boards()
+	await _settle()
+	_save(out + "/guide.png")
+	camp.toggle_clipboard("p_capture_one")
 	s.camp["calendar"]["minute"] = (Tuning.num("day", "clock.evening_hour") - start) * 60.0
 	s.day.vote("p_capture_one", true)
 	camp._check_bed()

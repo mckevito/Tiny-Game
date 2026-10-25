@@ -62,8 +62,10 @@ func test_the_calendar_turns_days_seasons_and_years() -> String:
 
 func test_bed_needs_everyone_and_either_can_cancel() -> String:
 	var state := _camp()
-	if state.day.vote("p_host", true) != "deny.too_early":
-		return "bed should wait for the evening"
+	# Bed is open all day (owner, 25 Oct 2026: sleep the day away whenever you like).
+	if state.day.vote("p_host", true) != "" or state.day.everyone_ready():
+		return "bed should be open in the morning too, and still wait for both players"
+	state.day.vote("p_host", false)
 	_at_hour(state, Tuning.num("day", "clock.evening_hour"))
 	if state.day.vote("p_host", true) != "" or state.day.everyone_ready():
 		return "one of two players ready should not start the night"
@@ -120,8 +122,6 @@ func test_a_night_survives_save_and_load_without_paying_again() -> String:
 	loaded.join("p_host", "Hana")
 	if int(loaded.camp["coins"]) != int(state.camp["coins"]) or loaded.day.today() != state.day.today():
 		return "the save should hold the coins and the next morning"
-	if loaded.day.vote("p_host", true) != "deny.too_early":
-		return "after loading, the morning should not allow bed again at once"
 	loaded.camp["calendar"] = state.camp["calendar"].duplicate()
 	loaded.camp["calendar"]["day"] = int(loaded.camp["calendar"]["day"]) - 1
 	_at_hour(loaded, Tuning.num("day", "clock.end_hour"))

@@ -1,5 +1,7 @@
 {
-  "_about": "Friendly felt animals (scripts/camp/wildlife.gd): scenery that wanders and reacts, never a resource or a threat. Each herd row places count animals of a model that wander within roam_m of home ([x, z] metres) at speed_mps, pausing idle_s between walks, and hop away from a player closer than shy_m (0 = never shy). They show only between the hours in hours (pairs of [from, to]) and from from_day (a day number); sit makes one stay put at home. A local player within spot_m of an animal spots it: the first sighting of each kind goes in the journal (wildlife) and counts for the Today list. max_animals caps how many are drawn at once (the laptop budget). hop_m and hop_hz shape the hop of hoppers.",
+  "_about": "With the camera in hand, a player within photo_m of an animal can take its photo for the field guide (the clipboard's Guide tab); the first photo of each kind pays photo_bonus coins. Friendly felt animals (scripts/camp/wildlife.gd): scenery that wanders and reacts, never a resource or a threat. Each herd row places count animals of a model that wander within roam_m of home ([x, z] metres) at speed_mps, pausing idle_s between walks, and hop away from a player closer than shy_m (0 = never shy). They show only between the hours in hours (pairs of [from, to]) and from from_day (a day number); sit makes one stay put at home. A local player within spot_m of an animal spots it: the first sighting of each kind goes in the journal (wildlife) and counts for the Today list. max_animals caps how many are drawn at once (the laptop budget). hop_m and hop_hz shape the hop of hoppers.",
+  "photo_m": 7.0,
+  "photo_bonus": 5,
   "max_animals": 10,
   "spot_m": 5.0,
   "herds": [

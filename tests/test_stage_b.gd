@@ -480,3 +480,116 @@ func _hud_fits(camp: Node, pieces: Array) -> String:
 			if r.intersects(shown[j].get_global_rect()):
 				return "%s %s and %s %s should not overlap" % [shown[i].name, r, shown[j].name, shown[j].get_global_rect()]
 	return ""
+
+
+## Round 5 from the buttons (owner: freedom to finish day 1 and sleep any time, guests at the heart of the day, tents
+## to sleep in, a camera for the animals): a guest asks again after a met request, the camp's tent takes a player to
+## bed in the morning, a guest sleeps in their tent at night with a name bubble, and the camera fills the field guide.
+func test_guests_ask_again_tents_and_the_camera_from_the_buttons() -> String:
+	_fresh()
+	var camp := _camp("RoundFive", "p_host", "Hana")
+	camp.start_solo(1)
+	var why := ""
+	var s: CampState = camp.state
+	s.build.build("p_host", "pitch", NEAR_FIRE, 0.0)
+	camp._show_object(s.build.last_id)
+	_at_hour(camp, Tuning.num("day", "stays.arrive_hour"))
+	await _tree().process_frame
+	var stay := str(camp.visitors.keys()[0]) if camp.visitors.size() == 1 else ""
+	if stay == "":
+		why = "a guest should come to the pitch"
+	else:
+		camp._pitch_tent(stay)
+	# A met request: a while later the guest asks for something else, up to today's share.
+	if why == "":
+		s.camp["stays"][stay]["request"] = {"kind": "fish", "done": false}
+		s.pack.add("p_host", "perch")
+		_stand(camp, "p_host", s.day.stand_point(stay) + Vector2(0.8, 0))
+		camp._unhandled_input(_key("interact"))
+		await _tree().process_frame
+		if s.guests.open_request(stay) != "":
+			why = "handing over the fish should meet the request"
+		elif not camp.today_lines().contains(Tuning.text("hud.today")):
+			why = "the corner should list the odd jobs under the guests"
+	if why == "":
+		s.camp["calendar"]["minute"] = float(s.camp["calendar"]["minute"]) + Tuning.num("guests", "more.wait_min") + 1.0
+		await _tree().process_frame
+		await _tree().process_frame
+		var want := s.guests.open_request(stay)
+		if want == "" or want == "fish":
+			why = "after a while the guest should ask for something new, got '%s'" % want
+		elif not camp.today_lines().contains(Tuning.text("request.want." + want)):
+			why = "the corner should show what the guest would love now: " + camp.today_lines()
+	# The camp's tent in the morning: crawl in, ready for bed (bed is open all day), get up again.
+	if why == "":
+		# A friend in the camp who is not ready yet keeps the day going while the host lies in the tent.
+		s.join("p_friend", "Ash")
+		var door: Vector2 = camp.home_tent_pos() + Vector2(1.6, 0.0)
+		_stand(camp, "p_host", door)
+		await _tree().process_frame
+		var tent: Node3D = camp.clearing.placed[camp.home_tent_index()]
+		if not camp.get_node("Hud/Prompt").text.contains(Tuning.text("prompt.tent")):
+			why = "by the camp's tent the prompt should offer to crawl in, got " + camp.get_node("Hud/Prompt").text
+		else:
+			camp._unhandled_input(_key("interact"))
+			await _tree().process_frame
+			if not camp._inside.has("p_host") or not s.day.votes.has("p_host") or camp.campers["p_host"].visible:
+				why = "interact by the tent should put the player in a sleeping bag and ready for bed, in the morning too"
+			elif not camp.is_open(tent, "tent"):
+				why = "the tent should open up so you can see the player inside"
+			else:
+				camp._unhandled_input(_key("interact"))
+				await _tree().process_frame
+				if camp._inside.has("p_host") or s.day.votes.has("p_host") or not camp.campers["p_host"].visible \
+						or camp.is_open(tent, "tent"):
+					why = "interact in the tent should get the player up and out of bed"
+		s.leave("p_friend")
+	# At night the guest sleeps in their tent; the bubble names them; it opens up when a player is close.
+	if why == "":
+		_at_hour(camp, Tuning.num("guests", "tent.in_hour") + 0.5)
+		_stand(camp, "p_host", Vector2(-6.0, 6.0))
+		await _tree().process_frame
+		var tent: Node3D = camp._tents.get(stay)
+		var name := str(s.camp["stays"][stay]["name"])
+		if tent == null or not camp._asleep.has(stay) or camp.visitors[stay].visible:
+			why = "at night the guest should be asleep inside their tent"
+		elif camp._bubbles[stay].text != Tuning.text("tent.asleep") % name:
+			why = "the tent's bubble should name its sleeping guest, got " + camp._bubbles[stay].text
+		elif camp.is_open(tent, "tent_guest"):
+			why = "a guest tent should stay closed while nobody is near"
+		else:
+			_stand(camp, "p_host", Vector2(tent.position.x + 1.8, tent.position.z))
+			await _tree().process_frame
+			if not camp.is_open(tent, "tent_guest"):
+				why = "a player close by should see into the sleeping guest's tent"
+			elif s.guests.guest_near("p_host") != "":
+				why = "a sleeping guest should not be asked for anything"
+	# The camera: an animal close by goes in the field guide, the first photo pays.
+	if why == "":
+		_at_hour(camp, 12.0)
+		await _tree().process_frame
+		var rabbit: Dictionary = camp.wildlife.animals[0]
+		var at: Vector3 = (rabbit["node"] as Node3D).position
+		camp.hold_tool("p_host", "camera")
+		_stand(camp, "p_host", Vector2(at.x + 1.5, at.z))
+		camp.wildlife.set_process(false)
+		var coins := int(s.camp["coins"])
+		camp._unhandled_input(_key("interact"))
+		await _tree().process_frame
+		var photos: Dictionary = s.camp["journal"].get("photos", {})
+		if int(photos.get(str(rabbit["row"]["model"]), 0)) != 1 or int(s.camp["coins"]) != coins + int(Tuning.num("wildlife", "photo_bonus")):
+			why = "interact with the camera by an animal should photograph it for the guide and pay the bonus: %s" % [photos]
+		elif not "\n".join(camp.field_guide()).contains(Tuning.text("animal." + str(rabbit["row"]["model"])).capitalize()):
+			why = "the field guide should list the photographed animal"
+	# Alone, crawling into the tent at midday sleeps the day away.
+	if why == "":
+		var day := s.day.today()
+		camp.hold_tool("p_host", "hands")
+		_stand(camp, "p_host", camp.home_tent_pos() + Vector2(1.6, 0.0))
+		await _tree().process_frame
+		camp._unhandled_input(_key("interact"))
+		await _tree().process_frame
+		if s.day.today() != day + 1 or not camp.report.visible or camp._inside.has("p_host"):
+			why = "alone, sleeping in the tent at midday should bring the next morning"
+	await _done()
+	return why

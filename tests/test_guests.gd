@@ -309,3 +309,29 @@ func test_stage_b_survives_save_and_load() -> String:
 	if not CampSave.upgrade(old)["reservations"] is Array:
 		return "a Stage A save (version 2) should get an empty booking board"
 	return ""
+
+
+## Guests are the heart of the day (owner, 25 Oct 2026): a met request is followed by another a while later, up to
+## today's share, which grows as the days go on; nothing new is asked at night.
+func test_guests_ask_again_up_to_a_share_that_grows() -> String:
+	var state := _camp()
+	if CampGuests.per_day(1) < 2 or CampGuests.per_day(5) <= CampGuests.per_day(1):
+		return "guests should ask more than once a day, and more later in the season"
+	_pitch(state, NEAR_FIRE)
+	_at_hour(state, Tuning.num("day", "stays.arrive_hour"))
+	var stay := state.day.maybe_arrive()
+	var wait := Tuning.num("guests", "more.wait_min")
+	for i in CampGuests.per_day(1):
+		var kind := state.guests.open_request(stay)
+		if kind == "":
+			return "request %d should be open" % (i + 1)
+		state.guests._met(stay)
+		if not state.guests.refresh_requests().is_empty():
+			return "a new request should wait a while after one is met"
+		state.camp["calendar"]["minute"] = state.day.minute() + wait + 1.0
+		var fresh := state.guests.refresh_requests()
+		if i < CampGuests.per_day(1) - 1 and fresh != [stay]:
+			return "after the wait the guest should ask again (request %d)" % (i + 2)
+		if i == CampGuests.per_day(1) - 1 and not fresh.is_empty():
+			return "after today's share the guest should be content till tomorrow"
+	return ""

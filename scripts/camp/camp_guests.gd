@@ -48,13 +48,67 @@ static func gift_kind(request_kind: String) -> String:
 func _met(stay_id: String) -> void:
 	var stay: Dictionary = state.camp["stays"][stay_id]
 	stay["request"]["done"] = true
+	_count_day(stay)
+	stay["met"] = int(stay.get("met", 0)) + 1
+	stay["met_ever"] = int(stay.get("met_ever", 0)) + 1
+	stay["had"] = (stay.get("had", []) as Array) + [stay["request"]["kind"]]
+	stay["next_at"] = state.day.minute() + float(_v("more.wait_min", 60.0))
 	last_tip = int(_v("requests.%s.tip" % stay["request"]["kind"], 0))
 	last_stay = stay_id
 	state.camp["coins"] = int(state.camp.get("coins", 0)) + last_tip
 
 
+## Guests are asleep in their tents (data/guests.json tent.in_hour); their requests wait till morning.
+func asleep() -> bool:
+	return state.day.hour() >= float(_v("tent.in_hour", 20.0))
+
+
+## How many requests each guest brings on day `today` (data/guests.json more.per_day: the last row whose day has come).
+static func per_day(today: int) -> int:
+	var n := 1
+	for row: Array in _v("more.per_day", [[1, 1]]):
+		if today >= int(row[0]):
+			n = int(row[1])
+	return n
+
+
+## A stay's count of met requests starts again each day.
+func _count_day(stay: Dictionary) -> void:
+	if int(stay.get("met_day", 0)) != state.day.today():
+		stay["met_day"] = state.day.today()
+		stay["met"] = 0
+
+
+## Gives each guest whose request was met a new one, a while later (data/guests.json more.wait_min), until they have
+## had today's share (more.per_day; more each day as the camp grows). Returns the stays with a new request.
+func refresh_requests() -> Array[String]:
+	var fresh: Array[String] = []
+	if asleep():
+		return fresh
+	for id: String in state.camp["stays"]:
+		var stay: Dictionary = state.camp["stays"][id]
+		_count_day(stay)
+		if open_request(id) != "" or int(stay["met"]) >= per_day(state.day.today()) \
+				or state.day.minute() < float(stay.get("next_at", 0.0)):
+			continue
+		var n := int(id.trim_prefix("stay_")) if id.trim_prefix("stay_").is_valid_int() else 0
+		# A request met by the camp itself (a chair by the tent) is not asked twice.
+		var req := {}
+		for i in (_v("request_order", []) as Array).size():
+			req = new_request(n + int(stay.get("met_ever", 0)) + i, state.day.today())
+			if req.is_empty() or _v("requests.%s.near" % req["kind"], []).is_empty() \
+					or not (stay.get("had", []) as Array).has(req["kind"]):
+				break
+		if not req.is_empty():
+			stay["request"] = req
+			fresh.append(id)
+	return fresh
+
+
 ## A guest with an open give-request who stands within talk reach of a player, or "".
 func guest_near(profile_id: String) -> String:
+	if asleep():
+		return ""
 	var at := state.player_pos(profile_id)
 	for id: String in state.camp["stays"]:
 		if gift_kind(open_request(id)) != "" and state.day.stand_point(id).distance_to(at) <= float(_v("talk_reach_m", 2.0)):
@@ -121,7 +175,8 @@ func review(stay_id: String) -> Dictionary:
 	for src: Dictionary in _v("satisfaction.sources", []):
 		var ok := false
 		if bool(src.get("request", false)):
-			ok = not (stay.get("request", {}) as Dictionary).is_empty() and bool(stay["request"].get("done", false))
+			ok = int(stay.get("met_ever", 0)) > 0 or (not (stay.get("request", {}) as Dictionary).is_empty()
+					and bool(stay["request"].get("done", false)))
 		else:
 			ok = _near_pitch(stay_id, src.get("near", []), float(src.get("radius_m", default_r)))
 		if ok:

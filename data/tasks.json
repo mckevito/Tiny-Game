@@ -1,5 +1,5 @@
 {
-  "_about": "The Today list (scripts/camp/camp_tasks.gd): up to active_max counted tasks at once, shared by both players; either player's step counts. A task names an event (chop, fish, cook, give, spot, forage, build:<kind>; a plain name also counts its sub-events, so forage counts forage:stick) and how many make it done; done pays bonus coins at once and the next task takes its place. The firsts come first, once per camp, and teach the game on day 1; after them the daily tasks cycle forever. place tags where it happens (text: data/text.json task.place). news: the line the morning report gives about the day after (text: news.day_<n>), for each day number listed.",
+  "_about": "The odd jobs (scripts/camp/camp_tasks.gd; the owner: gathering never gates anything, it is easy money any time, while guests' requests are the heart of the day): up to active_max counted tasks at once, shared by both players; either player's step counts. A task names an event (chop, fish, cook, give, spot, forage, build:<kind>; a plain name also counts its sub-events, so forage counts forage:stick) and how many make it done; done pays bonus coins at once and the next task takes its place. The firsts come first, once per camp, and teach the game on day 1; after them the daily tasks cycle forever. place tags where it happens (text: data/text.json task.place). news: the line the morning report gives about the day after (text: news.day_<n>), for each day number listed.",
   "active_max": 4,
   "firsts": [
     {"id": "first_sticks", "event": "forage:stick", "count": 3, "bonus": 3, "place": "edges"},
@@ -15,8 +15,8 @@
     {"id": "catch_fish", "event": "fish", "count": 3, "bonus": 4, "place": "pond"},
     {"id": "gather", "event": "forage", "count": 4, "bonus": 3, "place": "edges"},
     {"id": "grill_meals", "event": "cook", "count": 2, "bonus": 4, "place": "fire"},
-    {"id": "help_guests", "event": "give", "count": 2, "bonus": 5, "place": "pitches"},
     {"id": "spot_animals", "event": "spot", "count": 2, "bonus": 3, "place": "edges"},
+    {"id": "photo_animals", "event": "photo", "count": 2, "bonus": 4, "place": "edges"},
     {"id": "pick_berries", "event": "forage:berries", "count": 2, "bonus": 3, "place": "edges"},
     {"id": "plant_trees", "event": "plant", "count": 2, "bonus": 4, "place": "stumps"},
     {"id": "bring_log", "event": "log", "count": 1, "bonus": 5, "place": "woods"}

@@ -13,6 +13,9 @@
     "couch_name": "Couch friend"
   },
   "prompt": {
+    "photo": "Take a photo of the %s",
+    "tent": "Crawl into your tent to sleep",
+    "in_tent": "Snug in your sleeping bag and ready for bed. {interact} to get up.",
     "need_tool": "Take out the %s ({next_tool})",
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
@@ -23,7 +26,7 @@
     "build_blocked": "%s · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
     "pack_here": "{interact} Pack away this %s (%s back) · {undo} undo · {build} done",
     "sleep_wait": "Ready for bed: %s (%d of %d). {menu} for the menu to join in.",
-    "bed_open": "The evening is here. When you are ready, {menu} and choose Ready for bed.",
+    "bed_open": "The evening is here. When you are ready, sleep in your tent or {menu} and choose Ready for bed.",
     "fish": "{interact} Fish",
     "fishing": "Fishing…",
     "cook": "{interact} Grill your %s",
@@ -57,7 +60,7 @@
     "hosting": "Hosting camp %d. Your friend can join now.",
     "sleep": "Ready for bed",
     "not_sleep": "Not ready for bed yet",
-    "sleep_closed": "Bed opens in the evening (from %s)",
+    "sleep_early": "Sleep the day away",
     "bookings": "Booking board",
     "booking_accept": "Accept booking",
     "booking_later": "Ask them to come a day later",
@@ -118,6 +121,9 @@
     "nothing_to_box": "Only wood and sticks go in the camp box."
   },
   "toast": {
+    "photo_new": "Snap! A %s for the field guide (+%d coins).",
+    "photo_again": "Snap! Another %s photo (%d in the guide).",
+    "new_request": "%s would love %s now.",
     "joined": "%s joined the camp.",
     "left": "%s headed home. Their camper is safe in this camp's save.",
     "dropped_in": "%s dropped in.",
@@ -271,12 +277,13 @@
     "quiet": "A quiet night, nobody stayed.",
     "bookings": "Bookings",
     "none": "No bookings yet.",
-    "today": "Today",
+    "today": "Odd jobs (any time, for coins)",
+    "guests": "Guests would love",
     "goal_quick": "Quick task: %s",
     "goal_project": "Project: %s",
     "goal_dream": "Dream: %s",
     "tomorrow": "Tomorrow: %s",
-    "welcome": "Welcome to the campground! It's your first morning. The Today list in the corner says what to try first; either of you can do any task, and each one done pays a little bonus."
+    "welcome": "Welcome to the campground! It's your first morning. Guests come to a free tent pitch and ask for little things: that is the heart of the day. The odd jobs in the corner are there whenever you like; each one pays a little bonus. Sleep in your tent whenever you want the next day."
   },
   "goal": {
     "request": "%s would love %s.",
@@ -288,8 +295,14 @@
     "build": "craft a %s at the workbench: %s.",
     "cosy": "make the camp cosier with chairs by the tents."
   },
+  "tent": {
+    "bubble": "%s's tent",
+    "asleep": "%s · zZ"
+  },
   "hud": {
-    "today": "Today"
+    "today": "Odd jobs (for coins)",
+    "guests": "Guests",
+    "guest_line": "%s: %s"
   },
   "task": {
     "line": "%s (%d/%d) · %s",
@@ -306,6 +319,7 @@
     "grill_meals": "Grill meals",
     "help_guests": "Help guests with what they asked for",
     "spot_animals": "Spot the animals",
+    "photo_animals": "Photograph the animals for the field guide",
     "pick_berries": "Pick wild berries",
     "place": {
       "edges": "at the edges of the clearing",
@@ -335,7 +349,8 @@
     "tab": {
       "today": "Today",
       "bookings": "Bookings",
-      "supplies": "Supplies"
+      "supplies": "Supplies",
+      "guide": "Field guide"
     },
     "open_tab": "[ %s ]",
     "hint": "{tabs} turn the page · {clipboard} put it away",
@@ -361,7 +376,20 @@
   "tool": {
     "hands": "Hands",
     "axe": "Axe",
-    "rod": "Fishing rod"
+    "rod": "Fishing rod",
+    "camera": "Camera"
+  },
+  "guide": {
+    "head": "Field guide: %d of %d animals photographed",
+    "photo": "%s · %d photo(s) · %s",
+    "seen": "%s · seen, no photo yet · %s",
+    "unknown": "??? · %s",
+    "hint": {
+      "rabbit": "hops round the meadow all day",
+      "squirrel": "by the big trees east of the fire, all day",
+      "deer": "at the west woods at dawn and dusk, from day 2",
+      "bear": "sits by the fire in the evening, from day 3"
+    }
   },
   "dock": {
     "tool": "Tool · {next_tool}",
@@ -389,6 +417,9 @@
     "back": "Back"
   },
   "options": {
+    "apply": "Apply",
+    "applied": "Changes applied.",
+    "not_applied": "Choose Apply to use the new picture and window settings.",
     "title": "Options",
     "tab": {
       "picture": "Picture",

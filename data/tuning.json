@@ -68,14 +68,18 @@
     "menu_width_px": 560,
     "menu_margin_px": 24,
     "menu_font_px": 28,
-    "today_max": 3
+    "today_max": 2,
+    "guests_max": 3,
+    "flash_s": 0.35,
+    "flash_alpha": 0.7
   },
   "clipboard": {
     "_about": "The clipboard (scripts/camp/clipboard.gd): tabs in order (text: clipboard.tab.<name>), the panel width, font, gap from the screen edge and from the top, the margin, the edge and the thicker top edge (the clip), the felt swatches, and how often its text refreshes.",
     "tabs": [
       "today",
       "bookings",
-      "supplies"
+      "supplies",
+      "guide"
     ],
     "width_px": 560,
     "font_px": 22,
