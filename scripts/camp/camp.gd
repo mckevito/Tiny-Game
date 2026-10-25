@@ -2301,6 +2301,7 @@ func _sync_fire() -> void:
 			root.remove_child(old)
 			old.queue_free()
 		var scale := 1.0
+		var radius := -1.0
 		if level > 0:
 			var up := Node3D.new()
 			up.name = "Upgrade"
@@ -2309,9 +2310,16 @@ func _sync_fire() -> void:
 				up.add_child(FeltBuilder.build(str(row.get("model", ""))))
 			root.add_child(up)
 			scale = float(CampBuild.fire_levels()[level - 1].get("light_scale", 1.0))
-		for light in root.get_children():
-			if light is OmniLight3D:
-				light.set_meta("scale", scale)
+			radius = float(CampBuild.fire_levels()[level - 1].get("collide_m", -1.0))
+		for child in root.get_children():
+			if child is OmniLight3D:
+				child.set_meta("scale", scale)
+			elif child is StaticBody3D:
+				for shape in child.get_children():
+					if shape is CollisionShape3D and shape.shape is CylinderShape3D:
+						if not shape.has_meta("radius"):
+							shape.set_meta("radius", shape.shape.radius)
+						shape.shape.radius = radius if radius > 0.0 else float(shape.get_meta("radius"))
 		_light_t = -1.0
 
 
