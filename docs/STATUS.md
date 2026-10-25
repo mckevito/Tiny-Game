@@ -45,6 +45,21 @@ Signed off: yes, as a first draft (owner, 25 Oct 2026). Polish comes later; PR #
 - The extra palette shades in `data/palette.json` (grass, pine, wood, skin, stone, fire and so on) are Proposed.
 - The prompts in the sandbox hint are words ("L1", "WASD"); real button glyphs come with the prompt system.
 
+### Art pilot: toward the felt reference picture (25 Oct 2026)
+Not signed off: waits on the owner's verdict. The owner asked for the models to look like their original felt
+reference picture; the Art role's pilot covers the camper, the tent, the pine and the round broadleaf tree, felt
+fibres on the shared material, and a warmer day light and grass (all **Proposed**). Sizes and colliders are unchanged.
+
+| Proof | Test | Result |
+|---|---|---|
+| Pilot models still build, use known shapes and swatches and keep their sizes | `tests/test_felt_models.gd` | Passing |
+| The new lathe shape faces outward and its wave scallops the edge | `test_felt_models.test_lathe_faces_out_and_wave_scallops` | Passing |
+| A cord stitch (the smile, guy ropes) is unbroken | `test_felt_models.test_stitch_cord_is_unbroken` | Passing |
+| The pilot matches the reference closely enough to roll out | Owner's verdict (sheet beside the reference, day and dusk, walk GIF) | Waiting |
+
+How to look: the capture's `--hero` mode (`handoff/art/HANDOFF.md`), or F5 the sandbox.
+Still open: the laptop timing of the fibre shader; the roll-out to every other model, one family per PR.
+
 ## Milestone 2: Two PCs, one camp
 Signed off: yes, 25 Oct 2026 (PR #4 merged; the owner played on two PCs over their home network after letting Godot
 through the Windows firewall).

@@ -5,7 +5,7 @@ extends RefCounted
 ## Mesh detail and stitch sizes: data/art.json "mesh" and "stitch".
 
 const SHADER := preload("res://scripts/art/felt.gdshader")
-const SHAPES := ["sphere", "cone", "cylinder", "capsule", "prism", "box", "stitch", "ring", "seam"]
+const SHAPES := ["sphere", "cone", "cylinder", "capsule", "prism", "box", "stitch", "ring", "seam", "lathe"]
 
 static var _materials: Dictionary = {}
 static var _meshes: Dictionary = {}
@@ -98,7 +98,7 @@ static func material(sway: bool) -> ShaderMaterial:
 	mat.shader = SHADER
 	var felt: Dictionary = Tuning.table("art").get("felt", {})
 	for key in ["noise_scale", "noise_strength", "grain_scale", "grain_strength", "fuzz_strength", "rim", "rim_tint",
-			"glow_strength", "sway_speed"]:
+			"glow_strength", "sway_speed", "fibre_scale", "fibre_strength", "bump_strength"]:
 		mat.set_shader_parameter(key, float(felt.get(key, 0.0)))
 	mat.set_shader_parameter("sway_height", float(felt.get("sway_height_m", 3.0)))
 	mat.set_shader_parameter("sway_amount", float(felt.get("sway_amount_m", 0.0)) if sway else 0.0)
@@ -123,7 +123,7 @@ static func _part_transform(part: Dictionary) -> Transform3D:
 	var rot := vec3(part.get("rot")) * (PI / 180.0)
 	var basis := Basis.from_euler(rot)
 	var shape := str(part.get("shape"))
-	if shape in ["sphere", "cone", "cylinder", "prism"]:
+	if shape in ["sphere", "cone", "cylinder", "prism", "lathe"]:
 		basis = basis * Basis.from_scale(vec3(part.get("size"), Vector3.ONE))
 	elif shape == "capsule":
 		var size := vec3(part.get("size"), Vector3.ONE)
@@ -171,16 +171,21 @@ static func _part_arrays(part: Dictionary) -> Array:
 			var r := float(part.get("round", mesh_cfg.get("default_box_round_m", 0.03)))
 			return rounded_box(size, r, int(mesh_cfg.get("box_round_steps", 3)))
 		"stitch":
-			return _stitch_path(PackedVector3Array([vec3(part.get("from")), vec3(part.get("to"))]))
+			var points := PackedVector3Array()
+			for p: Variant in part.get("points", [part.get("from"), part.get("to")]):
+				points.append(vec3(p))
+			return _stitch_path(points, part)
 		"ring":
-			return _stitch_path(_ellipse_ring(size))
+			return _stitch_path(_ellipse_ring(size, part.get("wave", [])), part)
+		"lathe":
+			return _lathe(part.get("profile", []), part.get("wave", []), int(part.get("segments", segs)))
 		"seam":
 			var arrays := []
 			var count := int(part.get("count", 4))
 			for i in count:
 				var path := _meridian(size, TAU * i / count + deg_to_rad(float(part.get("turn", 0.0))),
 						deg_to_rad(float(part.get("from_lat", -50.0))), deg_to_rad(float(part.get("to_lat", 70.0))))
-				arrays = _merge(arrays, _stitch_path(path))
+				arrays = _merge(arrays, _stitch_path(path, part))
 			return arrays
 	push_error("FeltBuilder: unknown shape %s" % part.get("shape"))
 	return []
@@ -248,12 +253,13 @@ static func _quad(indices: PackedInt32Array, verts: PackedVector3Array, n: Vecto
 			indices.append_array([tri[0], tri[1], tri[2]])
 
 
-## Running-stitch dashes along a polyline. Sizes: data/art.json "stitch".
-static func _stitch_path(points: PackedVector3Array) -> Array:
+## Running-stitch dashes along a polyline. Sizes: data/art.json "stitch"; a part's "thick", "dash" and "gap" scale
+## them (gap 0 makes a solid cord, such as a guy rope).
+static func _stitch_path(points: PackedVector3Array, part: Dictionary = {}) -> Array:
 	var cfg: Dictionary = Tuning.table("art").get("stitch", {})
-	var dash := float(cfg.get("dash_m", 0.07))
-	var gap := float(cfg.get("gap_m", 0.05))
-	var thick := float(cfg.get("thickness_m", 0.02))
+	var dash := float(cfg.get("dash_m", 0.07)) * float(part.get("dash", 1.0))
+	var gap := float(cfg.get("gap_m", 0.05)) * float(part.get("gap", 1.0))
+	var thick := float(cfg.get("thickness_m", 0.02)) * float(part.get("thick", 1.0))
 	var piece := rounded_box(Vector3(thick, thick, dash), 0.0, 1)
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
@@ -269,6 +275,11 @@ static func _stitch_path(points: PackedVector3Array) -> Array:
 		var dir := (b - a) / length
 		var up := Vector3.UP if absf(dir.dot(Vector3.UP)) < 0.9 else Vector3.FORWARD
 		var basis := Basis.looking_at(dir, up)
+		if gap <= 0.0:
+			# A cord: one piece per segment, a little longer so the joints close.
+			var cord := rounded_box(Vector3(thick, thick, length + thick), 0.0, 1)
+			_append(cord, Transform3D(basis, (a + b) * 0.5), Color.WHITE, verts, normals, colors, indices)
+			continue
 		var d := carry
 		while d + dash <= length + 0.0001:
 			_append(piece, Transform3D(basis, a + dir * (d + dash * 0.5)), Color.WHITE, verts, normals, colors, indices)
@@ -277,14 +288,57 @@ static func _stitch_path(points: PackedVector3Array) -> Array:
 	return _pack(verts, normals, indices)
 
 
-## A closed ellipse in the XZ plane with the given [x, _, z] size.
-static func _ellipse_ring(size: Vector3) -> PackedVector3Array:
+## A closed ellipse in the XZ plane with the given [x, _, z] size, scalloped like a lathe with the same wave.
+static func _ellipse_ring(size: Vector3, wave: Array = []) -> PackedVector3Array:
 	var out := PackedVector3Array()
 	var steps := int(Tuning.num("art", "mesh.round_segments", 20)) * 2
+	if wave.size() == 2:
+		steps = maxi(steps, int(wave[0]) * 8)
 	for i in steps + 1:
 		var a := TAU * i / steps
-		out.append(Vector3(sin(a) * size.x * 0.5, 0.0, cos(a) * size.z * 0.5))
+		var k := _wave(a, wave)
+		out.append(Vector3(sin(a) * size.x * 0.5 * k, 0.0, cos(a) * size.z * 0.5 * k))
 	return out
+
+
+## How far in a wave pulls the radius at angle `a`: wave is [count, depth]; 1 at each lobe, 1 - depth between them.
+static func _wave(a: float, wave: Array) -> float:
+	if wave.size() != 2:
+		return 1.0
+	return 1.0 - float(wave[1]) * 0.5 * (1.0 - cos(float(wave[0]) * a))
+
+
+## A shape turned round Y from a profile of [radius, height] points (radius 0..1 of the half-width, height 0..1 from
+## the bottom), centred like the other unit shapes. An optional wave [count, depth] scallops it (pine tiers) or ribs
+## it (a knit beanie).
+static func _lathe(profile: Array, wave: Array, segs: int) -> Array:
+	if wave.size() == 2:
+		segs = maxi(segs, int(wave[0]) * 6)
+	var rows := profile.size()
+	var verts := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var indices := PackedInt32Array()
+	for p: Array in profile:
+		for j in segs:
+			var a := TAU * j / segs
+			var r := float(p[0]) * 0.5 * _wave(a, wave)
+			verts.append(Vector3(sin(a) * r, float(p[1]) - 0.5, cos(a) * r))
+			normals.append(Vector3.ZERO)
+	for i in rows - 1:
+		for j in segs:
+			var a := i * segs + j
+			var b := i * segs + (j + 1) % segs
+			var c := a + segs
+			var d := b + segs
+			for tri: Array in [[a, b, c], [b, d, c]]:
+				# tri runs anticlockwise seen from outside; Godot's front faces are clockwise, so it is written reversed.
+				var n := (verts[tri[1]] - verts[tri[0]]).cross(verts[tri[2]] - verts[tri[0]])
+				for k: int in tri:
+					normals[k] += n
+				indices.append_array([tri[0], tri[2], tri[1]])
+	for k in normals.size():
+		normals[k] = normals[k].normalized() if normals[k].length() > 0.0 else Vector3.UP
+	return _pack(verts, normals, indices)
 
 
 ## A line of longitude on an ellipsoid of the given size, at angle `lon`, between two latitudes.

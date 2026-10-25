@@ -9,6 +9,11 @@ uniform float noise_strength = 0.16;
 uniform float grain_scale = 55.0;
 uniform float grain_strength = 0.08;
 uniform float fuzz_strength = 0.35;
+// Felt fibres: a fine stretched noise that darkens the colour in flecks and bumps the normal (screen-space slopes, so
+// it costs one noise and no texture). 0 turns either off (the Light preset can).
+uniform float fibre_scale = 60.0;
+uniform float fibre_strength = 0.0;
+uniform float bump_strength = 0.0;
 uniform float rim = 0.35;
 uniform float rim_tint = 0.6;
 uniform float glow_strength = 2.0;
@@ -58,7 +63,21 @@ void fragment() {
 	}
 	float n = noise3(obj_pos * noise_scale) * 0.6 + noise3(obj_pos * noise_scale * 2.3) * 0.4;
 	float g = noise3(obj_pos * grain_scale);
-	vec3 base = COLOR.rgb * (1.0 + (n - 0.5) * noise_strength + (g - 0.5) * grain_strength);
+	// Fibres run in no one direction: two stretched noises at an angle, kept as the darker of the two.
+	float f1 = noise3(obj_pos * vec3(fibre_scale, fibre_scale * 0.35, fibre_scale));
+	float f2 = noise3(obj_pos.zyx * vec3(fibre_scale * 0.35, fibre_scale, fibre_scale) + 7.0);
+	float fibre = min(f1, f2);
+	vec3 base = COLOR.rgb * (1.0 + (n - 0.5) * noise_strength + (g - 0.5) * grain_strength + (fibre - 0.35) * fibre_strength);
+	if (bump_strength > 0.0) {
+		vec3 dpdx = dFdx(VERTEX);
+		vec3 dpdy = dFdy(VERTEX);
+		vec3 r1 = cross(dpdy, NORMAL);
+		vec3 r2 = cross(NORMAL, dpdx);
+		float det = dot(dpdx, r1);
+		float h = (fibre + n * 0.5) * bump_strength;
+		vec3 grad = sign(det) * (dFdx(h) * r1 + dFdy(h) * r2);
+		NORMAL = normalize(abs(det) * NORMAL - grad);
+	}
 	// Soft fuzz: edges facing away from the camera go a touch lighter, like felt fibres catching light.
 	float edge = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
 	ALBEDO = mix(base, base * 1.25 + vec3(0.02), edge * edge * fuzz_strength);

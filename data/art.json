@@ -11,7 +11,10 @@
     "glow_strength": 2.2,
     "sway_amount_m": 0.05,
     "sway_speed": 0.9,
-    "sway_height_m": 3.0
+    "sway_height_m": 3.0,
+    "fibre_scale": 70.0,
+    "fibre_strength": 0.22,
+    "bump_strength": 0.004
   },
   "mesh": {
     "sphere_segments": 24,

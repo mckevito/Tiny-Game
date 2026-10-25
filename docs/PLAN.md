@@ -204,4 +204,8 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   coins, the camp's tent and guest tents open like a doll's house, a camera tool and a field guide tab.
 - 25 Oct 2026, owner: after round 5, the work splits into three threads started from the hand-off files: Gameplay,
   Interface (HUD, Pack, cyclers, menus, settings) and Playtest/QA (`handoff/README.md`).
-
+- 25 Oct 2026, owner: bring the models up to the original felt reference picture: an Art role pilots a few pieces
+  beside the picture, then rolls out. **Proposed** (pilot built): a ribbed knit beanie without a pompom, hair under
+  the hat, a stitched smile; scalloped pine tiers; a broadleaf crown with honey seams and leaf sprigs; a plumper
+  stitched tent with pegs; felt fibres in the shared material; a warmer day light and olive grass; two new swatches
+  (`olive_felt`, `sage_thread`).

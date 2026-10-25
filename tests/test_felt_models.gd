@@ -83,3 +83,32 @@ func test_one_shared_felt_material() -> String:
 	a.free()
 	b.free()
 	return "" if ok else "solid models should share the one felt material"
+
+
+func test_lathe_faces_out_and_wave_scallops() -> String:
+	var plain: Array = FeltBuilder._part_arrays({"shape": "lathe", "profile": [[1, 0], [1, 1]], "size": [1, 1, 1]})
+	var verts: PackedVector3Array = plain[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = plain[Mesh.ARRAY_NORMAL]
+	var idx: PackedInt32Array = plain[Mesh.ARRAY_INDEX]
+	# Godot's front faces are clockwise: the anticlockwise normal of a written triangle must point inward.
+	var c: Vector3 = (verts[idx[1]] - verts[idx[0]]).cross(verts[idx[2]] - verts[idx[0]])
+	var mid: Vector3 = (verts[idx[0]] + verts[idx[1]] + verts[idx[2]]) / 3.0
+	if c.dot(Vector3(mid.x, 0, mid.z)) >= 0.0:
+		return "lathe triangles face inward"
+	for i in verts.size():
+		if normals[i].dot(Vector3(verts[i].x, 0, verts[i].z)) <= 0.0:
+			return "lathe normal %d points inward" % i
+	var waved: Array = FeltBuilder._part_arrays({"shape": "lathe", "profile": [[1, 0], [1, 1]], "wave": [6, 0.2],
+			"size": [1, 1, 1]})
+	var radii: Array = Array(waved[Mesh.ARRAY_VERTEX]).map(func(v: Vector3) -> float: return Vector2(v.x, v.z).length())
+	return "" if radii.min() < 0.41 and radii.max() > 0.49 else "the wave doesn't scallop the edge"
+
+
+func test_stitch_cord_is_unbroken() -> String:
+	var points := [[0, 0, 0], [0.05, 0, 0], [0.1, 0.01, 0]]
+	var cord: Array = FeltBuilder._part_arrays({"shape": "stitch", "points": points, "gap": 0})
+	var dashes: Array = FeltBuilder._part_arrays({"shape": "stitch", "points": points})
+	# A cord is one piece per segment (24 corners each); the running stitch fits fewer than one dash per segment.
+	if cord[Mesh.ARRAY_VERTEX].size() != 48:
+		return "a cord should be one piece per segment, got %d corners" % cord[Mesh.ARRAY_VERTEX].size()
+	return "" if dashes.is_empty() or dashes[Mesh.ARRAY_VERTEX].size() < 48 else "the dashes should leave gaps"

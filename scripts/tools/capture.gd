@@ -18,6 +18,8 @@ extends SceneTree
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
+## --hero is the art review shot: the sandbox from a lower, closer camera framed like the owner's felt reference
+## picture (hero_<mood>.png, no hint text), plus face_<mood>.png, a close look at the two campers.
 
 const SETTLE_FRAMES := 30
 
@@ -34,6 +36,7 @@ func _run() -> void:
 	var stage_b := false
 	var menus := false
 	var hud := false
+	var hero := false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -43,6 +46,7 @@ func _run() -> void:
 		stage_b = stage_b or arg == "--stage-b"
 		menus = menus or arg == "--menus"
 		hud = hud or arg == "--hud"
+		hero = hero or arg == "--hero"
 	DirAccess.make_dir_recursive_absolute(out)
 	await process_frame
 	if couch:
@@ -63,6 +67,10 @@ func _run() -> void:
 		return
 	if hud:
 		await _hud(out)
+		quit(0)
+		return
+	if hero:
+		await _hero(out)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -449,3 +457,27 @@ func _hud(out: String) -> void:
 	_save(out + "/couch_packs.png")
 	camp.stop("")
 	CampSave.dir = ""
+
+
+## The art review shot: a lower, closer camera on the sandbox's fire, tent and trees, in each mood, then a close
+## look at the campers' faces. The play camera keeps following the player, so this camera is made current instead.
+func _hero(out: String) -> void:
+	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
+	root.add_child(sandbox)
+	await process_frame
+	for label in ["Hint", "Mood"]:
+		sandbox.get_node(label).visible = false
+	var mid: Vector3 = (sandbox.player.position + sandbox.friend.position) * 0.5
+	var cam := Camera3D.new()
+	cam.fov = 40.0
+	sandbox.add_child(cam)
+	cam.current = true
+	for i in LightMoods.names().size():
+		sandbox.set_mood(i)
+		var mood: String = LightMoods.names()[i]
+		cam.look_at_from_position(mid + Vector3(0.6, 8.0, 9.0), mid + Vector3(0.6, 0.0, -1.2))
+		await _settle()
+		_save(out + "/hero_%s.png" % mood)
+		cam.look_at_from_position(mid + Vector3(0, 2.1, 3.6), mid + Vector3(0, 0.75, 0))
+		await _settle()
+		_save(out + "/face_%s.png" % mood)
