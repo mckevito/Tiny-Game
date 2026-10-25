@@ -857,10 +857,10 @@ func set_device(who: String, device: int) -> String:
 	else:
 		couch_pad = device
 	_sync_inputs()
-	if why != "":
-		_toast(Tuning.text(why))
 	if menu.visible and menu.page() == "players":
-		_show_players()
+		_show_players(Tuning.text(why) if why != "" else "")
+	elif why != "":
+		_toast(Tuning.text(why))
 	return why
 
 
