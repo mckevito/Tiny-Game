@@ -94,6 +94,19 @@ play camera, in daylight and at dusk. Elevated third-person camera, limited zoom
 **Accessibility baseline:** UI scale, separate music and effects volume, visual cues alongside sound, readable
 prompts, player names as well as colours, hold-or-toggle for held buttons, camera shake off.
 
+## Performance target (owner)
+The weakest PC is a laptop with an AMD Ryzen 7 5825U and its built-in Radeon graphics (8 compute units sharing system
+memory), 32 GB RAM, Windows 11. Every stage must hold **at least 30 fps, aiming for 60**, on it at 1080p, in the
+busiest scene that stage has (an event with about 10 guests; from Milestone 3, couch split screen too).
+
+**Proposed** ways to stay there:
+- A quality table (`data/graphics.json`) with a low preset for this laptop: render scale about 0.75 with FSR
+  upscaling, SSAO and glow off, one sun shadow at a modest size, FXAA instead of MSAA, fewer particles.
+- Split screen draws the world twice, so it gets its own lower render scale on the low preset.
+- Many-of-a-kind scenery (trees, grass tufts, path stones) drawn with `MultiMeshInstance3D`; guests stay at about 10.
+- An fps and frame-time readout on the F1 dev menu, and a timing check on this laptop at every stage sign-off.
+- If Forward+ can't hold 30 fps on the low preset, try Godot's Mobile renderer before cutting art.
+
 ## Milestones
 Each passes before the next starts. No dates. Stages A to E replace the old Milestones 4 to 6.
 
@@ -137,4 +150,6 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, **Proposed** (Milestone 2): each PC steers its own camper and tells the other where it is; the host
   decides every change to the camp (carrying, placing, everything saved). A third PC is told the camp is full.
 - 25 Oct 2026, owner: licence MIT for code and CC BY 4.0 for original art.
+- 25 Oct 2026, owner: the weakest PC (Ryzen 7 5825U laptop, built-in Radeon graphics) must run at least 30 fps,
+  aiming for 60.
 - 25 Oct 2026, **Proposed**: three save slots; thank-you letters; background wildlife; upkeep never below zero.

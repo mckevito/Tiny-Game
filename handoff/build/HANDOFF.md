@@ -18,6 +18,9 @@
       just more profile IDs in `CampState.online`; `_guests` maps connections to profiles, so a local player needs
       no connection. Keep the two-player total across couch and online.
       While there, have the owner try the DualSense with carry and the menu, and a Tailscale join (not yet tried).
+      Performance: the owner's weakest PC is a Ryzen 7 5825U laptop with built-in graphics; it must hold at least
+      30 fps (aim 60), split screen included. See "Performance target" in `docs/PLAN.md`: SSAO is on today
+      (`light_moods.gd`), so add the low quality preset and the F1 fps readout as part of this milestone.
    2. Stage A: day clock, sleep vote and nightly payout write into the save fields that already exist.
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
