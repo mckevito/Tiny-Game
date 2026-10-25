@@ -1,0 +1,30 @@
+{
+  "_about": "The owner's \"Beanie Camper\" T-pose turnaround (25 Oct 2026), the reference for this model, for art/tools/compare.py. The sheet stays in the project files, not in git. views: where each figure stands on the sheet (its middle x, the row its soles touch, in pixels); px_per_m: the sheet's pixels per metre at the model's real size; background_at: a pixel of plain backdrop; pairs: the box round each view for side-by-side crops; bands: colour samples of the front view (from and to metres above the ground, half width in metres, which pixels count, the swatch they test).",
+  "sheet": "/mnt/project-files/tiny-game/reference/beanie-camper-turnaround.png",
+  "title": "THE GAME'S CAMPER: SAME VIEWS, STUDIO LIGHT",
+  "px_per_m": 272.8,
+  "background_at": [10, 200],
+  "views": {
+    "front": [209, 476],
+    "front_right": [598, 476],
+    "right": [945, 476],
+    "back_right": [1323, 476],
+    "back": [209, 929],
+    "back_left": [590, 929],
+    "left": [945, 929],
+    "front_left": [1323, 929]
+  },
+  "pairs": {
+    "front": [20, 55, 400, 490],
+    "right": [800, 55, 1100, 490],
+    "back": [20, 510, 400, 945],
+    "left": [800, 510, 1100, 945]
+  },
+  "bands": {
+    "hat": [1.16, 1.4, 0.25, "blue", "beanie_teal"],
+    "skin": [0.86, 0.98, 0.12, "skin", "peach_felt"],
+    "sweater": [0.48, 0.68, 0.15, "blue", "dusk_teal"],
+    "trousers": [0.2, 0.36, 0.18, "brown", "trouser_brown"],
+    "boots": [0.02, 0.1, 0.2, "brown", "boot_brown"]
+  }
+}

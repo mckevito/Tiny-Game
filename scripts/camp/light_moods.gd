@@ -22,6 +22,8 @@ static func apply(mood: String, sun: DirectionalLight3D, env: Environment, fires
 	env.tonemap_exposure = float(m.get("exposure", 1.0))
 	env.glow_enabled = bool(m.get("glow", false))
 	env.ssao_enabled = true
+	_adjust(env, float(m.get("saturation", 1.0)), float(m.get("contrast", 1.0)))
+	_soften(sun, env, m)
 	for light in fires:
 		light.light_color = Color.html(str(m.get("fire_color", "#FFAA55")))
 		light.light_energy = float(m.get("fire_energy", 1.0))
@@ -47,6 +49,7 @@ static func blend(a: String, b: String, t: float, sun: DirectionalLight3D, env: 
 	env.ambient_light_color = col.call("ambient_color", "#FFFFFF")
 	env.ambient_light_energy = num.call("ambient_energy", 0.5)
 	env.tonemap_exposure = num.call("exposure", 1.0)
+	_adjust(env, num.call("saturation", 1.0), num.call("contrast", 1.0))
 	env.glow_enabled = bool((mb if t >= 0.5 else ma).get("glow", false)) \
 			and bool(Quality.preset(Quality.current).get("glow", true))
 	for light in fires:
@@ -54,3 +57,18 @@ static func blend(a: String, b: String, t: float, sun: DirectionalLight3D, env: 
 		light.light_energy = num.call("fire_energy", 1.0)
 		light.omni_range = num.call("fire_range_m", 4.0)
 		light.set_meta("base_energy", light.light_energy)
+
+
+## Colour grading for the felt look: richer wool colours (saturation) and a little more depth (contrast).
+static func _adjust(env: Environment, saturation: float, contrast: float) -> void:
+	env.adjustment_enabled = not (is_equal_approx(saturation, 1.0) and is_equal_approx(contrast, 1.0))
+	env.adjustment_saturation = saturation
+	env.adjustment_contrast = contrast
+
+
+## Studio light for the miniature look: a broad sun gives soft shadow edges, and deeper ambient occlusion tucks
+## shade into every seam (data/lighting.json sun_softness_deg, ao_intensity, ao_radius_m).
+static func _soften(sun: DirectionalLight3D, env: Environment, m: Dictionary) -> void:
+	sun.light_angular_distance = float(m.get("sun_softness_deg", 0.0))
+	env.ssao_intensity = float(m.get("ao_intensity", 2.0))
+	env.ssao_radius = float(m.get("ao_radius_m", 1.0))

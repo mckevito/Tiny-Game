@@ -1,17 +1,49 @@
 {
-  "_about": "The shared felt material (scripts/art/felt.gdshader) and how the builder makes meshes and stitches (scripts/art/felt_builder.gd).",
+  "_about": "The shared wool material (scripts/art/felt.gdshader) and how the builder makes meshes and stitches (scripts/art/felt_builder.gd). weaves: what a part (or a whole model, \"weave\") is made of, by the number the shader reads; knit_map and rib_map are for sculpted models (art/) whose second UV map is a stitch map (column, row), so V stitches follow their columns and ribs; yarn reads it as (round a strand in plies, along it in twists) for twisted curls; bead is smooth, for button eyes.",
   "felt": {
     "noise_scale": 4.0,
-    "noise_strength": 0.28,
+    "noise_strength": 0.32,
     "grain_scale": 28.0,
-    "grain_strength": 0.14,
+    "grain_strength": 0.2,
     "fuzz_strength": 0.18,
     "rim": 0.25,
     "rim_tint": 0.7,
     "glow_strength": 2.2,
     "sway_amount_m": 0.05,
     "sway_speed": 0.9,
-    "sway_height_m": 3.0
+    "sway_height_m": 3.0,
+    "fibre_scale": 80.0,
+    "fibre_strength": 0.45,
+    "bump_strength": 0.006,
+    "hair_edge": 0.35,
+    "knit_scale": 24.0,
+    "knit_depth": 0.5,
+    "knit_bump": 0.008,
+    "stitch_aspect": 1.4,
+    "stitch_width": 0.235,
+    "rib_narrow": 0.78,
+    "rib_shade": 0.35,
+    "rib_groove": 0.2,
+    "ply_strength": 0.1,
+    "stitch_vary": 0.08,
+    "yarn_shade": 0.45,
+    "wood_scale": 9.0,
+    "wood_strength": 0.3,
+    "water_scale": 2.2,
+    "water_strength": 0.6,
+    "grass_tint": 0.5,
+    "grass_light": [
+      1.18,
+      1.05,
+      0.72
+    ],
+    "grass_dark": [
+      0.62,
+      0.72,
+      0.55
+    ],
+    "fine_scale": 220.0,
+    "fine_strength": 0.35
   },
   "mesh": {
     "sphere_segments": 24,
@@ -30,5 +62,54 @@
   "fire": {
     "flicker_speed": 7.0,
     "flicker_amount": 0.18
+  },
+  "weaves": {
+    "felt": 0,
+    "knit": 1,
+    "wood": 2,
+    "water": 3,
+    "grass": 4,
+    "knit_map": 5,
+    "rib_map": 6,
+    "yarn": 7,
+    "bead": 8
+  },
+  "shells": {
+    "_about": "Fuzz shells: count extra passes, each shell_height metres further out, keeping shell_keep of the fibre cells (strand_scale per metre) on the first and less beyond. Off for the presets listed.",
+    "count": 1,
+    "shell_height": 0.005,
+    "shell_keep": 0.45,
+    "strand_scale": 280.0,
+    "off_presets": [
+      "low"
+    ]
+  },
+  "miniature": {
+    "_about": "The tilt-shift blur of the miniature look (scripts/art/miniature.gd): sharp from near_gap_m in front of the players to far_gap_m behind them, blurring over the transitions. Off for the presets listed.",
+    "blur_amount": 0.09,
+    "near_gap_m": 3.0,
+    "near_transition_m": 2.5,
+    "far_gap_m": 2.5,
+    "far_transition_m": 7.0,
+    "off_presets": [
+      "low"
+    ]
+  },
+  "turnaround": {
+    "_about": "The --turn review capture (scripts/tools/capture.gd), a studio like the owner's turnaround sheet: backdrop and floor colour, a plain camera (no grading), a key light of key_color and key_energy from key_azimuth_deg round from the camera (positive to its left; the sheet is lit from its right) and key_elevation_deg up, turning with the camera, its shadows softened by key_softness_deg, ambient fill, the floor's shadow_strength, and a camera camera_distance_m away at camera_height_m aimed at aim_height_m through a fov_deg lens, drawn supersample times larger and scaled down (a photo's fine fuzz, not single-pixel speckle).",
+    "background": "#FBF5E8",
+    "key_color": "#FFF4E6",
+    "key_azimuth_deg": -35.0,
+    "key_elevation_deg": 60.0,
+    "key_softness_deg": 7.0,
+    "key_energy": 1.25,
+    "ambient_color": "#F2EEE6",
+    "ambient_energy": 0.45,
+    "shadow_strength": 0.22,
+    "camera_distance_m": 6.0,
+    "camera_height_m": 1.6,
+    "aim_height_m": 0.74,
+    "fov_deg": 16.0,
+    "supersample": 2.0
   }
 }

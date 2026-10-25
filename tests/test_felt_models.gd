@@ -5,7 +5,7 @@ extends RefCounted
 const SIZES := {
 	"camper_a": [1.1, 1.6], "camper_b": [1.1, 1.6], "tent": [1.2, 2.0], "tree_pine": [2.5, 4.5],
 	"tree_round": [2.5, 4.5], "tree_puff": [2.5, 4.5], "picnic_table": [0.6, 1.0], "chair_teal": [0.7, 1.2],
-	"chair_honey": [0.7, 1.2], "fire_pit": [0.4, 1.2],
+	"chair_honey": [0.7, 1.2], "fire_pit": [0.4, 1.2], "knit_camper": [1.1, 1.6],
 }
 
 
@@ -83,3 +83,78 @@ func test_one_shared_felt_material() -> String:
 	a.free()
 	b.free()
 	return "" if ok else "solid models should share the one felt material"
+
+
+func test_lathe_faces_out_and_wave_scallops() -> String:
+	var plain: Array = FeltBuilder._part_arrays({"shape": "lathe", "profile": [[1, 0], [1, 1]], "size": [1, 1, 1]})
+	var verts: PackedVector3Array = plain[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = plain[Mesh.ARRAY_NORMAL]
+	var idx: PackedInt32Array = plain[Mesh.ARRAY_INDEX]
+	# Godot's front faces are clockwise: the anticlockwise normal of a written triangle must point inward.
+	var c: Vector3 = (verts[idx[1]] - verts[idx[0]]).cross(verts[idx[2]] - verts[idx[0]])
+	var mid: Vector3 = (verts[idx[0]] + verts[idx[1]] + verts[idx[2]]) / 3.0
+	if c.dot(Vector3(mid.x, 0, mid.z)) >= 0.0:
+		return "lathe triangles face inward"
+	for i in verts.size():
+		if normals[i].dot(Vector3(verts[i].x, 0, verts[i].z)) <= 0.0:
+			return "lathe normal %d points inward" % i
+	var waved: Array = FeltBuilder._part_arrays({"shape": "lathe", "profile": [[1, 0], [1, 1]], "wave": [6, 0.2],
+			"size": [1, 1, 1]})
+	var radii: Array = Array(waved[Mesh.ARRAY_VERTEX]).map(func(v: Vector3) -> float: return Vector2(v.x, v.z).length())
+	return "" if radii.min() < 0.41 and radii.max() > 0.49 else "the wave doesn't scallop the edge"
+
+
+func test_stitch_cord_is_unbroken() -> String:
+	var points := [[0, 0, 0], [0.05, 0, 0], [0.1, 0.01, 0]]
+	var cord: Array = FeltBuilder._part_arrays({"shape": "stitch", "points": points, "gap": 0})
+	var dashes: Array = FeltBuilder._part_arrays({"shape": "stitch", "points": points})
+	# A cord is one piece per segment (24 corners each); the running stitch fits fewer than one dash per segment.
+	if cord[Mesh.ARRAY_VERTEX].size() != 48:
+		return "a cord should be one piece per segment, got %d corners" % cord[Mesh.ARRAY_VERTEX].size()
+	return "" if dashes.is_empty() or dashes[Mesh.ARRAY_VERTEX].size() < 48 else "the dashes should leave gaps"
+
+
+func test_sculpted_camper_is_painted_from_the_palette() -> String:
+	var model := FeltBuilder.resolve("knit_camper")
+	for n: Variant in model.get("file_slots", []):
+		if not Tuning.table("palette").get("swatches", {}).has(FeltBuilder.swatch_name({"color": n}, model)):
+			return "file slot %s has no swatch" % n
+	var mesh := FeltBuilder.mesh("knit_camper")
+	if mesh.get_surface_count() == 0:
+		return "the sculpted camper didn't load"
+	var colors: PackedColorArray = mesh.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+	var seen := {}
+	for c in colors:
+		seen[c] = true
+	# Twelve slots, some sharing a swatch (the mittens and the skin, the shine and the cream), each in many tones from
+	# the baked shade.
+	return "" if seen.size() >= 7 else "only %d colours on the sculpted camper" % seen.size()
+
+
+func test_sculpted_camper_keeps_its_stitch_map_and_baked_shade() -> String:
+	var model := FeltBuilder.resolve("knit_camper")
+	var arrays := FeltBuilder.mesh("knit_camper").surface_get_arrays(0)
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var stitch: Variant = arrays[Mesh.ARRAY_TEX_UV2]
+	if stitch == null or (stitch as PackedVector2Array).size() != uvs.size():
+		return "the stitch map (UV2) is missing"
+	var weaves: Dictionary = Tuning.table("art").get("weaves", {})
+	var used := {}
+	for uv in uvs:
+		used[roundi(uv.x)] = true
+	for w in ["knit_map", "rib_map", "yarn", "bead"]:
+		if not used.has(int(weaves.get(w, -1))):
+			return "no part of the camper is %s" % w
+	# The baked shade only darkens: each vertex is its slot's swatch times a shade of at most 1.
+	var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+	var names: Array = model.get("file_slots", [])
+	var darker := 0
+	for i in uvs.size():
+		var slot := clampi(roundi(1.0 - uvs[i].y), 0, names.size() - 1)
+		var base := FeltBuilder.swatch(FeltBuilder.swatch_name({"color": names[slot]}, model))
+		var c := colors[i]
+		if c.r > base.r + 0.002 or c.g > base.g + 0.002 or c.b > base.b + 0.002:
+			return "vertex %d is lighter than its swatch" % i
+		if c.r < base.r - 0.01:
+			darker += 1
+	return "" if darker > uvs.size() / 10 else "no baked shade: %d of %d vertices darkened" % [darker, uvs.size()]

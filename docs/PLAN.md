@@ -211,3 +211,17 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, **Proposed** (gameplay round 3): the camp's star rating, worked out each night from pitches, crafted
   pieces, happy guests, photos and finished projects (each capped), never going down and with no mess penalty, with
   one hint from Ranger Ada in the Today list.
+- 25 Oct 2026, owner: bring the models up to the original felt reference picture: an Art role pilots a few pieces
+  beside the picture, then rolls out. **Proposed** (pilot built): a ribbed knit beanie without a pompom, hair under
+  the hat, a stitched smile; scalloped pine tiers; a broadleaf crown with honey seams and leaf sprigs; a plumper
+  stitched tent with pegs; felt fibres in the shared material; a warmer day light and olive grass; two new swatches
+  (`olive_felt`, `sage_thread`).
+- 25 Oct 2026, owner: the pilot's first pass is not enough: the world should look literally knitted together, like
+  the reference. **Proposed** (built): knit, wood, water and grass weaves in the one material, hairy edges, richer
+  graded colour, a ground strewn with felt clover, flowers, grass and ferns, and every model in view reworked.
+- 25 Oct 2026, owner: still off; the reference looks like a photo of real little knitted characters, a miniature
+  look with real felt. **Proposed** (built): a tilt-shift blur focused on the players, fuzz shells on every model,
+  finer fibres up close, soft sun shadows and deeper occlusion; blur and shells are off on the Light preset.
+- 25 Oct 2026, owner: try one camper made in Blender. **Proposed** (built): `knit_camper`, a sculpted model built by a
+  script in `art/characters/knit_camper/` and painted from the palette, shaped from the owner's "Beanie Camper"
+  turnaround (front, side and back); it sits beside the code camper until the owner decides.

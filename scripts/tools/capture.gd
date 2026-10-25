@@ -18,6 +18,13 @@ extends SceneTree
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
+## --hero is the art review shot: the sandbox from a lower, closer camera framed like the owner's felt reference
+## picture (hero_<mood>.png, no hint text), plus face_<mood>.png, a close look at the two campers.
+## --turn=ID saves a turnaround of one model in a studio like the owner's turnaround sheet: a cream backdrop and floor,
+## a key light from the camera's upper left, eight views (turn_front.png, turn_front_right.png ... turn_front_left.png;
+## data/art.json "turnaround"). --glb=PATH shows that .glb, painted as model ID, instead of the model's own file (a
+## camper built with --pose=t to match a T-pose sheet; it needn't be imported).
+## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
 
 const SETTLE_FRAMES := 30
 
@@ -34,6 +41,10 @@ func _run() -> void:
 	var stage_b := false
 	var menus := false
 	var hud := false
+	var hero := false
+	var swap := {}
+	var turn := ""
+	var glb := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -43,6 +54,14 @@ func _run() -> void:
 		stage_b = stage_b or arg == "--stage-b"
 		menus = menus or arg == "--menus"
 		hud = hud or arg == "--hud"
+		hero = hero or arg == "--hero"
+		if arg.begins_with("--turn="):
+			turn = arg.trim_prefix("--turn=")
+		if arg.begins_with("--glb="):
+			glb = arg.trim_prefix("--glb=")
+		for who in ["player", "friend"]:
+			if arg.begins_with("--%s=" % who):
+				swap[who] = arg.trim_prefix("--%s=" % who)
 	DirAccess.make_dir_recursive_absolute(out)
 	await process_frame
 	if couch:
@@ -63,6 +82,14 @@ func _run() -> void:
 		return
 	if hud:
 		await _hud(out)
+		quit(0)
+		return
+	if turn != "":
+		await _turn(out, turn, glb)
+		quit(0)
+		return
+	if hero:
+		await _hero(out, swap)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -449,3 +476,106 @@ func _hud(out: String) -> void:
 	_save(out + "/couch_packs.png")
 	camp.stop("")
 	CampSave.dir = ""
+
+
+## The art review shot: a lower, closer camera on the sandbox's fire, tent and trees, in each mood, then a close
+## look at the campers' faces. The play camera keeps following the player, so this camera is made current instead.
+func _hero(out: String, swap: Dictionary) -> void:
+	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
+	for who: String in swap:
+		sandbox.get_node("Player" if who == "player" else "Friend").model_id = swap[who]
+	root.add_child(sandbox)
+	await process_frame
+	for label in ["Hint", "Mood"]:
+		sandbox.get_node(label).visible = false
+	var mid: Vector3 = (sandbox.player.position + sandbox.friend.position) * 0.5
+	var cam := Camera3D.new()
+	cam.fov = 40.0
+	sandbox.add_child(cam)
+	cam.current = true
+	for i in LightMoods.names().size():
+		sandbox.set_mood(i)
+		var mood: String = LightMoods.names()[i]
+		cam.look_at_from_position(mid + Vector3(0.6, 8.0, 9.0), mid + Vector3(0.6, 0.0, -1.2))
+		Miniature.focus(cam, cam.position.distance_to(mid))
+		await _settle()
+		_save(out + "/hero_%s.png" % mood)
+		cam.look_at_from_position(mid + Vector3(0, 2.1, 3.6), mid + Vector3(0, 0.75, 0))
+		Miniature.focus(cam, cam.position.distance_to(mid))
+		await _settle()
+		_save(out + "/face_%s.png" % mood)
+
+
+## A turnaround: the model alone in a studio, from eight sides, lit from the camera's upper right as the owner's sheet
+## is. The light turns with the camera; the floor is a shadow catcher in the backdrop's colour, so there is no horizon.
+func _turn(out: String, id: String, glb: String) -> void:
+	var cfg: Dictionary = Tuning.table("art").get("turnaround", {})
+	# Drawn larger and scaled down, as a photo would: felt fuzz comes out soft instead of single-pixel speckle.
+	root.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	root.scaling_3d_scale = float(cfg.get("supersample", 1.0))
+	var world := Node3D.new()
+	root.add_child(world)
+	var env := Environment.new()
+	var we := WorldEnvironment.new()
+	we.environment = env
+	world.add_child(we)
+	var sun := DirectionalLight3D.new()
+	sun.shadow_enabled = true
+	world.add_child(sun)
+	LightMoods.apply("day", sun, env, [])
+	var backdrop := Color.html(str(cfg.get("background", "#FBF5E8")))
+	env.background_color = backdrop
+	# A plain camera: no grading or tone curve, so the backdrop and the felt's colours come out as they are.
+	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	env.adjustment_enabled = false
+	env.ambient_light_color = Color.html(str(cfg.get("ambient_color", "#FFFFFF")))
+	env.ambient_light_energy = float(cfg.get("ambient_energy", 0.5))
+	sun.light_color = Color.html(str(cfg.get("key_color", "#FFFFFF")))
+	sun.light_energy = float(cfg.get("key_energy", 1.0))
+	sun.light_angular_distance = float(cfg.get("key_softness_deg", 0.0))
+	var floor_mat := ShaderMaterial.new()
+	floor_mat.shader = Shader.new()
+	floor_mat.shader.code = """shader_type spatial;
+render_mode ambient_light_disabled, specular_disabled;
+uniform vec3 backdrop;
+uniform float strength;
+void fragment() { ALBEDO = backdrop; }
+void light() { DIFFUSE_LIGHT += vec3(1.0 - strength * (1.0 - ATTENUATION)); }
+"""
+	var lin := backdrop.srgb_to_linear()
+	floor_mat.set_shader_parameter("backdrop", Vector3(lin.r, lin.g, lin.b))
+	floor_mat.set_shader_parameter("strength", float(cfg.get("shadow_strength", 0.35)))
+	var ground := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(40, 40)
+	ground.mesh = plane
+	ground.material_override = floor_mat
+	world.add_child(ground)
+	var model := FeltBuilder.build(id)
+	if glb != "":
+		var doc := GLTFDocument.new()
+		var state := GLTFState.new()
+		if doc.append_from_file(glb, state) == OK:
+			var scene := doc.generate_scene(state)
+			model.mesh = FeltBuilder.painted(scene, FeltBuilder.resolve(id))
+			scene.free()
+		else:
+			push_error("capture: can't read %s" % glb)
+	world.add_child(model)
+	var cam := Camera3D.new()
+	cam.fov = float(cfg.get("fov_deg", 16.0))
+	world.add_child(cam)
+	cam.current = true
+	var dist := float(cfg.get("camera_distance_m", 6.0))
+	var aim := Vector3(0, float(cfg.get("aim_height_m", 0.72)), 0)
+	var key_az := deg_to_rad(float(cfg.get("key_azimuth_deg", 40.0)))
+	var key_el := deg_to_rad(float(cfg.get("key_elevation_deg", 40.0)))
+	var views := ["front", "front_right", "right", "back_right", "back", "back_left", "left", "front_left"]
+	for i in views.size():
+		# The front is -Z and the camper's right is +X: view i stands 45 degrees further round to its right.
+		var a := deg_to_rad(45.0 * i)
+		cam.look_at_from_position(Vector3(sin(a) * dist, float(cfg.get("camera_height_m", 1.6)), -cos(a) * dist), aim)
+		var key := Vector3(sin(a + key_az) * cos(key_el), sin(key_el), -cos(a + key_az) * cos(key_el))
+		sun.look_at_from_position(key * 10.0, Vector3.ZERO)
+		await _settle()
+		_save(out + "/turn_%s.png" % views[i])
