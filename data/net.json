@@ -1,0 +1,10 @@
+{
+  "_about": "Online play (scripts/camp/camp.gd). Two players in total: the host plus one guest. spare_connections lets one more PC connect only to be told the camp is full. protocol must match on both PCs. Rates are per second.",
+  "port": 24680,
+  "max_players": 2,
+  "spare_connections": 1,
+  "protocol": 1,
+  "send_rate_hz": 20,
+  "remote_smoothing": 14.0,
+  "remote_snap_m": 4.0
+}

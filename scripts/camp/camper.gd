@@ -1,12 +1,18 @@
 class_name Camper
 extends CharacterBody3D
-## A felt camper. The controlled one walks relative to the play camera with either input method; both waddle and
-## bob as they walk. Numbers: data/tuning.json "movement".
+## A felt camper. The controlled one walks relative to the play camera with either input method. A remote one (the
+## other PC's player) glides to the last place it was told; both waddle and bob as they walk.
+## Numbers: data/tuning.json "movement" and "camper", data/net.json for the remote smoothing.
 
 @export var model_id := "camper_a"
 @export var controlled := false
 ## The camera whose yaw makes "forward" mean "away from the camera".
 var camera: Node3D
+## The player's name, shown above the camper (names as well as colours: the accessibility baseline).
+var display_name := ""
+## Where a remote camper should be, in its parent's space; null for a camper nobody steers from afar.
+var remote_target: Variant = null
+var remote_yaw := 0.0
 
 var _body: Node3D
 var _walk_phase := 0.0
@@ -22,6 +28,17 @@ func _ready() -> void:
 	shape.shape = capsule
 	shape.position.y = capsule.height * 0.5
 	add_child(shape)
+	if display_name != "":
+		var label := Label3D.new()
+		label.name = "Name"
+		label.text = display_name
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.position.y = Tuning.num("tuning", "camper.name_height_m", 1.75)
+		label.font_size = int(Tuning.num("tuning", "camper.name_font_px", 48))
+		label.outline_size = int(Tuning.num("tuning", "camper.name_outline_px", 12))
+		label.pixel_size = 0.004
+		label.no_depth_test = true
+		add_child(label)
 
 
 ## The wanted ground velocity for a stick or key input, turned by the camera's yaw.
@@ -30,6 +47,9 @@ static func wish_velocity(input: Vector2, camera_yaw: float) -> Vector3:
 
 
 func _physics_process(delta: float) -> void:
+	if not controlled and remote_target is Vector3:
+		_glide(delta)
+		return
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back") if controlled else Vector2.ZERO
 	var target := wish_velocity(input, camera.global_rotation.y if camera else 0.0)
 	var accel := Tuning.num("tuning", "movement.acceleration_mps2") * delta
@@ -40,6 +60,19 @@ func _physics_process(delta: float) -> void:
 		var want := atan2(-target.x, -target.z)
 		rotation.y = lerp_angle(rotation.y, want, Tuning.num("tuning", "movement.turn_speed_rad_s") * delta)
 	move_and_slide()
+	_waddle(delta)
+
+
+## Eases a remote camper toward where the other PC last said it was; jumps if it is far off.
+func _glide(delta: float) -> void:
+	var before := position
+	var target: Vector3 = remote_target
+	if before.distance_to(target) > Tuning.num("net", "remote_snap_m", 4.0):
+		position = target
+	else:
+		position = before.lerp(target, 1.0 - exp(-Tuning.num("net", "remote_smoothing", 14.0) * delta))
+	rotation.y = lerp_angle(rotation.y, remote_yaw, 1.0 - exp(-Tuning.num("net", "remote_smoothing", 14.0) * delta))
+	velocity = (position - before) / maxf(delta, 0.0001)
 	_waddle(delta)
 
 

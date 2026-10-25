@@ -50,9 +50,10 @@ Review captures from the play camera (daylight and dusk) come from `scripts/tool
 ## Layout
 - `scripts/core/`: shared plumbing (tuning tables, text).
 - `scripts/art/`: the felt material and the builder that makes models from `data/models.json`.
-- `scripts/camp/`: the clearing, campers, play camera and light moods.
+- `scripts/camp/`: the camp scene, its rules and save, the clearing, campers, play camera and light moods.
+- `scripts/net/`: online identity (the local profile ID); the netcode itself is in `scripts/camp/camp.gd`.
 - `scripts/tools/`: dev-only scripts, such as the review capture (`capture.gd`).
-- `scenes/`: the sandbox and, later, the game scenes.
+- `scenes/`: the camp (the main scene) and the sandbox.
 - `data/`: tuning tables and text.
 - `tests/`: headless tests, `test_*.gd`, run by `tests/run_tests.gd`.
 - `docs/`: the plan and the status doc.

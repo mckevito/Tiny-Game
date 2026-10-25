@@ -6,5 +6,52 @@
   "mood": {
     "day": "Daylight",
     "dusk": "Dusk"
+  },
+  "profile": {
+    "default_name": "Camper"
+  },
+  "prompt": {
+    "pick_up": "{interact} Pick up",
+    "put_down": "{interact} Put down",
+    "controls": "{move} to walk · {camera} turn the camera · {interact} pick up or put down · {menu} for the menu"
+  },
+  "menu": {
+    "title": "Our Little Campground",
+    "name": "Your name",
+    "slot": "Camp %d",
+    "solo": "Play alone",
+    "host": "Host a camp",
+    "join": "Join a friend",
+    "address": "Friend's address",
+    "connecting": "Knocking on the camp gate…",
+    "resume": "Back to camp",
+    "leave": "Leave camp",
+    "hosting": "Hosting camp %d. Your friend can join now."
+  },
+  "join": {
+    "full": "That camp already has two campers.",
+    "wrong_version": "That camp runs a different version of the game.",
+    "already_here": "You are already in that camp.",
+    "unreachable": "Could not reach that camp. Check the address and that the host is in the camp.",
+    "host_left": "The host closed the camp. Your camper waits safely in their save.",
+    "no_address": "Type your friend's address first.",
+    "host_failed": "Could not open the camp for a friend. Is another copy of the game already hosting?"
+  },
+  "save": {
+    "too_new": "That camp was saved by a newer version of the game.",
+    "unreadable": "That camp save could not be read, and neither could its backup."
+  },
+  "deny": {
+    "carried": "Someone is already carrying that.",
+    "hands_full": "Your hands are full.",
+    "too_far": "That is a little too far away.",
+    "out_of_bounds": "That would be outside the camp.",
+    "too_close": "There is not quite enough room there.",
+    "nothing_carried": "You are not carrying anything.",
+    "not_movable": "That stays where it is."
+  },
+  "toast": {
+    "joined": "%s joined the camp.",
+    "left": "%s headed home. Their camper is safe in this camp's save."
   }
 }

@@ -3,6 +3,7 @@ extends SceneTree
 ## Runs every test_* method in res://tests/test_*.gd. A test returns "" on a pass or a message on a failure.
 ## Results go to the console and user://test_results.txt; the exit code is the number of failures.
 ## Tests run after the first frame, so a test can add nodes under `root` and their _ready runs at once.
+## A test may await (frames, signals), for example to let two camps talk over the network.
 
 
 func _initialize() -> void:
@@ -36,7 +37,7 @@ func _run() -> void:
 			var full := "%s.%s" % [file.get_basename(), test_name]
 			if filter != "" and not full.contains(filter):
 				continue
-			var result: Variant = suite.call(test_name)
+			var result: Variant = await suite.call(test_name)
 			if result is String and result == "":
 				passed += 1
 				lines.append("PASS " + full)

@@ -1,7 +1,11 @@
 {
-  "_about": "The Milestone 1 clearing in the sandbox (scripts/camp/clearing.gd). pos is [x, z] in metres; yaw in degrees, or face [x, z] to turn the model's front toward a point.",
+  "_about": "The Milestone 1 clearing in the sandbox (scripts/camp/clearing.gd). pos is [x, z] in metres; yaw in degrees, or face [x, z] to turn the model's front toward a point. placements are fixed scenery; objects are the camp's movable things with stable ids, copied into each new camp save (data/save.json).",
   "player": {"model": "camper_a", "pos": [-1.1, -1.4], "yaw": 200},
   "friend": {"model": "camper_b", "pos": [1.2, -1.3], "yaw": 160},
+  "objects": [
+    {"id": "chair_teal_1", "model": "chair_teal", "pos": [-1.5, 1.1], "face": [0, 0]},
+    {"id": "chair_honey_1", "model": "chair_honey", "pos": [1.5, 1.0], "face": [0, 0]}
+  ],
   "placements": [
     {"model": "ground", "pos": [0, 0]},
     {"model": "meadow", "pos": [0, -0.5]},
@@ -9,8 +13,6 @@
     {"model": "path", "pos": [0.4, 5.2], "yaw": 8},
     {"model": "pond", "pos": [5.6, -4.2], "yaw": 15},
     {"model": "fire_pit", "pos": [0, 0]},
-    {"model": "chair_teal", "pos": [-1.5, 1.1], "face": [0, 0]},
-    {"model": "chair_honey", "pos": [1.5, 1.0], "face": [0, 0]},
     {"model": "tent", "pos": [-4.4, -2.6], "face": [0, 0]},
     {"model": "picnic_table", "pos": [4.0, 1.6], "yaw": 12},
     {"model": "tree_pine", "pos": [-6.8, -5.6]},
