@@ -1,0 +1,26 @@
+{
+  "_about": "Named felt swatches. Models are painted only with these names (docs/PLAN.md art direction). The first five are the plan's palette; the rest are Proposed supporting shades for wood, skin, stone, fire and leaves.",
+  "swatches": {
+    "moss_felt": "#536B50",
+    "rust_canvas": "#BB704C",
+    "honey_thread": "#D6AF66",
+    "pond_blue": "#6B929C",
+    "warm_cream": "#EEE3CB",
+
+    "grass_felt": "#728C55",
+    "meadow_felt": "#879C5F",
+    "pine_felt": "#3E5B47",
+    "leaf_felt": "#6F8A4A",
+    "bark_brown": "#6E4B36",
+    "wood_felt": "#9A6743",
+    "stone_grey": "#8C877D",
+    "sand_felt": "#C9AE84",
+    "skin_felt": "#EBC09C",
+    "blush_felt": "#DB8F78",
+    "ink_brown": "#3B2C25",
+    "teal_felt": "#3F7471",
+    "denim_felt": "#4F6787",
+    "ember_felt": "#E07A3A",
+    "flame_felt": "#F4C459"
+  }
+}

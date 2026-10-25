@@ -1,0 +1,34 @@
+{
+  "_about": "The shared felt material (scripts/art/felt.gdshader) and how the builder makes meshes and stitches (scripts/art/felt_builder.gd).",
+  "felt": {
+    "noise_scale": 4.0,
+    "noise_strength": 0.28,
+    "grain_scale": 28.0,
+    "grain_strength": 0.14,
+    "fuzz_strength": 0.18,
+    "rim": 0.25,
+    "rim_tint": 0.7,
+    "glow_strength": 2.2,
+    "sway_amount_m": 0.05,
+    "sway_speed": 0.9,
+    "sway_height_m": 3.0
+  },
+  "mesh": {
+    "sphere_segments": 24,
+    "sphere_rings": 12,
+    "round_segments": 20,
+    "box_round_steps": 3,
+    "default_box_round_m": 0.03,
+    "segments_per_m": 8,
+    "max_round_segments": 64
+  },
+  "stitch": {
+    "dash_m": 0.07,
+    "gap_m": 0.05,
+    "thickness_m": 0.022
+  },
+  "fire": {
+    "flicker_speed": 7.0,
+    "flicker_amount": 0.18
+  }
+}

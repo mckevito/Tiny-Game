@@ -1,0 +1,37 @@
+{
+  "_about": "Lighting moods for the clearing (scripts/camp/light_moods.gd). Sun angles in degrees; colours are hex.",
+  "order": [
+    "day",
+    "dusk"
+  ],
+  "moods": {
+    "day": {
+      "sun_color": "#FFF2DC",
+      "sun_energy": 1.05,
+      "sun_elevation_deg": 52.0,
+      "sun_azimuth_deg": -35.0,
+      "ambient_color": "#CFDCE0",
+      "ambient_energy": 0.38,
+      "background": "#A9C9CF",
+      "exposure": 1.0,
+      "fire_color": "#FFB65C",
+      "fire_energy": 0.5,
+      "fire_range_m": 4.0,
+      "glow": false
+    },
+    "dusk": {
+      "sun_color": "#FF8A6A",
+      "sun_energy": 0.32,
+      "sun_elevation_deg": 16.0,
+      "sun_azimuth_deg": 60.0,
+      "ambient_color": "#6470AE",
+      "ambient_energy": 0.7,
+      "background": "#46426C",
+      "exposure": 1.05,
+      "fire_color": "#FFA24A",
+      "fire_energy": 2.2,
+      "fire_range_m": 5.5,
+      "glow": true
+    }
+  }
+}

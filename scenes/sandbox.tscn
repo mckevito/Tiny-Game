@@ -1,64 +1,48 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/sandbox/sandbox.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/sandbox/test_mover.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/camp/clearing.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/camp/camper.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/camp/play_camera.gd" id="4"]
 
-[sub_resource type="StandardMaterial3D" id="moss"]
-albedo_color = Color(0.325, 0.42, 0.314, 1)
-roughness = 1.0
-
-[sub_resource type="PlaneMesh" id="ground_mesh"]
-material = SubResource("moss")
-size = Vector2(30, 30)
-
-[sub_resource type="BoxShape3D" id="ground_shape"]
-size = Vector3(30, 0.2, 30)
-
-[sub_resource type="StandardMaterial3D" id="rust"]
-albedo_color = Color(0.733, 0.439, 0.298, 1)
-roughness = 1.0
-
-[sub_resource type="CapsuleMesh" id="capsule_mesh"]
-material = SubResource("rust")
-radius = 0.35
-height = 1.2
-
-[sub_resource type="CapsuleShape3D" id="capsule_shape"]
-radius = 0.35
-height = 1.2
+[sub_resource type="Environment" id="env"]
 
 [node name="Sandbox" type="Node3D"]
 script = ExtResource("1")
 
+[node name="World" type="WorldEnvironment" parent="."]
+environment = SubResource("env")
+
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 8, 0)
 shadow_enabled = true
+directional_shadow_max_distance = 40.0
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.707, 0.707, 0, -0.707, 0.707, 0, 9, 9)
-
-[node name="Ground" type="StaticBody3D" parent="."]
-
-[node name="Mesh" type="MeshInstance3D" parent="Ground"]
-mesh = SubResource("ground_mesh")
-
-[node name="Shape" type="CollisionShape3D" parent="Ground"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
-shape = SubResource("ground_shape")
-
-[node name="TestMover" type="CharacterBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+[node name="Clearing" type="Node3D" parent="."]
 script = ExtResource("2")
 
-[node name="Mesh" type="MeshInstance3D" parent="TestMover"]
-mesh = SubResource("capsule_mesh")
+[node name="Player" type="CharacterBody3D" parent="."]
+script = ExtResource("3")
+model_id = "camper_a"
+controlled = true
 
-[node name="Shape" type="CollisionShape3D" parent="TestMover"]
-shape = SubResource("capsule_shape")
+[node name="Friend" type="CharacterBody3D" parent="."]
+script = ExtResource("3")
+model_id = "camper_b"
+
+[node name="PlayCamera" type="Camera3D" parent="."]
+script = ExtResource("4")
+current = true
 
 [node name="Hint" type="Label" parent="."]
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 900.0
+offset_right = 1800.0
 offset_bottom = 60.0
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 26
+
+[node name="Mood" type="Label" parent="."]
+offset_left = 24.0
+offset_top = 64.0
+offset_right = 600.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 22

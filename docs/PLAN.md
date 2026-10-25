@@ -63,6 +63,9 @@ soft round crowns, thick stitched tent panels. One character rig; hats, hair and
 | Pond blue | `#6B929C` |
 | Warm cream | `#EEE3CB` |
 
+**Proposed:** supporting shades for grass, pine, leaves, bark, wood, stone, sand, skin, blush, embroidery ink, teal,
+denim and fire, listed in `data/palette.json`, so the models never need a colour outside the table.
+
 **How we make it cheaply:** models are built by code from simple rounded shapes (cones, spheres, capsules, bevelled
 boxes) listed in data tables, painted only with named palette swatches. One shared felt material (soft noise, matte, a
 gentle bright rim); stitches as a dashed texture strip on focal props only. Gentle tree sway in the shader. Each batch
@@ -101,4 +104,5 @@ interiors, voice acting, more than two players, consoles.
 - 25 Oct 2026, owner: dynamic split screen like modern LEGO games; two players in total.
 - 25 Oct 2026, owner: fresh GDScript netcode, ideas only from Dead Acre.
 - 25 Oct 2026, owner: keep a hand-off and lessons method like the reference repos.
+- 25 Oct 2026, owner: the felt art proof is a very good first draft; polish the look later.
 - 25 Oct 2026, **Proposed**: licence MIT for code and CC BY 4.0 for original art; the scope and milestone order above.
