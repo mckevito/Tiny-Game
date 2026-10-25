@@ -153,6 +153,7 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, owner: licence MIT for code and CC BY 4.0 for original art.
 - 25 Oct 2026, owner: the weakest PC (Ryzen 7 5825U laptop, built-in Radeon graphics) must run at least 30 fps,
   aiming for 60.
+- 25 Oct 2026, owner: Milestone 3 (couch and link codes) is signed off: "works and looks good".
 - 25 Oct 2026, **Proposed** (Milestone 3): a controller player one hasn't used drops in with Options; couch players
   share the camera's turn and zoom; a new couch character is "Couch friend" until its own PC claims it with a
   one-use link code, after which that PC plays it under the same profile ID.

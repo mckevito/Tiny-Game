@@ -84,7 +84,8 @@ through the Windows firewall).
   performance target in `docs/PLAN.md`).
 
 ## Milestone 3: Couch and link codes
-Signed off: not yet. Built and tested in the cloud; waits on the owner's hands-on try (below).
+Signed off: yes, 25 Oct 2026 (PR #8 merged; the owner: "works and looks good"). The four hands-on checks below were
+not each confirmed by name; they stay open under "Still open".
 
 | Proof | Test | Result |
 |---|---|---|
@@ -96,7 +97,8 @@ Signed off: not yet. Built and tested in the cloud; waits on the owner's hands-o
 | A link code moves a couch character to its own PC as the same character (same profile ID, no new character); a wrong code is refused; a used code is cleared | `test_couch.test_a_link_code_moves_the_couch_character_to_its_own_pc` | Passing |
 | Link codes avoid look-alike letters and ignore case and the dash | `test_couch.test_link_codes_are_easy_to_read_and_type` | Passing |
 | Picture presets: a low preset for the weakest PC reaches every view; the split screen draws its second view only while split, at a lower render scale | `test_couch.test_picture_presets_apply_to_every_view`, `test_split_screen_splits_apart_and_merges_together` | Passing |
-| Couch play with two DualSenses, a link code to the second PC, a Tailscale join, and at least 30 fps on the weakest PC (F1 shows the fps) | Owner's hands-on try | Not yet |
+| The owner tries the milestone | Owner's verdict | Passed: "works and looks good" (owner, 25 Oct 2026) |
+| Couch play with two DualSenses, a link code to the second PC, a Tailscale join, and at least 30 fps on the weakest PC (F1 shows the fps) | Owner's hands-on try | Not confirmed one by one; see "Still open" |
 
 ### How to try it
 1. Press F5 and play alone or host a camp, with the keyboard or the first DualSense.
@@ -114,6 +116,9 @@ Signed off: not yet. Built and tested in the cloud; waits on the owner's hands-o
    laptop, and split the screen there to see the slowest case.
 
 ### Still open
+- Not confirmed by name at sign-off: couch play with two DualSenses, a link code to the second PC, a Tailscale join,
+  and the fps on the weakest laptop (Light preset, split screen). Check them when the chance comes, at the latest at
+  Stage A's sign-off; a low fps there means tuning `data/graphics.json`.
 - **Proposed:** controllers are told apart by use: player one owns the keyboard, the mouse and every controller they
   have touched; a controller they haven't touched drops in with Options. If player one uses only the keyboard, the
   first controller to press Options drops in rather than opening player one's menu.

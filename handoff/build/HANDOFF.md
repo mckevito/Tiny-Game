@@ -1,10 +1,10 @@
-# Build hand-off, 25 Oct 2026 (Milestone 3)
+# Build hand-off, 25 Oct 2026 (after Milestone 3)
 
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
    Never touches the reference repos. Until an `art` role starts, Build also owns the felt models (`data/models.json`).
-2. **State now:** Milestones 0, 1 and 2 are signed off and merged. Milestone 3 (couch and link codes) is built and
-   tested in the cloud, in its PR, waiting on the owner's hands-on try (`docs/STATUS.md`).
+2. **State now:** Milestones 0 to 3 are signed off and merged (Milestone 3: PR #8, owner "works and looks good",
+   25 Oct 2026). Four Milestone 3 checks were not confirmed by name (`docs/STATUS.md`, "Still open").
    - `scenes/camp.tscn` + `scripts/camp/camp.gd` is the main scene: start menu (play alone, host, join with an
      optional link code), the camp, the couch, and all the netcode (ENet, RPCs on the Camp node). `camp_state.gd`
      holds the rules (host decides) and link codes, `camp_save.gd` the save (slots, backup, upgrades),
@@ -22,9 +22,9 @@
      main camera is player one's half, a SubViewport camera draws player two's half only while split.
    - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale.
 3. **Open work, in order:**
-   1. Milestone 3 sign-off: the owner tries couch with two DualSenses, a link code to the second PC, a Tailscale
-      join, and the fps on the weakest laptop (Light preset, split screen). Tune `data/graphics.json` from that.
-   2. Stage A: day clock, sleep vote and nightly payout write into the save fields that already exist.
+   1. Stage A: day clock, sleep vote and nightly payout write into the save fields that already exist. At its
+      sign-off, also ask for the four unconfirmed Milestone 3 checks: two-DualSense couch, a link code, a Tailscale
+      join, and the fps on the weakest laptop (tune `data/graphics.json` from that).
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
    - `data/palette.json`: named swatches (the plan's five plus Proposed shades). Models use only these names.
@@ -59,6 +59,8 @@
      checks each player is on screen. Check both side and bounds for anything on screen.
    - A camp in a test must not call `LocalProfile.save` with no profile file named, or it overwrites the real
      user://profile.json; `apply_quality(..., false)` at start-up exists for that.
+   - The capture's first log line must say "Vulkan ... Forward+". If `mesa-vulkan-drivers` is missing, Godot quietly
+     uses OpenGL and the frames don't match the owner's renderer: install it (`apt-get install mesa-vulkan-drivers`).
 7. **How to check things:**
    ```
    godot --headless --import
