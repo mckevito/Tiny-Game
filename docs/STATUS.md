@@ -116,6 +116,7 @@ not each confirmed by name; they stay open under "Still open".
 | A controller player one has not used drops in with its menu button; hopping off the couch from that player's menu drops out; the character waits in the host's save and comes back next time | `test_couch.test_a_free_controller_drops_in_and_out` | Passing |
 | Player one's own controller opens the menu and never drops in a second player | `test_couch.test_player_ones_own_controller_opens_the_menu_not_a_drop_in` | Passing |
 | Each couch player steers and carries with their own devices only; a couch player's menu pauses only them | `test_couch.test_a_free_controller_drops_in_and_out`, `test_couch_players_carry_with_their_own_button` | Passing |
+| Keyboard and controller on one couch: while player one is on the keyboard and mouse, a controller neither steers them nor becomes theirs, and its Options drops in a second player (even their own old controller, to hand it over); pressing another button on their own controller takes it back | `test_couch.test_keyboard_player_one_and_a_controller_share_the_couch`, `test_player_one_can_hand_their_controller_over_from_the_keyboard`, `test_player_one_back_on_their_controller_gets_the_menu` | Passing (owner's ask, 25 Oct 2026) |
 | Dynamic split screen: one shared view while close, a split at right angles to the players when apart (each on their own half), merged again when close; no jump at the moment of the split | `test_couch.test_split_screen_splits_apart_and_merges_together`, `test_split_aims_merge_close_and_lean_apart`, `test_screen_direction_matches_the_camera` | Passing |
 | Two players in total across couch and online: a guest PC is told the camp is full while someone is on the couch, and a controller can't drop in while a guest PC is in | `test_couch.test_two_players_in_total_across_couch_and_online` | Passing |
 | A link code moves a couch character to its own PC as the same character (same profile ID, no new character); a wrong code is refused; a used code is cleared | `test_couch.test_a_link_code_moves_the_couch_character_to_its_own_pc` | Passing |
@@ -130,6 +131,8 @@ not each confirmed by name; they stay open under "Still open".
    character called "Couch friend"; after that it is whoever played in this camp most recently (not the host).
 3. Walk apart: the screen splits along a line between you and merges when you meet again. Either player turns the
    shared camera (L1 and R1, or Q and R).
+   Keyboard and controller: play on the keyboard and mouse, and hand the DualSense to your friend; their Options
+   drops them in, and their stick never moves your camper.
 4. Options on the second DualSense opens that player's menu: it shows the couch character's link code and has
    **Hop off the couch**. Player one's menu (Tab or Options on their own controller) shows the code too.
 5. To move the couch character to its own PC: host the camp, and on the other PC type the host's address and the

@@ -40,8 +40,11 @@ var couch_id := ""
 var couch_pad := -1
 ## Controllers player one has used; any other controller can drop in.
 var _p1_pads: Array[int] = []
-## Player one's devices while someone is on the couch: the keyboard, the mouse and every other controller.
-var _p1_input := PlayerInput.new()
+## Player one's devices: the keyboard, the mouse and every other controller (only their own while on the keyboard).
+var _p1_input := PlayerInput.new(-1, [], _p1_pads)
+## True while player one's last press came from the keyboard or mouse: then any controller's menu button drops in a
+## second player, and a controller player one has not used neither steers them nor becomes theirs.
+var _p1_on_keys := false
 ## Whose menu is open ("" when closed).
 var _menu_for := ""
 var _link_code := ""
@@ -377,6 +380,8 @@ func _spawn_camper(id: String) -> void:
 	c.transform = Clearing.placement_transform({"pos": p["pos"], "yaw": p["yaw"]})
 	add_child(c)
 	campers[id] = c
+	if id == profile.get("id", ""):
+		_sync_p1_input()
 
 
 func _remove_camper(id: String) -> void:
@@ -578,8 +583,14 @@ func apply_quality(preset: String, keep: bool = true) -> void:
 # --- Input -------------------------------------------------------------------------------------------------------
 
 ## Sees every controller event before the menus do: a controller player one has not used drops in with the menu
-## button; any other controller that player one touches becomes theirs.
+## button; any other controller that player one touches becomes theirs. While player one is on the keyboard and mouse,
+## the keyboard and mouse are their device: every controller's menu button drops in, and other controllers stay free.
 func _input(event: InputEvent) -> void:
+	var from_keys: Variant = Prompts.device_of(event)
+	if from_keys == false and event.is_pressed() and not _p1_on_keys:
+		_set_p1_on_keys(true)
+	elif from_keys == true and _p1_on_keys and _p1_pads.has(event.device) and not event.is_action_pressed("menu"):
+		_set_p1_on_keys(false)
 	# The menu button closes the in-camp menu before its focused button sees it (Godot's focus moves on Tab).
 	if state != null and menu.visible and menu.page() == "pause" and event.is_action_pressed("menu"):
 		_close_menu()
@@ -587,15 +598,33 @@ func _input(event: InputEvent) -> void:
 		return
 	if not (event is InputEventJoypadButton or event is InputEventJoypadMotion) or event.device == couch_pad:
 		return
-	if event.is_action_pressed("menu") and not _p1_pads.has(event.device) and state != null and not menu.visible:
+	var free := not _p1_pads.has(event.device)
+	if event.is_action_pressed("menu") and (free or _p1_on_keys) and state != null and not menu.visible:
 		var why := drop_in(event.device)
 		if why != "couch.not_now":
 			if why != "":
 				_toast(Tuning.text(why))
 			get_viewport().set_input_as_handled()
 			return
-	if Prompts.device_of(event) == true and not _p1_pads.has(event.device):
+	if free and _p1_on_keys:
+		if state != null:
+			get_viewport().set_input_as_handled()
+		return
+	if from_keys == true and free:
 		_p1_pads.append(event.device)
+
+
+func _set_p1_on_keys(on: bool) -> void:
+	_p1_on_keys = on
+	_p1_input.free_pads = not on
+	_sync_p1_input()
+
+
+## Player one reads their own devices (PlayerInput) when the couch is shared or they are on the keyboard; alone on a
+## controller they read every action as before.
+func _sync_p1_input() -> void:
+	if campers.has(profile.get("id", "")):
+		campers[profile["id"]].input = _p1_input if couch_id != "" or _p1_on_keys else null
 
 
 ## Which local player an event belongs to: the couch player for their controller, player one for everything else.
@@ -750,10 +779,11 @@ func drop_in(pad: int) -> String:
 		p["link_code"] = state.new_link_code()
 	couch_id = id
 	couch_pad = pad
+	_p1_pads.erase(pad)
 	_p1_input.taken.assign([pad])
 	_spawn_camper(id)
 	campers[id].input = PlayerInput.new(pad)
-	campers[profile["id"]].input = _p1_input
+	_sync_p1_input()
 	var both: Array[Camper] = [campers[profile["id"]], campers[id]]
 	couch.follow(both)
 	_toast(Tuning.text("toast.dropped_in") % p["name"])
@@ -787,8 +817,7 @@ func _end_couch() -> void:
 	couch_id = ""
 	couch_pad = -1
 	_p1_input.taken.clear()
-	if campers.has(profile.get("id", "")):
-		campers[profile["id"]].input = null
+	_sync_p1_input()
 	couch.follow([] as Array[Camper])
 
 

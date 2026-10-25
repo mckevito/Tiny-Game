@@ -1,25 +1,36 @@
 class_name PlayerInput
 extends RefCounted
 ## One player's share of the input devices, for couch play. Player one has the keyboard, the mouse and every
-## controller that is not someone else's; a couch player has exactly one controller. Reads the bindings in
+## controller that is not someone else's (only the ones they have used while they are on the keyboard); a couch player
+## has exactly one controller. Reads the bindings in
 ## data/input.json (with this PC's remaps, InputSetup.row) for those devices only, so a second controller never steers player one.
 
 ## The controller this player owns, or -1 for player one (keyboard, mouse and every free controller).
 var pad := -1
 ## Controllers owned by other players; player one skips them. Shared with the camp, which fills it.
 var taken: Array[int] = []
+## Player one only: false while they are on the keyboard and mouse, so a controller they have not used (in `mine`)
+## stays free for a couch player and never steers them.
+var free_pads := true
+## Player one only: the controllers they have used. Shared with the camp, which fills it.
+var mine: Array[int] = []
 
 
-func _init(own_pad: int = -1, others: Array[int] = []) -> void:
+func _init(own_pad: int = -1, others: Array[int] = [], used: Array[int] = []) -> void:
 	pad = own_pad
 	taken = others
+	mine = used
 
 
 ## True when this event came from one of this player's devices.
 func owns_event(event: InputEvent) -> bool:
 	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
-		return event.device == pad if pad >= 0 else not taken.has(event.device)
+		return event.device == pad if pad >= 0 else _counts(event.device)
 	return pad < 0
+
+
+func _counts(device: int) -> bool:
+	return not taken.has(device) and (free_pads or mine.has(device))
 
 
 func _pads() -> Array[int]:
@@ -27,7 +38,7 @@ func _pads() -> Array[int]:
 		return [pad]
 	var out: Array[int] = []
 	for device in Input.get_connected_joypads():
-		if not taken.has(device):
+		if _counts(device):
 			out.append(device)
 	return out
 
