@@ -102,7 +102,7 @@ func everyone_ready() -> bool:
 
 ## The night: each guest pays for their pitch, a guest whose stay is over is scored and tips (Stage B), a booking
 ## that arrived today pays its extras bonus, the calendar turns to the next morning, and guests whose stay is over
-## head home. The sell crate pays too (sale). Returns the night's summary {night, coins, lines, left, reviews, bonuses, sale}, or {} when this day already
+## head home. The sell crate pays too (sale), and the camp's stars are worked out again (rating). Returns the night's summary {night, coins, lines, left, reviews, bonuses, sale, rating}, or {} when this day already
 ## paid.
 func settle_night() -> Dictionary:
 	var night := today()
@@ -134,6 +134,7 @@ func settle_night() -> Dictionary:
 	var summary := {"night": night, "coins": total, "lines": lines, "left": left, "reviews": reviews, "bonuses": bonuses,
 			"sale": sale}
 	(state.camp["ledger"] as Array).append(summary.duplicate(true))
+	summary["rating"] = state.rating.settle()
 	state.camp["last_settled"] = night
 	for id in left:
 		stays.erase(id)

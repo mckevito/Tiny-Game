@@ -363,6 +363,18 @@
     "deer": "deer",
     "bear": "bear"
   },
+  "rating": {
+    "line": "Camp rating: %d of %d stars.",
+    "up": "Camp rating: %d of %d stars, up from %d!",
+    "ranger": "Ranger %s says: %s",
+    "hint": {
+      "pitches": "another tent pitch would let more guests stay.",
+      "pieces": "a few more lanterns, benches or planters would make the camp homier.",
+      "happy": "guests love it when their requests are met and something nice is near their tent.",
+      "photos": "the field guide could use more animal photos.",
+      "projects": "the project board has another camp project waiting."
+    }
+  },
   "project": {
     "line": "Camp project, %s: %s. %s",
     "all_done": "Every camp project is finished. The camp says thank you!",

@@ -1,0 +1,12 @@
+{
+  "_about": "The camp's star rating (scripts/camp/camp_rating.gd), worked out each night and shown in the morning report and the Today list, with one hint from the ranger. Each factor gives per points for each one counted, up to cap: pitches built; pieces (the crafted pieces standing in the camp, models listed); happy (satisfaction points from the reviews of the last nights nights); photos (animal kinds in the field guide); projects (camp projects done). stars rows are [points needed, stars]. The rating never goes down (cozy: nothing is lost), and there is no mess penalty. The hint names the first factor in this order still under its cap (text: data/text.json rating.hint.<id>).",
+  "factors": [
+    {"id": "pitches", "per": 4, "cap": 12},
+    {"id": "pieces", "per": 2, "cap": 16, "models": ["lantern_post", "water_point", "log_bench", "stool", "planter"]},
+    {"id": "happy", "per": 1, "cap": 12, "nights": 3},
+    {"id": "photos", "per": 2, "cap": 8},
+    {"id": "projects", "per": 3, "cap": 9}
+  ],
+  "stars": [[0, 1], [10, 2], [22, 3], [36, 4], [50, 5]],
+  "ranger": "Ada"
+}
