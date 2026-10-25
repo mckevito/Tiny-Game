@@ -20,8 +20,10 @@ extends SceneTree
 ## with a throwaway save and settings file.
 ## --hero is the art review shot: the sandbox from a lower, closer camera framed like the owner's felt reference
 ## picture (hero_<mood>.png, no hint text), plus face_<mood>.png, a close look at the two campers.
-## --turn=ID saves a turnaround of one model on a plain cream backdrop (turn_front/right/back/left.png), to set
-## beside an owner's turnaround sheet.
+## --turn=ID saves a turnaround of one model in a studio like the owner's turnaround sheet: a cream backdrop and floor,
+## a key light from the camera's upper left, eight views (turn_front.png, turn_front_right.png ... turn_front_left.png;
+## data/art.json "turnaround"). --glb=PATH shows that .glb, painted as model ID, instead of the model's own file (a
+## camper built with --pose=t to match a T-pose sheet; it needn't be imported).
 ## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
 
 const SETTLE_FRAMES := 30
@@ -42,6 +44,7 @@ func _run() -> void:
 	var hero := false
 	var swap := {}
 	var turn := ""
+	var glb := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -54,6 +57,8 @@ func _run() -> void:
 		hero = hero or arg == "--hero"
 		if arg.begins_with("--turn="):
 			turn = arg.trim_prefix("--turn=")
+		if arg.begins_with("--glb="):
+			glb = arg.trim_prefix("--glb=")
 		for who in ["player", "friend"]:
 			if arg.begins_with("--%s=" % who):
 				swap[who] = arg.trim_prefix("--%s=" % who)
@@ -80,7 +85,7 @@ func _run() -> void:
 		quit(0)
 		return
 	if turn != "":
-		await _turn(out, turn)
+		await _turn(out, turn, glb)
 		quit(0)
 		return
 	if hero:
@@ -501,8 +506,13 @@ func _hero(out: String, swap: Dictionary) -> void:
 		_save(out + "/face_%s.png" % mood)
 
 
-## A turnaround: the model alone on a cream backdrop, in the day light, from the front, right, back and left.
-func _turn(out: String, id: String) -> void:
+## A turnaround: the model alone in a studio, from eight sides, lit from the camera's upper right as the owner's sheet
+## is. The light turns with the camera; the floor is a shadow catcher in the backdrop's colour, so there is no horizon.
+func _turn(out: String, id: String, glb: String) -> void:
+	var cfg: Dictionary = Tuning.table("art").get("turnaround", {})
+	# Drawn larger and scaled down, as a photo would: felt fuzz comes out soft instead of single-pixel speckle.
+	root.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	root.scaling_3d_scale = float(cfg.get("supersample", 1.0))
 	var world := Node3D.new()
 	root.add_child(world)
 	var env := Environment.new()
@@ -513,18 +523,59 @@ func _turn(out: String, id: String) -> void:
 	sun.shadow_enabled = true
 	world.add_child(sun)
 	LightMoods.apply("day", sun, env, [])
-	env.background_color = FeltBuilder.swatch("warm_cream").linear_to_srgb()
+	var backdrop := Color.html(str(cfg.get("background", "#FBF5E8")))
+	env.background_color = backdrop
+	# A plain camera: no grading or tone curve, so the backdrop and the felt's colours come out as they are.
+	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	env.adjustment_enabled = false
+	env.ambient_light_color = Color.html(str(cfg.get("ambient_color", "#FFFFFF")))
+	env.ambient_light_energy = float(cfg.get("ambient_energy", 0.5))
+	sun.light_color = Color.html(str(cfg.get("key_color", "#FFFFFF")))
+	sun.light_energy = float(cfg.get("key_energy", 1.0))
+	sun.light_angular_distance = float(cfg.get("key_softness_deg", 0.0))
+	var floor_mat := ShaderMaterial.new()
+	floor_mat.shader = Shader.new()
+	floor_mat.shader.code = """shader_type spatial;
+render_mode ambient_light_disabled, specular_disabled;
+uniform vec3 backdrop;
+uniform float strength;
+void fragment() { ALBEDO = backdrop; }
+void light() { DIFFUSE_LIGHT += vec3(1.0 - strength * (1.0 - ATTENUATION)); }
+"""
+	var lin := backdrop.srgb_to_linear()
+	floor_mat.set_shader_parameter("backdrop", Vector3(lin.r, lin.g, lin.b))
+	floor_mat.set_shader_parameter("strength", float(cfg.get("shadow_strength", 0.35)))
+	var ground := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(40, 40)
+	ground.mesh = plane
+	ground.material_override = floor_mat
+	world.add_child(ground)
 	var model := FeltBuilder.build(id)
+	if glb != "":
+		var doc := GLTFDocument.new()
+		var state := GLTFState.new()
+		if doc.append_from_file(glb, state) == OK:
+			var scene := doc.generate_scene(state)
+			model.mesh = FeltBuilder.painted(scene, FeltBuilder.resolve(id))
+			scene.free()
+		else:
+			push_error("capture: can't read %s" % glb)
 	world.add_child(model)
 	var cam := Camera3D.new()
-	cam.fov = 30.0
+	cam.fov = float(cfg.get("fov_deg", 16.0))
 	world.add_child(cam)
 	cam.current = true
-	var top := model.get_aabb().end.y
-	for view: Array in [["front", 0.0], ["right", 90.0], ["back", 180.0], ["left", 270.0]]:
-		var a := deg_to_rad(float(view[1]))
-		# The front is -Z, so the front view looks from -Z toward the model.
-		var eye := Vector3(sin(a) * -3.6, top * 0.62, cos(a) * -3.6)
-		cam.look_at_from_position(eye, Vector3(0, top * 0.5, 0))
+	var dist := float(cfg.get("camera_distance_m", 6.0))
+	var aim := Vector3(0, float(cfg.get("aim_height_m", 0.72)), 0)
+	var key_az := deg_to_rad(float(cfg.get("key_azimuth_deg", 40.0)))
+	var key_el := deg_to_rad(float(cfg.get("key_elevation_deg", 40.0)))
+	var views := ["front", "front_right", "right", "back_right", "back", "back_left", "left", "front_left"]
+	for i in views.size():
+		# The front is -Z and the camper's right is +X: view i stands 45 degrees further round to its right.
+		var a := deg_to_rad(45.0 * i)
+		cam.look_at_from_position(Vector3(sin(a) * dist, float(cfg.get("camera_height_m", 1.6)), -cos(a) * dist), aim)
+		var key := Vector3(sin(a + key_az) * cos(key_el), sin(key_el), -cos(a + key_az) * cos(key_el))
+		sun.look_at_from_position(key * 10.0, Vector3.ZERO)
 		await _settle()
-		_save(out + "/turn_%s.png" % view[0])
+		_save(out + "/turn_%s.png" % views[i])

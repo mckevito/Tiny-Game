@@ -1,5 +1,5 @@
 {
-  "_about": "The shared wool material (scripts/art/felt.gdshader) and how the builder makes meshes and stitches (scripts/art/felt_builder.gd). weaves: what a part (or a whole model, \"weave\") is made of, by the number the shader reads.",
+  "_about": "The shared wool material (scripts/art/felt.gdshader) and how the builder makes meshes and stitches (scripts/art/felt_builder.gd). weaves: what a part (or a whole model, \"weave\") is made of, by the number the shader reads; knit_map and rib_map are for sculpted models (art/) whose second UV map is a stitch map (column, row), so V stitches follow their columns and ribs; yarn reads it as (round a strand in plies, along it in twists) for twisted curls; bead is smooth, for button eyes.",
   "felt": {
     "noise_scale": 4.0,
     "noise_strength": 0.32,
@@ -19,6 +19,14 @@
     "knit_scale": 24.0,
     "knit_depth": 0.5,
     "knit_bump": 0.008,
+    "stitch_aspect": 1.4,
+    "stitch_width": 0.235,
+    "rib_narrow": 0.78,
+    "rib_shade": 0.35,
+    "rib_groove": 0.2,
+    "ply_strength": 0.1,
+    "stitch_vary": 0.08,
+    "yarn_shade": 0.45,
     "wood_scale": 9.0,
     "wood_strength": 0.3,
     "water_scale": 2.2,
@@ -60,11 +68,15 @@
     "knit": 1,
     "wood": 2,
     "water": 3,
-    "grass": 4
+    "grass": 4,
+    "knit_map": 5,
+    "rib_map": 6,
+    "yarn": 7,
+    "bead": 8
   },
   "shells": {
     "_about": "Fuzz shells: count extra passes, each shell_height metres further out, keeping shell_keep of the fibre cells (strand_scale per metre) on the first and less beyond. Off for the presets listed.",
-    "count": 2,
+    "count": 1,
     "shell_height": 0.005,
     "shell_keep": 0.45,
     "strand_scale": 280.0,
@@ -82,5 +94,22 @@
     "off_presets": [
       "low"
     ]
+  },
+  "turnaround": {
+    "_about": "The --turn review capture (scripts/tools/capture.gd), a studio like the owner's turnaround sheet: backdrop and floor colour, a plain camera (no grading), a key light of key_color and key_energy from key_azimuth_deg round from the camera (positive to its left; the sheet is lit from its right) and key_elevation_deg up, turning with the camera, its shadows softened by key_softness_deg, ambient fill, the floor's shadow_strength, and a camera camera_distance_m away at camera_height_m aimed at aim_height_m through a fov_deg lens, drawn supersample times larger and scaled down (a photo's fine fuzz, not single-pixel speckle).",
+    "background": "#FBF5E8",
+    "key_color": "#FFF4E6",
+    "key_azimuth_deg": -35.0,
+    "key_elevation_deg": 60.0,
+    "key_softness_deg": 7.0,
+    "key_energy": 1.25,
+    "ambient_color": "#F2EEE6",
+    "ambient_energy": 0.45,
+    "shadow_strength": 0.22,
+    "camera_distance_m": 6.0,
+    "camera_height_m": 1.6,
+    "aim_height_m": 0.74,
+    "fov_deg": 16.0,
+    "supersample": 2.0
   }
 }

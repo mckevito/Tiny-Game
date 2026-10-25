@@ -100,32 +100,45 @@ static func mesh(id: String) -> ArrayMesh:
 
 ## A model sculpted outside the game (a .glb under art/, made by its own build script): its UV.x is the weave and
 ## its UV.y the index into the model's "file_slots" (swatch names or $slots), so it is painted from the palette here
-## and variants swap colours like any other model.
+## and variants swap colours like any other model. A second UV map, when there is one, is its stitch map (weaves
+## knit_map, rib_map and yarn) and is kept. Vertex colours, when it has them, are a baked shade (grey) that darkens
+## the swatch in creases.
 static func _file_mesh(model: Dictionary) -> ArrayMesh:
-	var out := ArrayMesh.new()
 	var scene: PackedScene = load(str(model["file"]))
 	if scene == null:
 		push_error("FeltBuilder: can't load %s" % model["file"])
-		return out
+		return ArrayMesh.new()
 	var root := scene.instantiate()
+	var out := painted(root, model)
+	root.free()
+	return out
+
+
+## The first mesh under `root` painted from `model`'s file_slots (see _file_mesh). The capture tool also uses it on a
+## .glb loaded straight from a file.
+static func painted(root: Node, model: Dictionary) -> ArrayMesh:
+	var out := ArrayMesh.new()
 	var found: Array[Node] = root.find_children("*", "MeshInstance3D", true, false)
 	if found.is_empty():
-		root.free()
 		return out
 	var src: Mesh = (found[0] as MeshInstance3D).mesh
 	var arrays := src.surface_get_arrays(0)
-	root.free()
 	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
 	var names: Array = model.get("file_slots", [])
 	var palette: Array[Color] = []
 	for n: Variant in names:
 		palette.append(swatch(swatch_name({"color": n}, model)))
+	var shade: PackedColorArray = arrays[Mesh.ARRAY_COLOR] if arrays[Mesh.ARRAY_COLOR] != null else PackedColorArray()
 	var colors := PackedColorArray()
 	colors.resize(uvs.size())
 	for i in uvs.size():
 		# glTF flips V (v = 1 - y), so the slot comes back as 1 - UV.y.
 		var slot := clampi(roundi(1.0 - uvs[i].y), 0, palette.size() - 1)
-		colors[i] = palette[slot] if not palette.is_empty() else Color.WHITE
+		var c := palette[slot] if not palette.is_empty() else Color.WHITE
+		if shade.size() == uvs.size():
+			var g := shade[i].r
+			c = Color(c.r * g, c.g * g, c.b * g, c.a)
+		colors[i] = c
 	arrays[Mesh.ARRAY_COLOR] = colors
 	out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return out
@@ -141,7 +154,8 @@ static func material(sway: bool) -> ShaderMaterial:
 	for key in ["noise_scale", "noise_strength", "grain_scale", "grain_strength", "fuzz_strength", "rim", "rim_tint",
 			"glow_strength", "sway_speed", "fibre_scale", "fibre_strength", "bump_strength", "hair_edge", "knit_scale",
 			"knit_depth", "knit_bump", "wood_scale", "wood_strength", "water_scale", "water_strength", "grass_tint",
-			"fine_scale", "fine_strength"]:
+			"fine_scale", "fine_strength", "stitch_aspect", "stitch_width", "rib_narrow", "rib_shade", "rib_groove",
+			"ply_strength", "stitch_vary", "yarn_shade"]:
 		mat.set_shader_parameter(key, float(felt.get(key, 0.0)))
 	for key in ["grass_light", "grass_dark"]:
 		mat.set_shader_parameter(key, vec3(felt.get(key), Vector3.ONE))
@@ -153,6 +167,8 @@ static func material(sway: bool) -> ShaderMaterial:
 	if not (shells.get("off_presets", []) as Array).has(Quality.current):
 		for i in int(shells.get("count", 0)):
 			var shell := mat.duplicate() as ShaderMaterial
+			# A copy of the base would carry its chain along and loop back on itself.
+			shell.next_pass = null
 			shell.set_shader_parameter("shell", float(i + 1))
 			for key in ["shell_height", "shell_keep", "strand_scale"]:
 				shell.set_shader_parameter(key, float(shells.get(key, 0.0)))

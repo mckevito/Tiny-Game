@@ -35,8 +35,15 @@
      so the slot is 1 - UV.y). It is only the `knit_camper` model so far; the capture's `--player=ID --friend=ID` puts
      it beside the code camper. Its proportions follow the owner's "Beanie Camper" turnaround (big head, beanie wider
      than the head with a folded cuff, separate sleeves, short trousers, boots); `--turn=knit_camper` renders front,
-     right, back and left on a cream backdrop to compare with it. About 14k vertices (28k triangles) after the
-     per-part `decimate` ratios were lowered; the ribs survive that, check a turnaround before lowering further.
+     right, back and left on a cream backdrop to compare with it.
+   - The camper rebuilt from the turnaround (one of two attempts the owner asked for, 25 Oct 2026; PR "Proposed: the
+     camper rebuilt from the owner's turnaround"): knitted parts are grids whose columns are the knit's own columns,
+     each vertex carrying its stitch position (column, row) in a second UV map, so the shader draws V stitches up
+     the columns and ribs (weaves `knit_map`, `rib_map`); the curls are two-ply yarn tubes (`yarn`), the eyes and
+     smile smooth beads (`bead`). Occlusion is baked into the vertex colour, which the builder multiplies into the
+     swatch. `--pose=t` builds the T-pose; `capture.gd --turn=knit_camper --glb=FILE` renders eight views in a studio
+     lit like the sheet (data/art.json "turnaround"). About 29k vertices (58k triangles), a 2.2 MB file. The beanie
+     has its own teal (`beanie_teal`), lighter than the sweater, as on the sheet; new swatches are Proposed.
    - Trap: the fire's light sits above the flame tongues (`light.pos` y 1.1), or each tongue casts a long shadow and
      the fire circle shows a star.
    - Builder additions: the `lathe` shape (a profile of [radius, height] points turned round Y, with an optional
@@ -49,7 +56,9 @@
      bead eyes, a stitched smile, a nose, ribbed hem and collar, boots (`$boots`, `$strand` slots).
    - Sizes and colliders are unchanged; the mittens stay at `camper.hand_pos` so held tools still fit.
 3. **Open work, in order:**
-   1. The owner's verdict on the pilot; fix what they name.
+   1. The owner's verdict on the pilot and their pick between the two rebuilt campers; fix what they name. Then ask
+      Gameplay to move `camper.hand_pos` (data/tuning.json) to the rebuilt camper's mitten centre, about 6 cm higher
+      (the build prints it, in Blender axes).
    2. Still plain: animals, tools, saplings, stumps, water point, lantern post, bag covers, bundles, the pitch.
    3. Ideas from the reference not yet built: a stitched fence and sign, log-stump seats, mugs, a lantern on the
       table, a soft tilt-shift blur (the play camera belongs to Gameplay; ask first).
@@ -62,6 +71,14 @@
    - A rib or hem lathe wider than the body at its height reads as a frilly skirt; measure the ellipsoid's width there.
    - Running stitches on a short curve break into dashes; use `gap: 0` for a line that must read as one stroke.
    - Captures need lavapipe: install `mesa-vulkan-drivers` if the log says OpenGL (build HANDOFF trap).
+   - Never rewrite data/models.json with `json.dump`: it relays the whole file. Edit the lines by hand.
+   - Knit reads from the stitch's shape more than its size. The sheet knits short rows (`KNIT_ROW`, 0.42 of a column)
+     of V's whose legs lean out and stop short of the column's middle and edge (dark lines between, wheat ears). V
+     legs that touch across columns read as horizontal chevrons. `stitch_aspect` is the V's drawing space, so a
+     shorter row in the stitch map squashes the V.
+   - The fuzz shells: before the `next_pass` fix only the last shell was drawn, so `count` is 1 (the same look).
+   - The sheet is a generated picture and its views disagree a little (hat height and tilt); fit the front and side
+     outlines, and split the difference.
 6. **How to check:**
    ```
    godot --headless --script res://tests/run_tests.gd -- --filter=felt
@@ -69,3 +86,9 @@
      --resolution 1280x720 --fixed-fps 30 -- --out=OUT_DIR --hero     # hero_<mood>.png, face_<mood>.png
    ```
    Then the plain capture (play camera) and `--clip` for a walk GIF. Put each next to the reference picture.
+   The camper against the owner's turnaround (eight views, studio light):
+   ```
+   blender --background --factory-startup --python art/characters/knit_camper/build_knit_camper.py -- OUT.glb --pose=t
+   xvfb-run -a -s "-screen 0 1920x1080x24" godot --script res://scripts/tools/capture.gd --resolution 1000x920 \
+     -- --out=OUT_DIR --turn=knit_camper --glb=OUT.glb                  # turn_<view>.png
+   ```

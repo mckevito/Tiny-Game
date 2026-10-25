@@ -39,3 +39,10 @@ All of `handoff/build/LESSONS.md` "Owner rules" apply. For art especially:
   comes from the camera and light as much as from the models: tilt-shift blur, soft shadows, deep occlusion and
   fuzz on every edge. Faults found by looking: the flame tongues cast a star of shadows over the fire circle (the
   fire light sat inside them; it now sits above).
+- 25 Oct 2026, the camper from the owner's turnaround (max-effort attempt): measure the sheet's outlines (width of
+  hat, head and body at each height, front and side) and fit them within 1 to 3 cm; light the studio as the sheet
+  is (key from the camera's right, soft, short shadow) before comparing colours, then match colours by measured
+  ratios. Faults found by looking: fringe curls sank into the head (a radius clamp took the smaller value); the crown
+  bulged past the cuff and peaked (rebuilt as an upright egg with round tops); a speckled band on the forehead (the
+  hair mass sat too close to the skin); seams on the sheet (the floor's occlusion; composite each row by its own
+  backdrop); the sweater knit read as chevron rows (V legs touched across columns; short rows, legs stopping short).

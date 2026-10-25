@@ -38,8 +38,8 @@
   },
   "knit_camper": {
     "file": "res://art/characters/knit_camper/knit_camper.glb",
-    "file_slots": ["$skin", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "ink_brown", "blush_felt", "warm_cream", "$thread"],
-    "slots": {"skin": "peach_felt", "shirt": "dusk_teal", "pants": "trouser_brown", "mitten": "peach_felt", "hat": "dusk_teal", "hair": "bark_brown", "boots": "boot_brown", "thread": "honey_thread"}
+    "file_slots": ["$skin", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "button_black", "blush_felt", "warm_cream", "$thread", "$hair_shade"],
+    "slots": {"skin": "peach_felt", "shirt": "dusk_teal", "pants": "trouser_brown", "mitten": "peach_felt", "hat": "beanie_teal", "hair": "curl_brown", "boots": "boot_brown", "thread": "honey_thread", "hair_shade": "curl_shadow"}
   },
   "camper_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "teal_felt", "hat": "teal_felt", "trim": "warm_cream", "mitten": "warm_cream"}},
   "guest_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "rust_canvas", "pants": "moss_felt", "hat": "pond_blue", "trim": "honey_thread", "mitten": "warm_cream"}},

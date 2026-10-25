@@ -51,12 +51,17 @@ look knitted (wool weaves in the material, a ground of felt plants, every model 
 owner's verdict. The owner asked for the models to look like their original felt
 reference picture; the Art role's pilot covers the camper, the tent, the pine and the round broadleaf tree, felt
 fibres on the shared material, and a warmer day light and grass (all **Proposed**). Sizes and colliders are unchanged.
+The owner disliked the first Blender camper and asked for two separate rebuilds from their "Beanie Camper" turnaround
+(25 Oct 2026); each is its own Proposed PR, and the owner picks one. The max-effort one knits the beanie, sweater and
+curls along their own stitch map (stitch-mapped knit, ribs, two-ply yarn, bead eyes) with baked shading.
 
 | Proof | Test | Result |
 |---|---|---|
 | Pilot models still build, use known shapes and swatches and keep their sizes | `tests/test_felt_models.gd` | Passing |
 | The new lathe shape faces outward and its wave scallops the edge | `test_felt_models.test_lathe_faces_out_and_wave_scallops` | Passing |
 | A cord stitch (the smile, guy ropes) is unbroken | `test_felt_models.test_stitch_cord_is_unbroken` | Passing |
+| The sculpted camper keeps its stitch map, uses the knit, rib, yarn and bead weaves, and its baked shade only darkens | `test_felt_models.test_sculpted_camper_keeps_its_stitch_map_and_baked_shade` | Passing (fails without the shade) |
+| The rebuilt camper matches the owner's turnaround | Owner's verdict (eight views beside the sheet, in-camp day and dusk) | Waiting |
 | The pilot matches the reference closely enough to roll out | Owner's verdict (sheet beside the reference, day and dusk, walk GIF) | Waiting |
 
 How to look: the capture's `--hero` mode (`handoff/art/HANDOFF.md`), or F5 the sandbox.

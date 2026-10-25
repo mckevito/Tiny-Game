@@ -25,9 +25,13 @@
     "olive_felt": "#6E7D3A",
     "sage_thread": "#B5C08F",
     "lake_blue": "#3E7DB8",
-    "dusk_teal": "#467890",
-    "peach_felt": "#E9BC96",
-    "trouser_brown": "#6E3F22",
-    "boot_brown": "#4B2B1A"
+    "dusk_teal": "#517783",
+    "peach_felt": "#DEBA99",
+    "trouser_brown": "#6E3F25",
+    "boot_brown": "#6E412B",
+    "curl_brown": "#7A4A2C",
+    "curl_shadow": "#5C3420",
+    "button_black": "#1E1714",
+    "beanie_teal": "#648C97"
   }
 }

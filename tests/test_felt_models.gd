@@ -126,6 +126,35 @@ func test_sculpted_camper_is_painted_from_the_palette() -> String:
 	var seen := {}
 	for c in colors:
 		seen[c] = true
-	# Ten slots, seven colours by default: the hat shares the sweater's teal, the boots the hair's brown, the shine the
-	# mittens' cream.
+	# Twelve slots, some sharing a swatch (the mittens and the skin, the shine and the cream), each in many tones from
+	# the baked shade.
 	return "" if seen.size() >= 7 else "only %d colours on the sculpted camper" % seen.size()
+
+
+func test_sculpted_camper_keeps_its_stitch_map_and_baked_shade() -> String:
+	var model := FeltBuilder.resolve("knit_camper")
+	var arrays := FeltBuilder.mesh("knit_camper").surface_get_arrays(0)
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var stitch: Variant = arrays[Mesh.ARRAY_TEX_UV2]
+	if stitch == null or (stitch as PackedVector2Array).size() != uvs.size():
+		return "the stitch map (UV2) is missing"
+	var weaves: Dictionary = Tuning.table("art").get("weaves", {})
+	var used := {}
+	for uv in uvs:
+		used[roundi(uv.x)] = true
+	for w in ["knit_map", "rib_map", "yarn", "bead"]:
+		if not used.has(int(weaves.get(w, -1))):
+			return "no part of the camper is %s" % w
+	# The baked shade only darkens: each vertex is its slot's swatch times a shade of at most 1.
+	var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+	var names: Array = model.get("file_slots", [])
+	var darker := 0
+	for i in uvs.size():
+		var slot := clampi(roundi(1.0 - uvs[i].y), 0, names.size() - 1)
+		var base := FeltBuilder.swatch(FeltBuilder.swatch_name({"color": names[slot]}, model))
+		var c := colors[i]
+		if c.r > base.r + 0.002 or c.g > base.g + 0.002 or c.b > base.b + 0.002:
+			return "vertex %d is lighter than its swatch" % i
+		if c.r < base.r - 0.01:
+			darker += 1
+	return "" if darker > uvs.size() / 10 else "no baked shade: %d of %d vertices darkened" % [darker, uvs.size()]

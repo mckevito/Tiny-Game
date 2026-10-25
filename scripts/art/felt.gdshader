@@ -1,8 +1,11 @@
 shader_type spatial;
 // The one shared wool material (docs/PLAN.md art direction). Colour comes from the vertex colour, which the builder
 // paints from data/palette.json; vertex alpha below 1 marks glowing parts (1 - alpha = glow). UV.x picks the weave a
-// part is made of (data/art.json "weaves": 0 felt, 1 knit, 2 wood, 3 water, 4 grass), so one material still draws
-// everything. Every value is set from data/art.json "felt" by FeltBuilder.
+// part is made of (data/art.json "weaves": 0 felt, 1 knit, 2 wood, 3 water, 4 grass, 5 knit_map, 6 rib_map, 7 yarn,
+// 8 bead), so one material still draws everything. knit_map and rib_map read the model's own stitch map from UV2
+// (column, row), so each V stitch runs along its column on a sculpted model; yarn reads UV2 as (round the strand in
+// plies, along it in twists) and draws twisted plies; bead is smooth (button eyes): no fibres, fuzz or ragged edge.
+// Every value is set from data/art.json "felt" by FeltBuilder.
 render_mode diffuse_lambert_wrap, specular_disabled;
 
 uniform float noise_scale = 3.5;
@@ -21,6 +24,17 @@ uniform float hair_edge = 0.0;
 uniform float knit_scale = 26.0;
 uniform float knit_depth = 0.45;
 uniform float knit_bump = 0.006;
+// Stitch-mapped knit (UV2): a stitch's width over its height, a loop's half-thickness (in rows), how far a rib's
+// stitches squeeze onto its ridge and how dark its grooves go, the plies' light and dark, and how much stitches vary.
+uniform float stitch_aspect = 1.4;
+uniform float stitch_width = 0.25;
+uniform float rib_narrow = 0.78;
+uniform float rib_shade = 0.35;
+uniform float rib_groove = 0.22;
+uniform float ply_strength = 0.1;
+uniform float stitch_vary = 0.08;
+// Yarn strands (curls): how dark the twist between two plies goes.
+uniform float yarn_shade = 0.4;
 // Wood: grain lines per metre along the part's length and how dark they are.
 uniform float wood_scale = 7.0;
 uniform float wood_strength = 0.35;
@@ -52,6 +66,7 @@ instance uniform float fade = 0.0;
 varying vec3 obj_pos;
 varying vec3 obj_normal;
 varying flat float weave;
+varying vec2 stitch_uv;
 
 float hash3(vec3 p) {
 	p = fract(p * 0.3183099 + 0.1);
@@ -79,6 +94,45 @@ float knit2(vec2 uv) {
 	return smoothstep(0.62, 0.18, d);
 }
 
+// One leg of a V stitch: a yarn loop leaning out from near the column's middle at the bottom to near its edge at
+// the top, a little longer than a row so it tucks under the next stitch up. It stops short of the middle and the
+// edge, so a dark line runs up between a V's two legs and between columns, as on knitted wool (wheat ears). q.x runs
+// out from the column's middle and q.y up from the stitch's bottom, both in rows. Returns the yarn's height 0..1;
+// `ply` the twisted plies' light and dark.
+float stitch_leg(vec2 q, out float ply) {
+	vec2 a = vec2(0.12 * stitch_aspect, 0.02);
+	vec2 b = vec2(0.365 * stitch_aspect, 1.16);
+	vec2 ab = b - a;
+	float s = clamp(dot(q - a, ab) / dot(ab, ab), 0.0, 1.0);
+	vec2 off = q - (a + ab * s);
+	float r = stitch_width * (0.7 + 0.3 * sin(3.14159 * s));
+	float d = length(off) / r;
+	float across = (off.x * ab.y - off.y * ab.x) / (length(ab) * r);
+	ply = cos(6.2832 * (s * 2.6 + across * 0.6));
+	return sqrt(max(1.0 - d * d, 0.0));
+}
+
+// A V stitch in a model's own stitch map (UV2: x counts columns, y counts rows up the column): two slanted loops
+// meeting at the bottom, stacked up the column like a braid, as stockinette looks. The stitches above and below
+// reach into this one, so the front-most loop wins. Returns the yarn's height 0..1 (0 between loops). `narrow` < 1
+// squeezes the V onto the middle of its column (a rib's knit column standing on its ridge). A model's stitch map may
+// make its rows shorter than stitch_aspect says, which squashes the V's and leans their legs out further.
+float stitch_v(vec2 uv, float narrow, out float ply) {
+	vec2 c = fract(uv);
+	float x = abs(c.x - 0.5) / narrow * stitch_aspect;
+	float best = 0.0;
+	ply = 0.0;
+	for (int k = -1; k <= 1; k++) {
+		float p;
+		float h = stitch_leg(vec2(x, c.y - float(k)), p);
+		if (h > best) {
+			best = h;
+			ply = p;
+		}
+	}
+	return best;
+}
+
 // The knit seen from three sides, blended by the surface's facing (object space, so it moves with the model).
 float knit3(vec3 p, vec3 n) {
 	vec3 w = pow(abs(n), vec3(4.0));
@@ -93,6 +147,7 @@ void vertex() {
 	obj_pos = VERTEX;
 	obj_normal = NORMAL;
 	weave = UV.x;
+	stitch_uv = UV2;
 	if (sway_amount > 0.0) {
 		vec3 world = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 		float h = max(world.y - NODE_POSITION_WORLD.y, 0.0) / sway_height;
@@ -111,13 +166,13 @@ void fragment() {
 			discard;
 		}
 	}
+	int kind = int(weave + 0.5);
 	if (shell > 0.0) {
 		// Only fibre tips survive on a shell: a random few cells, fewer the farther out the shell sits.
-		if (COLOR.a < 0.99 || hash3(floor(obj_pos * strand_scale)) > shell_keep / shell) {
+		if (COLOR.a < 0.99 || kind == 8 || hash3(floor(obj_pos * strand_scale)) > shell_keep / shell) {
 			discard;
 		}
 	}
-	int kind = int(weave + 0.5);
 	float n = noise3(obj_pos * noise_scale) * 0.6 + noise3(obj_pos * noise_scale * 2.3) * 0.4;
 	float g = noise3(obj_pos * grain_scale);
 	// Fibres run in no one direction: two stretched noises at an angle, kept as the darker of the two.
@@ -130,7 +185,7 @@ void fragment() {
 	float near_fine = clamp(1.5 - length(fwidth(obj_pos)) * fine_scale, 0.0, 1.0);
 	fibre = mix(fibre, fibre * (0.7 + 0.6 * noise3(obj_pos * vec3(fine_scale, fine_scale * 0.4, fine_scale))), fine_strength * near_fine);
 	float edge = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-	if (hair_edge > 0.0 && edge > 1.0 - hair_edge && COLOR.a > 0.99) {
+	if (hair_edge > 0.0 && edge > 1.0 - hair_edge && COLOR.a > 0.99 && kind != 8) {
 		if (fibre * 1.6 < (edge - (1.0 - hair_edge)) / hair_edge) {
 			discard;
 		}
@@ -143,6 +198,26 @@ void fragment() {
 		float k = knit3(obj_pos * knit_scale, normalize(obj_normal));
 		shade *= mix(1.0 - knit_depth, 1.05, k);
 		h = k * (knit_bump / max(bump_strength, 0.0001)) + fibre * 0.5;
+	} else if (kind == 5 || kind == 6) {
+		float rib = float(kind == 6);
+		// A stitch a few pixels across only shimmers: fade it to an even knit.
+		float near_st = clamp(1.5 - length(fwidth(stitch_uv)) * 4.0, 0.0, 1.0);
+		float ply;
+		float k = stitch_v(stitch_uv, mix(1.0, rib_narrow, rib), ply);
+		float groove = rib * smoothstep(0.5 - rib_groove, 0.5, abs(fract(stitch_uv.x) - 0.5));
+		k = mix(0.55, k, near_st);
+		shade *= mix(1.0 - knit_depth, 1.06, k) * (1.0 - groove * rib_shade);
+		shade *= 1.0 + (ply * ply_strength * k + (hash3(vec3(floor(stitch_uv), 3.0)) - 0.5) * stitch_vary) * near_st;
+		h = k * (knit_bump / max(bump_strength, 0.0001)) + fibre * 0.5;
+	} else if (kind == 7) {
+		// Two or more plies twisting round the strand: each ply a round cord, dark where it meets the next.
+		float near_st = clamp(1.5 - length(fwidth(stitch_uv)) * 4.0, 0.0, 1.0);
+		float k = mix(0.65, sin(3.14159 * fract(stitch_uv.x + stitch_uv.y)), near_st);
+		shade *= mix(1.0 - yarn_shade, 1.08, k);
+		h = k * (knit_bump / max(bump_strength, 0.0001)) + fibre * 0.5;
+	} else if (kind == 8) {
+		shade = 1.0 + (n - 0.5) * 0.04;
+		h = 0.0;
 	} else if (kind == 2) {
 		// Grain lines run along X (planks, benches and logs are laid along X): across Z on top, across Y on the sides.
 		float across = abs(obj_normal.y) > 0.5 ? obj_pos.z : obj_pos.y;
