@@ -7,7 +7,7 @@
   "requests": {
     "fish": {"give": "fish", "tip": 4},
     "meal": {"give": "meal", "tip": 6},
-    "chair": {"near": ["chair_teal", "chair_honey", "log_bench"], "radius_m": 3.2, "tip": 3},
+    "chair": {"near": ["chair_teal", "chair_honey", "log_bench", "stool"], "radius_m": 3.2, "tip": 3},
     "berries": {"give": "fruit", "tip": 4, "from_day": 2}
   },
   "satisfaction": {
@@ -16,11 +16,12 @@
     "moods": [[0, "okay"], [2, "happy"], [4, "delighted"]],
     "sources": [
       {"factor": "comfort", "cause": "water", "near": ["water_point"]},
-      {"factor": "comfort", "cause": "chair", "near": ["chair_teal", "chair_honey", "log_bench"], "radius_m": 3.2},
+      {"factor": "comfort", "cause": "chair", "near": ["chair_teal", "chair_honey", "log_bench", "stool"], "radius_m": 3.2},
       {"factor": "things_to_do", "cause": "request", "request": true},
       {"factor": "things_to_do", "cause": "pond", "near": ["pond"], "radius_m": 8.0},
       {"factor": "atmosphere", "cause": "lantern", "near": ["lantern_post"]},
-      {"factor": "atmosphere", "cause": "fire", "near": ["fire_pit"]}
+      {"factor": "atmosphere", "cause": "fire", "near": ["fire_pit"]},
+      {"factor": "atmosphere", "cause": "flowers", "near": ["planter"]}
     ]
   },
   "bookings": [

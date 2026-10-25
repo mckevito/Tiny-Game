@@ -129,7 +129,7 @@ together actions. Never cut both input methods, two-player reliability, decorati
 save recovery.
 
 ## Later (not in v1)
-Next round (owner, 25 Oct 2026): a sell crate, camp projects, a field guide and the camp's star rating; then the
+Next round (owner, 25 Oct 2026): the camp's star rating (the sell crate, camp projects and field guide are built); then the
 clipboard's map tab with plan marks both players see. A free photo mode, text chat, separate remaps for each couch player, a credits page, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
 two players, a public release (itch.io or Steam), Steam's relay, consoles, voice acting.
 
@@ -204,4 +204,7 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   coins, the camp's tent and guest tents open like a doll's house, a camera tool and a field guide tab.
 - 25 Oct 2026, owner: after round 5, the work splits into three threads started from the hand-off files: Gameplay,
   Interface (HUD, Pack, cyclers, menus, settings) and Playtest/QA (`handoff/README.md`).
-
+- 25 Oct 2026, **Proposed** (gameplay round 2, built from the owner's next-round pick): a sell crate that pays in the
+  morning report at flat, low prices and gives back the last stack until night; three camp projects in order
+  (fireside stools, flower planters, a tidy woodpile) filled by either player from their Pack and the camp box, each
+  rewarding once (two new recipes, then coins); players stop at the clearing's edge.

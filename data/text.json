@@ -41,7 +41,10 @@
     "log_alone": "Heavy! It goes faster with a friend beside you.",
     "pick_bundle": "{interact} Pick up the %s (%d)",
     "bench": "{interact} Use the workbench",
-    "deposit": "{interact} Put your wood and sticks in the camp box"
+    "deposit": "{interact} Put your wood and sticks in the camp box",
+    "ship": "{interact} Put your %s (%d) in the sell crate: %d coins in the morning",
+    "take_back": "{interact} Take your %s back out of the sell crate",
+    "project": "{interact} Bring what you have for the camp project: %s"
   },
   "menu": {
     "title": "Our Little Campground",
@@ -89,6 +92,11 @@
     "unreadable": "That camp save could not be read, and neither could its backup."
   },
   "deny": {
+    "nothing_to_sell": "Nothing in your Pack the sell crate takes.",
+    "crate_empty": "The sell crate is empty.",
+    "pack_full": "Your Pack is full.",
+    "projects_done": "Every camp project is finished. Thank you!",
+    "nothing_for_project": "You have nothing the camp project still needs.",
     "carried": "Someone is already carrying that.",
     "hands_full": "Your hands are full.",
     "too_far": "That is a little too far away.",
@@ -121,6 +129,10 @@
     "nothing_to_box": "Only wood and sticks go in the camp box."
   },
   "toast": {
+    "shipped": "Into the sell crate: %s (%d). It pays in the morning.",
+    "took_back": "Back in your Pack: %s (%d).",
+    "project_given": "Thank you! The camp project %s is coming along.",
+    "project_done": "Camp project finished: %s! %s",
     "photo_new": "Snap! A %s for the field guide (+%d coins).",
     "photo_again": "Snap! Another %s photo (%d in the guide).",
     "new_request": "%s would love %s now.",
@@ -156,6 +168,8 @@
     "water_point": "water point",
     "lantern_post": "lantern post",
     "log_bench": "log bench",
+    "stool": "stool",
+    "planter": "flower planter",
     "coins": "%d coins",
     "in_kit": "%d in the kit",
     "to_kit": "into the kit"
@@ -205,7 +219,8 @@
     "berries": "berries",
     "stick": "sticks",
     "sapling": "sapling",
-    "wood": "wood"
+    "wood": "wood",
+    "fish": "fish (any)"
   },
   "request": {
     "say": {
@@ -228,7 +243,8 @@
       "request": "your kindness",
       "pond": "the pond nearby",
       "lantern": "the lantern light",
-      "fire": "the campfire close by"
+      "fire": "the campfire close by",
+      "flowers": "the flowers by the tent"
     },
     "wished": {
       "water": "fresh water nearer the tent",
@@ -236,7 +252,8 @@
       "request": "help with their request",
       "pond": "a pitch nearer the pond",
       "lantern": "a lantern nearby",
-      "fire": "a pitch nearer the campfire"
+      "fire": "a pitch nearer the campfire",
+      "flowers": "some flowers nearby"
     }
   },
   "booking": {
@@ -266,6 +283,7 @@
     "waiting": " Waiting for %d more free pitches; they'll come the first morning you have room."
   },
   "report": {
+    "sale": "The sell crate paid %d coins (%s).",
     "morning": "Good morning! %s, day %d.",
     "earned": "Last night the camp earned %d coins.",
     "paid": "%s paid %d coins for the %s.",
@@ -345,7 +363,16 @@
     "deer": "deer",
     "bear": "bear"
   },
+  "project": {
+    "line": "Camp project, %s: %s. %s",
+    "all_done": "Every camp project is finished. The camp says thank you!",
+    "stools": {"name": "fireside stools", "reward": "The stool recipe opens at the workbench."},
+    "planters": {"name": "flower planters", "reward": "The flower planter recipe opens at the workbench."},
+    "woodpile": {"name": "a tidy woodpile", "reward": "The camp pays you %d coins."}
+  },
   "clipboard": {
+    "crate": "In the sell crate: %s",
+    "shipped": "Sold so far: %d things",
     "tab": {
       "today": "Today",
       "bookings": "Bookings",
