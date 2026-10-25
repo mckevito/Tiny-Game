@@ -1,0 +1,21 @@
+; Engine configuration file.
+; Input actions are not listed here: they live in data/input.json and are registered at start by Boot.
+
+config_version=5
+
+[application]
+
+config/name="Our Little Campground"
+config/description="A tiny cozy two-player co-op campground game."
+run/main_scene="res://scenes/sandbox.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[autoload]
+
+Boot="*res://scripts/core/boot.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"

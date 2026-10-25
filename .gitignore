@@ -1,0 +1,17 @@
+# Godot's generated cache and imports
+.godot/
+# Builds and exports
+/build/
+/export/
+*.exe
+*.pck
+# Local-only files: never commit saves, logs, keys or editor settings
+*.log
+*.save
+*.key
+*.pem
+.env
+export_credentials.cfg
+.claude/settings.local.json
+.DS_Store
+Thumbs.db
