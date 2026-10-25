@@ -379,6 +379,19 @@ The last of the owner's next-round pick (the v1 pick "a camp star rating with ra
 | The Today list (clipboard and morning report) gives the stars and one hint from Ranger Ada naming the first factor still short; the report says when a star is new | `test_rating.test_the_morning_report_and_today_list_show_the_stars_and_a_hint` | Passing |
 | Review frame: the morning report with the stars and the hint | Cloud frame (`stage-b/gameplay3_rating_report.png` in the project files) | Looked at |
 
+### First-minutes round 1: chopping that feels good, and a shovel (25 Oct 2026)
+From the owner's feedback after playing (decision log, 25 Oct): if the first 3 to 15 seconds don't hook, waiting for
+days won't help. The research doc "Hooked in the first minute" (a Claude Doc, linked in the project thread) found the
+hook is hit, drop into the world, collect with +1. The owner picked this round first. Stage B is still not signed off.
+
+| Proof | Test | Result |
+|---|---|---|
+| A chop pops one wood out of the tree onto the grass, fanned round the tree, never into the Pack directly; a full Pack still chops and the wood waits on the grass | `test_gather.test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted` | Passing |
+| Walking over a landed piece sweeps it into the Pack; a piece still in the air waits; a full Pack leaves it there (never lost) | `test_gather.test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted` | Passing |
+| The shovel (fifth tool) digs a stump (sapling or not) into a hole, popping its roots as wood and the sapling; a hole takes a sapling; an empty hole is grass by morning and no longer blocks building | `test_gather.test_the_shovel_digs_a_stump_into_a_hole_that_grasses_over` | Passing (checked by breaking it) |
+| From the buttons: the camper swings the axe, the wood is in the air, walking onto it sweeps it up; a felled tree topples before it hides; the shovel's prompt and dig | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_stage_b.test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons` | Passing |
+| Review clip: three chops, the tree toppling away from the camper, sweeping the wood with +1 tags, digging the stump | `capture.gd --chop` (`first-minutes-g1/` in the project files) | Looked at |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -432,7 +445,14 @@ The last of the owner's next-round pick (the v1 pick "a camp star rating with ra
   hand is not saved; the Pack opens on I or D-pad down and the next tool is T or D-pad up, so zoom moved from the
   D-pad to L3 and R3 and the drop button went away (drop from the open Pack); the window size choices are 1280 × 720
   to 2560 × 1440, 1600 × 900 by default (data/settings.json); dock and Pack sizes in data/tuning.json.
-- Frame rate on the weakest laptop is still unmeasured; round 2 adds up to 10 animals (no lights or physics), stump,
+- **Proposed** first-minutes round 1 numbers and choices (data/gather.json, data/items.json, data/save.json): a new
+  camp starts with **100 coins** (owner's pick, was 40); wood lands 1 m from the tree, 55° then 110° either side of
+  the chopper; it flies 0.45 s, sweeps up within 0.75 m once landed (0.6 s); a dig takes 1 s and pops 1 wood; the
+  shovel is the last tool (hands, axe, rod, camera, shovel); a felled tree tips 84° over 0.6 s; puffs are 12 felt bits.
+  Dropped bundles (G) still need a press to pick up; only pieces that popped out sweep up by walking. No sounds yet
+  (the game has no audio so far). Online play needs both PCs on protocol 7.
+- Frame rate on the weakest laptop is still unmeasured; the first-minutes round adds at most a few short-lived pieces,
+  12-bit puffs (CPU particles) and tweens per chop. Round 2 adds up to 10 animals (no lights or physics), stump,
   sapling, stick and berry models, and the clipboard panel.
 
 ## Title screen and settings (quality of life, 25 Oct 2026)

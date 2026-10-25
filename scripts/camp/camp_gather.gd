@@ -1,8 +1,10 @@
 class_name CampGather
 extends RefCounted
-## Gathering: chopping the clearing's trees for wood (into the chopper's Pack) and picking up what the forage spots hold. A tree gives a few
-## wood, then falls: a stump stays and a sapling drops beside it to pick up and plant back at a stump, where it grows
-## into a tree again in a few mornings (like Animal Crossing). Forage spots refill each morning. Wood goes on the camp's
+## Gathering: chopping the clearing's trees for wood and picking up what the forage spots hold. Each chop pops a
+## piece of wood out onto the grass, to sweep up by walking over it. A tree gives a few wood, then falls: a stump
+## stays and a sapling drops beside it to pick up and plant back at a stump, where it grows into a tree again in a few
+## mornings (like Animal Crossing). The shovel digs a stump up into a hole: plant a sapling there, or leave it and the
+## spot is grass by morning, free to build on. Forage spots refill each morning. Wood goes on the camp's
 ## shared wood pile. The host's copy decides; every rule takes a profile ID and returns "" or a text key.
 ## Numbers: data/gather.json.
 
@@ -35,7 +37,7 @@ static func trees() -> Array:
 	return out
 
 
-## A tree's row in the camp's "trees": {chops, stage ("standing", "stump" or "sapling"), sapling_out (a sapling
+## A tree's row in the camp's "trees": {chops, stage ("standing", "stump", "hole", "sapling" or "cleared"), sapling_out (a sapling
 ## lies by the stump to pick up), planted (the day number it was planted)}. A tree never chopped has no row.
 func tree(index: int) -> Dictionary:
 	return state.camp["trees"].get(str(index), {"chops": 0, "stage": "standing", "sapling_out": false, "planted": 0})
@@ -78,9 +80,36 @@ func sapling_near(pos: Vector2) -> int:
 	return _tree_where(pos, func(i: int) -> bool: return bool(tree(i)["sapling_out"]))
 
 
-## The nearest bare stump (its sapling picked up) within reach, or -1.
+## The nearest spot a sapling can go within reach (a bare stump, its sapling picked up, or a dug hole), or -1.
 func stump_near(pos: Vector2) -> int:
-	return _tree_where(pos, func(i: int) -> bool: return tree(i)["stage"] == "stump" and not bool(tree(i)["sapling_out"]))
+	return _tree_where(pos, func(i: int) -> bool: return _plantable(i))
+
+
+func _plantable(index: int) -> bool:
+	var row := tree(index)
+	return row["stage"] == "hole" or (row["stage"] == "stump" and not bool(row["sapling_out"]))
+
+
+## The nearest stump within reach, sapling or not (for the shovel), or -1.
+func dig_near(pos: Vector2) -> int:
+	return _tree_where(pos, func(i: int) -> bool: return tree(i)["stage"] == "stump")
+
+
+## True when a tree's spot is grass now (its stump dug up and the hole left empty overnight): it blocks nothing.
+func cleared(index: int) -> bool:
+	return tree(index)["stage"] == "cleared"
+
+
+## Where the `nth` piece popping out of a tree lands: land_m out, turned spread_deg, then twice that, either side of
+## the way to the player in turn (so pieces fan out round the tree, not under the player's feet).
+func drop_spot(index: int, profile_id: String, nth: int) -> Vector2:
+	var from := tree_pos(index)
+	var toward := state.player_pos(profile_id) - from
+	if toward.length() < 0.01:
+		toward = Vector2(0, 1)
+	var side := 1.0 if nth % 2 == 0 else -1.0
+	var turn := deg_to_rad(float(_v("drops.spread_deg", 55))) * side * float((maxi(nth, 1) + 1) / 2)
+	return from + toward.normalized().rotated(turn) * float(_v("drops.land_m", 1.0))
 
 
 func _check_tree(profile_id: String, index: int) -> String:
@@ -94,8 +123,8 @@ func _check_tree(profile_id: String, index: int) -> String:
 	return ""
 
 
-## A chop: one wood from the tree into the chopper's Pack (it stays in the tree while the Pack is full). The last chop fells it: a stump stays and a sapling drops
-## beside it. `felled` says whether this chop did.
+## A chop: one wood pops out of the tree onto the grass (CampPack.lay). The last chop fells it: a stump stays and a
+## sapling drops beside it. `felled` says whether this chop did.
 var felled := false
 
 
@@ -106,16 +135,31 @@ func chop(profile_id: String, index: int) -> String:
 		return why
 	if wood_left(index) <= 0:
 		return "deny.no_tree"
-	var wood := str(_v("wood_item", "wood"))
-	if state.pack.room_for(profile_id, wood) <= 0:
-		return "deny.pack_full"
 	var row := tree(index).duplicate()
 	row["chops"] = int(row["chops"]) + 1
+	state.pack.lay(str(_v("wood_item", "wood")), 1, drop_spot(index, profile_id, int(row["chops"])), tree_pos(index))
 	if int(row["chops"]) >= int(_v("trees.wood_per_tree", 3)):
 		row = {"chops": 0, "stage": "stump", "sapling_out": true, "planted": 0}
 		felled = true
 	_set_tree(index, row)
-	state.pack.add(profile_id, wood)
+	return ""
+
+
+## Digs a stump up with the shovel: it becomes a hole, its roots pop out as wood (dig.roots_wood), and a sapling still
+## lying by it pops out too, to sweep up.
+func dig(profile_id: String, index: int) -> String:
+	var why := _check_tree(profile_id, index)
+	if why != "":
+		return why
+	var row := tree(index)
+	if row["stage"] != "stump":
+		return "deny.no_dig"
+	var roots := int(_v("dig.roots_wood", 1))
+	if roots > 0:
+		state.pack.lay(str(_v("wood_item", "wood")), roots, drop_spot(index, profile_id, 0), tree_pos(index))
+	if bool(row["sapling_out"]):
+		state.pack.lay(str(_v("trees.sapling_item", "sapling")), 1, drop_spot(index, profile_id, 1), tree_pos(index))
+	_set_tree(index, {"chops": 0, "stage": "hole", "sapling_out": false, "planted": 0})
 	return ""
 
 
@@ -139,7 +183,7 @@ func plant(profile_id: String, index: int) -> String:
 	var why := _check_tree(profile_id, index)
 	if why != "":
 		return why
-	if tree(index)["stage"] != "stump" or bool(tree(index)["sapling_out"]):
+	if not _plantable(index):
 		return "deny.no_stump"
 	var item := str(_v("trees.sapling_item", "sapling"))
 	if not state.pack.remove(profile_id, item):
@@ -237,10 +281,12 @@ static func carry_speed(model: String, carrier: Vector3, others: Array[Vector3])
 	return float(_v("long_log.alone_speed", 0.45))
 
 
-## The morning: saplings old enough grow back into trees, and every forage spot refills.
+## The morning: saplings old enough grow back into trees, holes left empty grass over, and every forage spot refills.
 func new_day() -> void:
 	for key: String in (state.camp["trees"] as Dictionary).keys():
 		var row: Dictionary = state.camp["trees"][key]
-		if row["stage"] == "sapling" and state.day.today() - int(row["planted"]) >= int(_v("trees.grow_days", 2)):
+		if row["stage"] == "hole":
+			row["stage"] = "cleared"
+		elif row["stage"] == "sapling" and state.day.today() - int(row["planted"]) >= int(_v("trees.grow_days", 2)):
 			state.camp["trees"].erase(key)
 	state.camp["forage"] = {}

@@ -225,3 +225,12 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, owner: try one camper made in Blender. **Proposed** (built): `knit_camper`, a sculpted model built by a
   script in `art/characters/knit_camper/` and painted from the palette, shaped from the owner's "Beanie Camper"
   turnaround (front, side and back); it sits beside the code camper until the owner decides.
+- 25 Oct 2026, owner (after playing Stage B): "if you are not right away hooked and captivated it won't be any funner
+  waiting for days": wants chop animations with wood visibly dropping, a shovel to dig up stumps, more stylized,
+  icon-led UI with fewer blocks of text, a visual clipboard and Pack, more than one guest at a time who stay longer
+  and fish, photograph animals, fly kites, play frisbee fetch and sit on chairs, more starting money, crafting and
+  upgrading a bonfire, and placing key items like the events board. Research doc "Hooked in the first minute" ranks
+  the work into Gameplay rounds (1 chop feel and shovel, 2 bonfire and placeable board, 3 more guests staying longer,
+  4 guest activities) and Interface rounds (1 item icons and icon pop-ups, 2 a picture clipboard and Pack).
+- 25 Oct 2026, owner picks: chop feel and the shovel first; up to **3 guests at once, 2 nights each** (Gameplay round
+  3); a new camp starts with **100 coins** (built in first-minutes round 1).

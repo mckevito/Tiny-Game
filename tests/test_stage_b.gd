@@ -81,6 +81,16 @@ func _use(camp: Node, who: String) -> bool:
 	return await _until(func() -> bool: return not camp._busy.has(who))
 
 
+## Walks a player onto the first loose piece and waits for it to land and be swept up.
+func _sweep_up(camp: Node, who: String) -> bool:
+	var bundles: Dictionary = camp.state.camp["bundles"]
+	if bundles.is_empty():
+		return false
+	var id: String = bundles.keys()[0]
+	_stand(camp, who, CampPack.bundle_pos(bundles[id]))
+	return await _until(func() -> bool: return not bundles.has(id))
+
+
 func _shore() -> Vector2:
 	for row: Dictionary in Tuning.table("clearing")["placements"]:
 		if row["model"] == "pond":
@@ -162,8 +172,12 @@ func test_three_days_of_play_from_the_buttons() -> String:
 		await _tree().process_frame
 		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.chop") % 3, false)):
 			why = "by a tree the prompt should offer to chop, got " + camp.get_node("Hud/Prompt").text
-		elif not await _use(camp, "p_host") or s.pack.count("p_host", "wood") != 1:
-			why = "interact by a tree should chop one wood into the Pack"
+		elif not await _use(camp, "p_host") or s.pack.count("p_host", "wood") != 0 or s.camp["bundles"].size() != 1:
+			why = "interact by a tree should pop one wood out onto the grass"
+		elif not camp.campers["p_host"].swinging() or not camp._airborne.has(s.camp["bundles"].keys()[0]):
+			why = "the camper should swing the axe and the wood should be in the air"
+		elif not await _sweep_up(camp, "p_host") or s.pack.count("p_host", "wood") != 1:
+			why = "walking over the landed wood should sweep it into the Pack"
 		elif not camp.get_node("Hud/Clock").text.contains(CampTasks.line({"id": "first_bench", "have": 0}, true)):
 			why = "the HUD's Today list should move on from the first chop, got " + camp.get_node("Hud/Clock").text
 	if why == "":
@@ -319,8 +333,13 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 		if why == "" and not await _use(camp, "p_host"):
 			why = "chop %d should work" % (i + 1)
 	var root: Node3D = camp.clearing.placed[index]
-	if why == "" and (root.get_child(0).visible or (camp._tree_props.get(index, []) as Array).size() != 2):
+	if why == "" and not (root.get_child(0).visible and root.get_child(0).has_meta("falling")):
+		why = "the felled tree should topple over before it hides"
+	if why == "" and (not await _until(func() -> bool: return not root.get_child(0).visible) \
+			or (camp._tree_props.get(index, []) as Array).size() != 2):
 		why = "the felled tree should hide, leaving a stump and a sapling beside it"
+	s.camp["bundles"] = {}
+	camp._sync_bundles()
 	if why == "":
 		camp._unhandled_input(_key("interact"))
 		if s.pack.first_of("p_host", "plant") != "sapling":
@@ -332,6 +351,26 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 		camp._unhandled_input(_key("interact"))
 		if s.gather.tree(index)["stage"] != "sapling" or (camp._tree_props.get(index, []) as Array).size() != 1:
 			why = "interact should plant the sapling at the stump, and show it"
+	# The shovel digs a bare stump up into a hole.
+	if why == "":
+		var other: Dictionary = {}
+		for t: Dictionary in CampGather.trees().slice(1):
+			var near := false
+			for i in CampGather.spots().size():
+				near = near or CampGather.spot_pos(i).distance_to(t["pos"]) < 3.0
+			if not near and other.is_empty():
+				other = t
+		var j := int(other["index"])
+		s.camp["trees"][str(j)] = {"chops": 0, "stage": "stump", "sapling_out": false, "planted": 0}
+		camp._sync_trees(false)
+		_stand(camp, "p_host", (other["pos"] as Vector2) + Vector2(1.0, 0.0))
+		camp.hold_tool("p_host", "shovel")
+		await _tree().process_frame
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.dig"), false)):
+			why = "with the shovel by a stump the prompt should offer to dig, got " + camp.get_node("Hud/Prompt").text
+		elif not await _use(camp, "p_host") or s.gather.tree(j)["stage"] != "hole" or s.camp["bundles"].size() != 1:
+			why = "interact with the shovel should dig the stump into a hole and pop out its roots"
+		camp.hold_tool("p_host", "hands")
 	# The clipboard: open, flip through every tab, put away.
 	if why == "":
 		camp._unhandled_input(_key("clipboard"))
