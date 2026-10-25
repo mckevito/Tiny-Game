@@ -117,7 +117,7 @@ Each passes before the next starts. No dates. Stages A to E replace the old Mile
 | 1 | Look and feel | Done: felt art proof, a first draft (signed off 25 Oct 2026) |
 | 2 | Two PCs, one camp | Done: host and join, carry and place, profile IDs, a whole-year camp save (signed off 25 Oct 2026) |
 | 3 | Couch and link codes | Couch drop-in and drop-out on the host's PC, dynamic split screen, a link code moves a character to the other PC |
-| A | Core proof | One pitch, one guest, day clock, sleep vote, nightly payout, grid placement with undo; a night pays exactly once, even after save, load or a reconnect |
+| A | Core proof | Done (signed off 25 Oct 2026): one pitch, one guest, day clock, sleep vote, nightly payout, grid placement with undo; a night pays exactly once, even after save, load or a reconnect |
 | B | Three-day fun test | Small requests, one improvement choice, a short advance booking, fishing or cooking, satisfaction lines, the morning report; both players want a fourth day and can explain the next booking |
 | C | Autumn chapter | 14 days of fall: tent pitches, washroom, water point, fire circle, the group campout, staff, a small shop, the first RV pad, weather looks, one together action; a lazy-play headless test still affords the RV loop; playable start to end on either input alone |
 | D | The other three seasons | Spring, summer and winter areas, events and visitors; dollhouse cabins on Cabin Hill; the camp rating; the lantern-night finale and the turn into year two |
@@ -162,3 +162,4 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   vote; the clock waits while the menu is open with no guest PC in; 40 starting coins, a pitch costs 25 and a night
   pays 15; one guest at a time, one night each, arriving from 9 am; undo is per player and clears each night; F1 runs
   the clock 30 times faster on the host.
+- 25 Oct 2026, owner: Stage A (core proof) is signed off.

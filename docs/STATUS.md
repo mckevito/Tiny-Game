@@ -117,8 +117,8 @@ not each confirmed by name; they stay open under "Still open".
 
 ### Still open
 - Not confirmed by name at sign-off: couch play with two DualSenses, a link code to the second PC, a Tailscale join,
-  and the fps on the weakest laptop (Light preset, split screen). Check them when the chance comes, at the latest at
-  Stage A's sign-off; a low fps there means tuning `data/graphics.json`.
+  and the fps on the weakest laptop (Light preset, split screen). Still not confirmed at Stage A's sign-off; check them
+  before Stage B's sign-off. A low fps there means tuning `data/graphics.json`.
 - **Proposed:** controllers are told apart by use: player one owns the keyboard, the mouse and every controller they
   have touched; a controller they haven't touched drops in with Options. If player one uses only the keyboard, the
   first controller to press Options drops in rather than opening player one's menu.
@@ -131,7 +131,8 @@ not each confirmed by name; they stay open under "Still open".
 - Frame rate on the weakest PC is not measured yet (the cloud has no GPU); the presets are a first guess.
 
 ## Stage A: Core proof
-Signed off: not yet. Built and tested in the cloud; waiting on the owner's try.
+Signed off: yes, 25 Oct 2026 (PR #10 merged; the owner: "i sign off"). The four Milestone 3 hands-on checks were not
+mentioned; they stay open under Milestone 3's "Still open".
 
 | Proof | Test | Result |
 |---|---|---|
@@ -145,7 +146,7 @@ Signed off: not yet. Built and tested in the cloud; waiting on the owner's try.
 | A night pays exactly once: a repeated or stale request, a save and load, and a guest PC leaving and rejoining (before or after the night) never pay it again; both PCs see the same coins | `test_day.test_a_night_pays_exactly_once`, `test_a_night_survives_save_and_load_without_paying_again`, `test_stage_a.test_a_night_pays_once_across_a_reconnect` | Passing |
 | The guest PC sees the host's clock, guest and coins, and builds and undoes through the host | `test_stage_a.test_the_guest_pc_sees_the_day_and_builds_through_the_host` | Passing |
 | A Milestone 3 save (version 1) is upgraded with the starting coins | `test_day.test_an_older_save_gets_the_starting_coins` | Passing |
-| The owner tries the stage | Owner's verdict | Waiting |
+| The owner tries the stage | Owner's verdict | Passed: signed off (owner, 25 Oct 2026) |
 
 ### How to try it
 1. Press F5, then **Play alone** or **Host a camp**. The top right shows the season, day, time and coins (40 to start).

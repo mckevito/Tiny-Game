@@ -69,3 +69,5 @@ Build owns how the game loads them.
   below the pitch's top; stops it: `ghost.lift_m` in data/build.json, checked in the `--stage-a` capture); the guest
   stood on the pitch's sign post (why: the stand offset was picked without a look; stops it: looking at the capture
   before the PR).
+- 25 Oct 2026: Stage A signed off by the owner (PR #10 merged, defaults approved). The four Milestone 3 hands-on
+  checks are still unconfirmed; carried to Stage B.

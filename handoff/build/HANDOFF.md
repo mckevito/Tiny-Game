@@ -1,11 +1,11 @@
-# Build hand-off, 25 Oct 2026 (Stage A built, waiting on the owner)
+# Build hand-off, 25 Oct 2026 (after Stage A)
 
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
    Never touches the reference repos. Until an `art` role starts, Build also owns the felt models (`data/models.json`).
 2. **State now:** Milestones 0 to 3 are signed off and merged (Milestone 3: PR #8, owner "works and looks good",
    25 Oct 2026). Four Milestone 3 checks were not confirmed by name (`docs/STATUS.md`, "Still open"). Stage A (core
-   proof) is built on its own branch and PR, waiting on the owner's try and merge.
+   proof) is merged (PR #10) and signed off by the owner, 25 Oct 2026.
    - Stage A: `scripts/camp/camp_day.gd` (CampDay: clock, calendar, sleep vote, `settle_night`, guests' stays) and
      `scripts/camp/camp_build.gd` (CampBuild: grid, build, pack, per-player undo) hang off `CampState` as `state.day`
      and `state.build` (held weakly, so no reference cycle). Numbers in `data/day.json` and `data/build.json`. A night
@@ -30,10 +30,10 @@
      main camera is player one's half, a SubViewport camera draws player two's half only while split.
    - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale.
 3. **Open work, in order:**
-   1. Stage A sign-off: the owner tries it (the defaults in STATUS "Still open" are approved) and
-      confirms the four Milestone 3 checks: two-DualSense couch, a link code, a Tailscale join, and the fps on the
-      weakest laptop (tune `data/graphics.json` from that).
-   2. Stage B (three-day fun test), after Stage A is merged and signed off.
+   1. Stage B (three-day fun test), when the owner says go.
+   2. Still unconfirmed from Milestone 3 (not mentioned at Stage A's sign-off): two-DualSense couch, a link code, a
+      Tailscale join, and the fps on the weakest laptop (tune `data/graphics.json` from that). Ask at Stage B's
+      sign-off at the latest.
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
    - `data/palette.json`: named swatches (the plan's five plus Proposed shades). Models use only these names.
