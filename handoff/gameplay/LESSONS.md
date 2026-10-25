@@ -50,3 +50,7 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   (seen in the dusk frame). Playtest then found the seats
   ran through the folding chairs at (±1.5, 1.0) and campers could stand on the stones (why: placed against the fire
   alone, not the chairs beside it; the seats now sit behind the fire and the collider grows with the ring).
+- 25 Oct 2026: first-minutes round 3: up to 3 walk-in guests, 2 nights each, plus the clipboard reading pose. Faults:
+  tests that slept one night to send a guest home had to loop over the nights (why: the stay length was assumed, not
+  read from the table; read `nights` from data in tests); a build in an old test hit the new arrival gap (why: the
+  clock minute carried over; set the minute in the test).

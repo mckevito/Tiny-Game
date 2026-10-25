@@ -219,6 +219,7 @@ func test_the_guest_pc_sees_the_day_and_builds_through_the_host() -> String:
 		why = "the guest PC's clock should match the host's"
 	if why == "":
 		var spot := CampBuild.snap(Vector2(-6, 5))
+		host.state.camp["calendar"]["minute"] = 0.0
 		_face_spot(guest, "p_guest", spot)
 		await _until(func() -> bool: return host.state.player_pos("p_guest").distance_to(Vector2(spot.x, spot.y + Tuning.num("build", "ahead_m"))) < 0.05)
 		host.state.camp["coins"] = 100
@@ -263,6 +264,8 @@ func test_a_night_pays_once_across_a_reconnect() -> String:
 		if not await _until(func() -> bool: return again.state != null):
 			why = "the guest could not rejoin"
 	if why == "":
+		for stay: Dictionary in host.state.camp["stays"].values():
+			stay["nights_left"] = 1
 		host.ask("sleep", [true])
 		if int(host.state.camp["last_settled"]) == night:
 			why = "the host alone should not start the night with the guest back in"

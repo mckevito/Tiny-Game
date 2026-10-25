@@ -407,6 +407,16 @@ like the board for events". Round 1 (PR #30) was merged by the owner on 25 Oct 2
 | The guest PC sees the board go up and the fire grow (the fire level is shared) | `test_projects.test_the_guest_pc_sells_and_gives_to_a_project_from_the_buttons` | Passing (checked by breaking it) |
 | Review frames: the three fire levels at dusk | `capture.gd --fire` (`first-minutes-g2/` in the project files) | Looked at |
 
+### First-minutes round 3: up to three guests at once, two nights each (25 Oct 2026)
+The owner's asks "more than just one camper" and "the campers stay longer", with the owner's pick: up to 3 guests at
+once, 2 nights each. Round 2 (PR #33) was merged by the owner on 25 Oct 2026.
+
+| Proof | Test | Result |
+|---|---|---|
+| Up to three walk-in guests stay at once, arriving one by one (a gap between arrivals on the same day), and a fourth pitch stays empty | `test_day.test_up_to_three_guests_come_one_by_one_and_stay_two_nights` | Passing (checked by breaking it) |
+| A guest stays two nights, pays each night and heads home on the second morning; bookings stay two nights and pay their bonus once | `test_day.test_up_to_three_guests_come_one_by_one_and_stay_two_nights`, `test_day`, `test_guests` | Passing |
+| While a player reads the clipboard their camper holds it up, on both PCs (for the Interface round's clipboard) | `test_stage_b.test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons`, `test_stage_b.test_the_guest_pc_fishes_gives_and_books_through_the_host` | Passing |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -475,6 +485,11 @@ like the board for events". Round 1 (PR #30) was merged by the owner on 25 Oct 2
 - Frame rate on the weakest laptop is still unmeasured; the first-minutes round adds at most a few short-lived pieces,
   12-bit puffs (CPU particles) and tweens per chop. Round 2 adds up to 10 animals (no lights or physics), stump,
   sapling, stick and berry models, and the clipboard panel.
+- **Proposed** first-minutes round 3 numbers and choices (data/day.json, data/guests.json, data/items.json): up to 3
+  walk-in guests at once (bookings come on top, as before), each staying 2 nights; a second guest comes no sooner than
+  40 game minutes after one arrived that day; the Fern family and the birdwatchers now stay 2 nights too. The
+  clipboard the camper reads is a plain felt stand-in (`clipboard_prop` in data/models.json) until the knitted one
+  from the Interface round replaces it. Three guests add three campers and three tents, no lights.
 
 ## Title screen and settings (quality of life, 25 Oct 2026)
 Asked for by the owner alongside Stage B: a landing page with Start game, an Options screen and controls. Waits on the

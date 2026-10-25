@@ -438,7 +438,7 @@ func _physics_process(delta: float) -> void:
 	_note_own_position()
 	for id in local_ids():
 		if campers.has(id):
-			(campers[id] as Camper).hold(tool_of(id))
+			(campers[id] as Camper).hold(held_by(id))
 	var hold := FeltBuilder.vec3(Tuning.value("tuning", "carry.hold_pos"))
 	var spots: Array[Vector3] = []
 	for c: Camper in campers.values():
@@ -458,7 +458,7 @@ func _physics_process(delta: float) -> void:
 			var me: Camper = campers.get(id)
 			if me:
 				for peer: int in ([1] if mode == Mode.GUEST else _guests.keys()):
-					_moved.rpc_id(peer, id, me.position, me.rotation.y, tool_of(id), _inside.has(id))
+					_moved.rpc_id(peer, id, me.position, me.rotation.y, held_by(id), _inside.has(id))
 
 
 func _process(delta: float) -> void:
@@ -1433,7 +1433,7 @@ func _moved(profile_id: String, pos: Vector3, yaw: float, tool: String, in_tent:
 	if c:
 		c.remote_target = pos
 		c.remote_yaw = yaw
-		c.hold(tool if tools().has(tool) else "hands")
+		c.hold(tool if tools().has(tool) or tool == "clipboard" else "hands")
 	if in_tent and not _inside.has(profile_id):
 		_lie_down(profile_id)
 	elif not in_tent and _inside.has(profile_id):
@@ -2277,6 +2277,12 @@ func _hold_camera() -> void:
 ## The tools every player cycles through (data/items.json tools.order).
 static func tools() -> Array:
 	return Tuning.value("items", "tools.order", ["hands"])
+
+
+## What a player on this PC holds up: the clipboard while theirs is open, else the tool in hand. The other PC sees it
+## through `_moved`.
+func held_by(who: String) -> String:
+	return "clipboard" if _boards.has(who) else tool_of(who)
 
 
 ## The tool a step needs in hand ("chop": the axe, "fish": the rod), or "" when any will do.
