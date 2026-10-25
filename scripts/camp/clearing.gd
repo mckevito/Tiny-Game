@@ -10,11 +10,13 @@ extends Node3D
 var fire_lights: Array[OmniLight3D] = []
 ## Meshes that dither away when they hide a player (data/models.json "fade").
 var faders: Array[MeshInstance3D] = []
+## The scenery placed from data/clearing.json "placements", by index (trees are chopped by this index).
+var placed: Array[Node3D] = []
 
 
 func _ready() -> void:
 	for row: Dictionary in Tuning.table("clearing").get("placements", []):
-		place(row)
+		placed.append(place(row))
 	if include_objects:
 		for row: Dictionary in Tuning.table("clearing").get("objects", []):
 			place(row)

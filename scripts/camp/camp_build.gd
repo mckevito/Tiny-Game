@@ -38,6 +38,30 @@ static func cost(kind: String) -> int:
 	return int(kinds().get(kind, {}).get("cost", 0))
 
 
+## Wood from the camp's pile a building costs (data/build.json kinds.<kind>.wood).
+static func wood_cost(kind: String) -> int:
+	return int(kinds().get(kind, {}).get("wood", 0))
+
+
+## A price as the player reads it: "25 coins", "5 wood" or "20 coins + 3 wood".
+static func cost_text(kind: String) -> String:
+	var parts: PackedStringArray = []
+	if cost(kind) > 0 or wood_cost(kind) == 0:
+		parts.append(Tuning.text("build.coins") % cost(kind))
+	if wood_cost(kind) > 0:
+		parts.append(Tuning.text("build.wood") % wood_cost(kind))
+	return " + ".join(parts)
+
+
+## "" when the camp can pay for `kind`, or the text key saying what it lacks.
+func afford(kind: String) -> String:
+	if int(state.camp.get("coins", 0)) < cost(kind):
+		return "deny.coins"
+	if int(state.camp.get("wood", 0)) < wood_cost(kind):
+		return "deny.wood"
+	return ""
+
+
 ## The grid point nearest to a spot on the ground.
 static func snap(pos: Vector2) -> Vector2:
 	var g := maxf(Tuning.num("build", "grid_m", 1.0), 0.01)
@@ -100,15 +124,15 @@ func check(kind: String, pos: Vector2, yaw_deg: float, ignore: String = "") -> S
 	return ""
 
 
-## Builds `kind` at the grid spot nearest `pos` for its cost in coins. Returns "" or a text key.
+## Builds `kind` at the grid spot nearest `pos` for its cost in coins and wood. Returns "" or a text key.
 func build(profile_id: String, kind: String, pos: Vector2, yaw_deg: float) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
 	pos = snap(pos)
 	yaw_deg = quarter(yaw_deg)
 	var why := check(kind, pos, yaw_deg)
-	if why == "" and int(state.camp.get("coins", 0)) < cost(kind):
-		why = "deny.coins"
+	if why == "":
+		why = afford(kind)
 	if why != "":
 		return why
 	var n := int(state.camp.get("next_object_id", 1))
@@ -121,6 +145,7 @@ func build(profile_id: String, kind: String, pos: Vector2, yaw_deg: float) -> St
 
 func _put(id: String, kind: String, pos: Vector2, yaw_deg: float) -> void:
 	state.camp["coins"] = int(state.camp.get("coins", 0)) - cost(kind)
+	state.camp["wood"] = int(state.camp.get("wood", 0)) - wood_cost(kind)
 	state.camp["objects"][id] = {"model": str(kinds()[kind]["model"]), "pos": [pos.x, pos.y], "yaw": yaw_deg}
 	last_id = id
 
@@ -137,6 +162,7 @@ func pack(profile_id: String, id: String, remember: bool = true) -> String:
 	var row: Dictionary = state.camp["objects"][id]
 	state.camp["objects"].erase(id)
 	state.camp["coins"] = int(state.camp.get("coins", 0)) + cost(kind)
+	state.camp["wood"] = int(state.camp.get("wood", 0)) + wood_cost(kind)
 	last_id = id
 	if remember:
 		_remember(profile_id, {"op": "pack", "id": id, "row": row})
@@ -161,8 +187,8 @@ func undo_last(profile_id: String) -> String:
 				kind = k
 		var pos := Vector2(float(row["pos"][0]), float(row["pos"][1]))
 		why = check(kind, pos, float(row["yaw"]))
-		if why == "" and int(state.camp.get("coins", 0)) < cost(kind):
-			why = "deny.coins"
+		if why == "":
+			why = afford(kind)
 		if why == "":
 			_put(step["id"], kind, pos, float(row["yaw"]))
 	if why == "":

@@ -15,12 +15,12 @@
   "prompt": {
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
-    "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {menu} for the menu",
+    "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {clipboard} clipboard · {menu} for the menu",
     "drop_in": "A friend can drop in: {menu} on a second controller",
     "for_player": "%s: %s",
-    "build_here": "{interact} Make a %s here (%d coins) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
+    "build_here": "{interact} Make a %s here (%s) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
     "build_blocked": "%s · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
-    "pack_here": "{interact} Pack away this %s (+%d coins) · {undo} undo · {build} done",
+    "pack_here": "{interact} Pack away this %s (+%s back) · {undo} undo · {build} done",
     "sleep_wait": "Ready for bed: %s (%d of %d). {menu} for the menu to join in.",
     "bed_open": "The evening is here. When you are ready, {menu} and choose Ready for bed.",
     "fish": "{interact} Fish",
@@ -30,7 +30,13 @@
     "give": "{interact} Give %s your %s",
     "pockets": "Pockets: %s",
     "pockets_for": "%s's pockets: %s",
-    "report_close": "{interact} Start the day"
+    "report_close": "{interact} Start the day",
+    "chop": "{interact} Chop wood (%d left in this tree)",
+    "chopping": "Chopping…",
+    "forage": "{interact} Pick up the %s",
+    "take_sapling": "{interact} Pick up the sapling",
+    "plant": "{interact} Plant a sapling here",
+    "log_alone": "Heavy! It goes faster with a friend beside you."
   },
   "menu": {
     "title": "Our Little Campground",
@@ -99,7 +105,13 @@
     "no_fish": "You need a fish to grill.",
     "nothing_to_give": "You have nothing they asked for.",
     "no_request": "They don't need anything right now.",
-    "no_booking": "That booking isn't on the board any more."
+    "no_booking": "That booking isn't on the board any more.",
+    "wood": "Not quite enough wood for that yet. The trees will give you some.",
+    "nothing_here": "There's nothing left here today.",
+    "no_wood": "The fire needs a piece of wood first. Chop a tree or pick up sticks.",
+    "no_tree": "This tree is down. Plant a sapling at its stump and it will grow back.",
+    "no_stump": "Saplings go in a bare stump.",
+    "no_sapling": "You need a sapling for that. A fallen tree drops one."
   },
   "toast": {
     "joined": "%s joined the camp.",
@@ -117,15 +129,25 @@
     "booking_later": "%s will come on %s instead.",
     "booking_declined": "You let %s know there's no room this time. No hard feelings.",
     "booking_arrived": "%s have arrived!",
-    "booking_offer": "A new booking is on the board: %s."
+    "booking_offer": "A new booking is on the board: %s.",
+    "chopped": "Chop! The wood pile has %d.",
+    "found": "You picked up the %s.",
+    "spotted_new": "You spotted a %s! It is in the journal now.",
+    "task_done": "Done: %s! +%d coins.",
+    "felled": "Timber! The tree fell and dropped a sapling by its stump.",
+    "planted": "Planted! It will be a tree again in a couple of mornings.",
+    "log_split": "The long log splits into %d wood for the pile!"
   },
   "build": {
     "pitch": "tent pitch",
     "water_point": "water point",
-    "lantern_post": "lantern post"
+    "lantern_post": "lantern post",
+    "log_bench": "log bench",
+    "coins": "%d coins",
+    "wood": "%d wood"
   },
   "clock": {
-    "line": "%s, day %d · %s · %d coins",
+    "line": "%s, day %d · %s · %d coins · %d wood",
     "time": "%d:%02d %s",
     "am": "am",
     "pm": "pm",
@@ -165,18 +187,23 @@
     "sunfish": "sunfish",
     "grilled_perch": "grilled perch",
     "grilled_trout": "grilled trout",
-    "grilled_sunfish": "grilled sunfish"
+    "grilled_sunfish": "grilled sunfish",
+    "berries": "berries",
+    "stick": "sticks",
+    "sapling": "sapling"
   },
   "request": {
     "say": {
       "fish": "A fresh fish, please!",
       "meal": "Something warm from the fire?",
-      "chair": "A chair by my tent?"
+      "chair": "Somewhere to sit by my tent?",
+      "berries": "Any wild berries about?"
     },
     "want": {
       "fish": "a fresh fish",
       "meal": "something grilled at the fire",
-      "chair": "a camp chair by their tent"
+      "chair": "a chair or a log bench by their tent",
+      "berries": "a handful of wild berries"
     }
   },
   "cause": {
@@ -238,7 +265,9 @@
     "today": "Today",
     "goal_quick": "Quick task: %s",
     "goal_project": "Project: %s",
-    "goal_dream": "Dream: %s"
+    "goal_dream": "Dream: %s",
+    "tomorrow": "Tomorrow: %s",
+    "welcome": "Welcome to the campground! It's your first morning. The Today list in the corner says what to try first; either of you can do any task, and each one done pays a little bonus."
   },
   "goal": {
     "request": "%s would love %s.",
@@ -249,5 +278,67 @@
     "pitch": "make another tent pitch for more guests.",
     "build": "save up for a %s (%d coins): %s.",
     "cosy": "make the camp cosier with chairs by the tents."
+  },
+  "hud": {
+    "today": "Today"
+  },
+  "task": {
+    "line": "%s (%d/%d) · %s",
+    "hud_line": "%s  %d/%d",
+    "first_sticks": "Pick up fallen sticks",
+    "first_chop": "Chop a tree for wood",
+    "first_bench": "Build a log bench",
+    "first_fish": "Catch a fish",
+    "first_grill": "Grill a fish at the fire",
+    "first_pitch": "Make a new tent pitch",
+    "chop_wood": "Chop wood",
+    "catch_fish": "Catch fish",
+    "gather": "Gather what the woods left out",
+    "grill_meals": "Grill meals",
+    "help_guests": "Help guests with what they asked for",
+    "spot_animals": "Spot the animals",
+    "pick_berries": "Pick wild berries",
+    "place": {
+      "edges": "at the edges of the clearing",
+      "trees": "by the trees",
+      "fire": "by the fire",
+      "pond": "at the pond",
+      "pitches": "at the pitches",
+      "stumps": "at a stump",
+      "woods": "from the edge of the woods"
+    },
+    "first_plant": "Plant a sapling at a stump",
+    "plant_trees": "Plant saplings",
+    "bring_log": "Bring the long log to the fire (easier together)"
+  },
+  "news": {
+    "day_2": "berries ripen on the bushes, and deer visit the edge of the woods at dawn and dusk.",
+    "day_3": "the Fern family arrive if you took their booking, and someone big and fluffy may come to sit by the fire after dark. Friendly, they say.",
+    "day_5": "the birdwatchers arrive if you took their booking."
+  },
+  "animal": {
+    "rabbit": "rabbit",
+    "squirrel": "squirrel",
+    "deer": "deer",
+    "bear": "bear"
+  },
+  "clipboard": {
+    "tab": {
+      "today": "Today",
+      "bookings": "Bookings",
+      "supplies": "Supplies"
+    },
+    "open_tab": "[ %s ]",
+    "hint": "{tabs} turn the page · {clipboard} put it away",
+    "answer": "Answer a new booking from the menu ({menu}).",
+    "staying": "Staying now",
+    "nobody": "Nobody yet. Guests come to a free pitch in the afternoon.",
+    "stay": "%s at the %s: would like %s",
+    "content": "nothing more, happy as can be",
+    "stock": "Wood pile: %d · Coins: %d",
+    "pockets": "%s's pockets: %s",
+    "empty": "empty",
+    "animals": "Animals spotted: %d of %d (%s)",
+    "none_yet": "none yet"
   }
 }

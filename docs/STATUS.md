@@ -169,7 +169,8 @@ mentioned; they stay open under Milestone 3's "Still open".
 - Frame rate on the weakest laptop is still unmeasured; Stage A adds a few models and one ghost, nothing heavy.
 
 ## Stage B: Three-day fun test
-Signed off: not yet. Built 25 Oct 2026 from the owner's approved picks (decision log); waits on the owner's play.
+Signed off: not yet. Built 25 Oct 2026 from the owner's approved picks (decision log). After the first play the owner
+found days 1 to 3 blank (decision log), so round 2 below fills them; sign-off waits on playing round 2.
 
 | Proof | Test | Result |
 |---|---|---|
@@ -185,6 +186,28 @@ Signed off: not yet. Built 25 Oct 2026 from the owner's approved picks (decision
 | A test that hits a script error fails (it used to pass) | `tests/run_tests.gd` (engine log listener) | Checked by breaking a test on purpose |
 | Review frames: pitches with guests and their requests (day and dusk), fishing, the morning report | `tools/capture.gd --stage-b` | Looked at |
 | Both players want a fourth day and can explain the next booking | Owner's play | Waiting on the owner |
+
+### Round 2: fuller first days (25 Oct 2026)
+From the owner's feedback and the research report (Cozy first days and clipboard, in the project files), scope
+"items 1-6, map later" (owner's pick). The clipboard's map tab comes next round.
+
+| Proof | Test | Result |
+|---|---|---|
+| A tree gives a few wood, then falls: a stump stays and a sapling drops beside it (it waits there while pockets are full); planted at a bare stump it grows back in a couple of mornings | `test_gather.test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted` | Passing |
+| Forage spots refill each morning: sticks go onto the wood pile, berries into the pockets from day 2 | `test_gather.test_forage_spots_refill_each_morning_and_berries_wait_for_day_two` | Passing |
+| Wood is spent: the log bench costs wood (packing gives it back) and grilling burns one | `test_gather.test_the_log_bench_costs_wood_and_packing_gives_it_back`, `test_guests.test_fishing_and_grilling_fill_the_pockets_and_never_fail` | Passing |
+| The Today list: the firsts teach day 1 in order (sticks, chop, bench, fish, grill, pitch, plant), each pays a bonus, then daily tasks cycle; either player's step counts | `test_gather.test_the_today_list_teaches_with_firsts_then_cycles_daily_tasks` | Passing |
+| Felt animals: rabbits and squirrels by day, deer at dawn and dusk from day 2, a bear who sits by the fire in the evening from day 3; they hop away from players, never threaten, are capped for the laptop, and spotting one goes in the journal | `test_gather.test_animals_keep_their_hours_and_days` | Passing |
+| The long log: one lies at the woods' edge each morning; carried alone it is slow, with a friend beside it full pace; set down by the fire it splits into wood | `test_gather.test_the_long_log_goes_faster_together_and_splits_by_the_fire` | Passing |
+| From the buttons: chop (the HUD's Today list moves on), grill with wood, fell a tree, pick up and plant its sapling, the clipboard's three tabs, the long log to the fire; the morning report says what is new tomorrow | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_stage_b.test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons` | Passing |
+| Review frames: the welcome report, the animals by day and the bear at dusk, chopping, a stump with its sapling, the long log and the clipboard | `tools/capture.gd --stage-b` | Looked at |
+| Days 1 to 3 feel full, and both players want a fourth day | Owner's play | Waiting on the owner |
+
+How to try round 2 (a new slot): the welcome report lists the Today tasks. Pick up stick piles (E), chop a tree (E
+by its trunk; three chops fell it), pick up its sapling and plant it at the stump, build a log bench (B, then C to
+pick it), fish and grill. J (Touchpad) opens your clipboard; Q and R (L1 and R1) turn its pages; J again puts it
+away. The long log lies at the west edge: carry it to the fire, faster with your friend beside you. Look for the
+rabbits and squirrels, the deer at dawn and dusk from day 2, and the bear by the fire after 6 pm from day 3.
 
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
@@ -206,5 +229,11 @@ Signed off: not yet. Built 25 Oct 2026 from the owner's approved picks (decision
   pockets hold 6; a cast takes 2.5 s and grilling 2 s; next kind is C or D-pad right.
 - The four Milestone 3 hands-on checks (two DualSense couch, a link code, a Tailscale join, fps on the weakest
   laptop) are still unconfirmed; ask at this stage's sign-off.
-- Wood is not used yet (Stage C, with the shop and staff). Guests still walk in a straight line.
-- Frame rate on the weakest laptop is still unmeasured; Stage B adds two small models, a bobber and a 2D panel.
+- **Proposed** round 2 numbers (data/gather.json, data/tasks.json, data/wildlife.json, data/build.json): a tree gives
+  3 wood and regrows 2 mornings after planting; a chop takes 0.8 s; 4 stick piles a day and 3 berry bushes from day 2;
+  grilling burns 1 wood; the log bench costs 5 wood and no coins; the long log gives 6 wood, goes at 45% pace alone
+  and full pace with a friend within 2.2 m; up to 4 Today tasks, bonuses 3 to 5 coins; at most 10 animals, spotted
+  within 5 m; the clipboard is J or the Touchpad. A new berries request (tip 4) opens on day 2.
+- Guests still walk in a straight line. The clipboard's map tab with plan marks is the next round.
+- Frame rate on the weakest laptop is still unmeasured; round 2 adds up to 10 animals (no lights or physics), stump,
+  sapling, stick and berry models, and the clipboard panel.

@@ -40,6 +40,10 @@ func _num(key: String, fallback: float) -> float:
 	return Tuning.num("tuning", "camera." + key, fallback)
 
 
+## True while the turn buttons do something else (they flip the clipboard's tabs).
+var hold_turn := false
+
+
 ## Meshes that fade when they hide the target (data/models.json "fade").
 func set_faders(meshes: Array[MeshInstance3D]) -> void:
 	_faders = meshes
@@ -51,8 +55,9 @@ func _process(delta: float) -> void:
 		distance = leader.distance
 		extra_distance = leader.extra_distance
 	else:
-		yaw += (Input.get_action_strength("camera_right") - Input.get_action_strength("camera_left")) \
-				* deg_to_rad(_num("yaw_speed_deg_s", 90.0)) * delta
+		if not hold_turn:
+			yaw += (Input.get_action_strength("camera_right") - Input.get_action_strength("camera_left")) \
+					* deg_to_rad(_num("yaw_speed_deg_s", 90.0)) * delta
 		if Input.is_action_just_pressed("zoom_in"):
 			_want_distance -= _num("zoom_step_m", 1.0)
 		if Input.is_action_just_pressed("zoom_out"):

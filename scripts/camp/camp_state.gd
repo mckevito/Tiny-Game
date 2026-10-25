@@ -7,7 +7,8 @@ extends RefCounted
 ## The camp save (see CampSave), or on a guest the part of it the host shared.
 var camp: Dictionary
 ## The parts of the camp a guest PC mirrors besides objects and profiles: the day, the coins and the guests.
-const SHARED: Array[String] = ["calendar", "coins", "wood", "stays", "last_settled", "ledger", "reservations"]
+const SHARED: Array[String] = ["calendar", "coins", "wood", "stays", "last_settled", "ledger", "reservations", "tasks",
+		"trees", "forage", "journal"]
 ## Object id -> profile id of whoever carries it. Not saved: a carried thing stays at its last spot in the save.
 var carriers := {}
 ## Profile ids of the players in the camp right now.
@@ -18,6 +19,9 @@ var build: CampBuild
 ## Stage B: requests, satisfaction and bookings (CampGuests), and fishing and grilling (CampPockets).
 var guests: CampGuests
 var pockets: CampPockets
+## Stage B round 2: chopping and forage (CampGather), and the Today list (CampTasks).
+var gather: CampGather
+var tasks: CampTasks
 
 
 func _init(data: Dictionary) -> void:
@@ -34,6 +38,8 @@ func _init(data: Dictionary) -> void:
 	build = CampBuild.new(self)
 	guests = CampGuests.new(self)
 	pockets = CampPockets.new(self)
+	gather = CampGather.new(self)
+	tasks = CampTasks.new(self)
 
 
 static func _num(key: String) -> float:

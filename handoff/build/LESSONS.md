@@ -80,3 +80,12 @@ Build owns how the game loads them.
   an empty panel (why: an autowrapped label with no width; stops it: the label gets a minimum width, HANDOFF trap,
   checked in the `--stage-b` capture); the first capture showed no guests (why: a pitch spot was blocked by a bush, so
   the booking rightly waited; stops it: the capture prints any refused build, and known good spots are in HANDOFF).
+- 25 Oct 2026: Stage B round 2 (owner: days 1 to 3 felt blank): research first (report in the project files), then a
+  Today list whose firsts teach day 1, chopping with trees that fall and get replanted (owner's Animal Crossing ask),
+  daily sticks and berries, the log bench, felt animals, a per-player clipboard and a long log that goes faster
+  carried together. Faults found: the morning "tomorrow" line never showed (why: JSON numbers are floats and
+  `Array.has(int)` is false; stops it: compare with `int()`, HANDOFF trap, the scene test checks the line); grilling
+  stopped working (why: the busy step passed the interact arg on to a request that takes none; stops it: only chop
+  passes its arg, HANDOFF trap, the button test grills). Lesson: a playtest with nothing to do needed many small
+  things to do at once, not one big system; building the shared part while the owner chose saved a round.
+

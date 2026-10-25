@@ -3,7 +3,7 @@
   "port": 24680,
   "max_players": 2,
   "spare_connections": 1,
-  "protocol": 3,
+  "protocol": 4,
   "send_rate_hz": 20,
   "remote_smoothing": 14.0,
   "remote_snap_m": 4.0,

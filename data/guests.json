@@ -1,11 +1,12 @@
 {
-  "_about": "Stage B's guests (scripts/camp/camp_guests.gd): small requests, how a stay is scored, and advance bookings. Every guest brings one request, picked in turn from request_order. A request with give is met by handing the guest an item of that kind from your pockets (data/fishing.json items) within talk_reach_m of where they stand; a request with near is met when one of those models stands within radius_m of their pitch. A met request pays its tip at once. When a stay ends, it is scored once: each satisfaction source met is one point (near: one of the models within radius_m of the pitch, from the camp's objects or the clearing's scenery; request: the guest's request was met), the guest tips tip_per_point coins a point, and moods names the mood from that many points up. The guest's line names the first source met as what they loved and the first missed as what they wished for. bookings are offered on offer_day (a day number, day 1 is the first morning) for arrive_day; accepted, they arrive from data/day.json stays.arrive_hour on that day or the first day after it with essential.pitches free pitches, and wait patiently until then. Each optional build standing in the camp when they arrive adds its bonus to their first night. Names live in data/text.json booking.<id>.",
+  "_about": "Stage B's guests (scripts/camp/camp_guests.gd): small requests, how a stay is scored, and advance bookings. Every guest brings one request, picked in turn from request_order among those open today (from_day, a day number). A request with give is met by handing the guest an item of that kind from your pockets (data/fishing.json items) within talk_reach_m of where they stand; a request with near is met when one of those models stands within radius_m of their pitch. A met request pays its tip at once. When a stay ends, it is scored once: each satisfaction source met is one point (near: one of the models within radius_m of the pitch, from the camp's objects or the clearing's scenery; request: the guest's request was met), the guest tips tip_per_point coins a point, and moods names the mood from that many points up. The guest's line names the first source met as what they loved and the first missed as what they wished for. bookings are offered on offer_day (a day number, day 1 is the first morning) for arrive_day; accepted, they arrive from data/day.json stays.arrive_hour on that day or the first day after it with essential.pitches free pitches, and wait patiently until then. Each optional build standing in the camp when they arrive adds its bonus to their first night. Names live in data/text.json booking.<id>.",
   "talk_reach_m": 2.2,
-  "request_order": ["fish", "chair", "meal"],
+  "request_order": ["fish", "chair", "berries", "meal"],
   "requests": {
     "fish": {"give": "fish", "tip": 4},
     "meal": {"give": "meal", "tip": 6},
-    "chair": {"near": ["chair_teal", "chair_honey"], "radius_m": 3.2, "tip": 3}
+    "chair": {"near": ["chair_teal", "chair_honey", "log_bench"], "radius_m": 3.2, "tip": 3},
+    "berries": {"give": "fruit", "tip": 4, "from_day": 2}
   },
   "satisfaction": {
     "radius_m": 6.0,
@@ -13,7 +14,7 @@
     "moods": [[0, "okay"], [2, "happy"], [4, "delighted"]],
     "sources": [
       {"factor": "comfort", "cause": "water", "near": ["water_point"]},
-      {"factor": "comfort", "cause": "chair", "near": ["chair_teal", "chair_honey"], "radius_m": 3.2},
+      {"factor": "comfort", "cause": "chair", "near": ["chair_teal", "chair_honey", "log_bench"], "radius_m": 3.2},
       {"factor": "things_to_do", "cause": "request", "request": true},
       {"factor": "things_to_do", "cause": "pond", "near": ["pond"], "radius_m": 8.0},
       {"factor": "atmosphere", "cause": "lantern", "near": ["lantern_post"]},

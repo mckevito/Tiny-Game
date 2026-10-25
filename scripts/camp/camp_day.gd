@@ -138,6 +138,7 @@ func settle_night() -> Dictionary:
 		stays.erase(id)
 	state.guests.finish_departed()
 	_next_morning()
+	state.gather.new_day()
 	state.guests.refresh_offers()
 	votes.clear()
 	state.build.undo.clear()
@@ -183,7 +184,7 @@ func maybe_arrive() -> String:
 	var id := "stay_%d" % n
 	state.camp["stays"][id] = {"pitch": free[0], "name": str(names[n % names.size()]),
 			"look": str(looks[n % looks.size()]), "nights_left": int(_n("stays.nights", 1)), "arrived": today(),
-			"request": CampGuests.new_request(n)}
+			"request": CampGuests.new_request(n, today())}
 	return id
 
 
