@@ -51,3 +51,8 @@ All of `handoff/build/LESSONS.md` "Owner rules" apply. For art especially:
   same file byte for byte) and the review scripts into `art/tools/`. Lesson: keep review tools in the repo from the
   first round; scratch copies die with the session. Measuring again after the new stitch showed the knit parts 5 to
   9% darker than the sheet (more shade between stitches); the two teals were lifted to match.
+- 25 Oct 2026, player two's camper (a test of whether a medium-effort thread can repeat the recipe): following
+  `art/RECIPE.md` took two review rounds. The recipe covered the body and the knit, but not a model without its own
+  sheet, or hair with no hat over it; both are now in the recipe ("A sibling or variant"). Faults found by looking:
+  the first round rendered under OpenGL (the hook's Vulkan install had failed quietly), so its colours were wrong;
+  `olive_felt` trousers read as a bright green next to the mustard sweater.
