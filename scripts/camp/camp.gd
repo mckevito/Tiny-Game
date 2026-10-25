@@ -37,16 +37,17 @@ var campers := {}
 var objects := {}
 ## Host only: connection id -> profile id, for guests that said hello.
 var _guests := {}
-## The couch player on this PC ("" when none) and the controller it owns.
+## The couch player on this PC ("" when none) and the device it owns (a controller or PlayerInput.KEYS; -1 when none).
 var couch_id := ""
 var couch_pad := -1
-## Controllers player one has used; any other controller can drop in.
-var _p1_pads: Array[int] = []
-## Player one's devices: the keyboard, the mouse and every other controller (only their own while on the keyboard).
-var _p1_input := PlayerInput.new(-1, [], _p1_pads)
-## True while player one's last press came from the keyboard or mouse: then any controller's menu button drops in a
-## second player, and a controller player one has not used neither steers them nor becomes theirs.
-var _p1_on_keys := false
+## Player one's device: PlayerInput.ANY (every device, while alone and not set on the Players page), KEYS or a
+## controller. On the couch each player has exactly one.
+var p1_device := PlayerInput.ANY
+## The device player one pressed last while on ANY (ANY before their first press): another controller's menu button
+## drops in a second player, theirs opens their menu.
+var _p1_last := PlayerInput.ANY
+## "p1" or "p2" while the Players page waits for a press on the device that player should get.
+var _picking := ""
 ## Whose menu is open ("" when closed).
 var _menu_for := ""
 var _link_code := ""
@@ -165,6 +166,20 @@ func _on_menu(action: String) -> void:
 		"resume": _close_menu()
 		"leave": stop("")
 		"leave_couch": drop_out(couch_id)
+		"players": _show_players()
+		"players_p1", "players_p2":
+			_picking = "p1" if action == "players_p1" else "p2"
+			_show_players(Tuning.text("menu.players_press") % Tuning.text(
+					"menu.player_one" if _picking == "p1" else "menu.player_two"))
+		"players_swap":
+			swap_devices()
+			_show_players()
+		"players_nobody":
+			var back := _menu_for if _menu_for != couch_id else str(profile["id"])
+			drop_out(couch_id)
+			if not menu.visible:
+				_open_menu(back)
+			_show_players()
 		"sleep":
 			var who := _menu_for
 			_close_menu()
@@ -389,7 +404,7 @@ func _spawn_camper(id: String) -> void:
 	add_child(c)
 	campers[id] = c
 	if id == profile.get("id", ""):
-		_sync_p1_input()
+		_sync_inputs()
 
 
 func _remove_camper(id: String) -> void:
@@ -471,7 +486,7 @@ func _process(delta: float) -> void:
 			var line := _build_prompt(id) if _building.has(id) else _carry_prompt(id)
 			if line == "":
 				continue
-			line = Prompts.fill(line, _pad if id == profile["id"] else true)
+			line = Prompts.fill(line, _glyph(id))
 			lines.append(Tuning.text("prompt.for_player") % [state.camp["profiles"][id]["name"], line] \
 					if couch_id != "" else line)
 		var bed := _bed_line()
@@ -594,57 +609,64 @@ func apply_quality(preset: String, keep: bool = true) -> void:
 
 # --- Input -------------------------------------------------------------------------------------------------------
 
-## Sees every controller event before the menus do: a controller player one has not used drops in with the menu
-## button; any other controller that player one touches becomes theirs. While player one is on the keyboard and mouse,
-## the keyboard and mouse are their device: every controller's menu button drops in, and other controllers stay free.
+## Sees every event before the menus do: the Players page's device pick, then a controller's menu button that drops in
+## a second player (any controller but the one player one is on), and drops the presses of devices nobody owns.
 func _input(event: InputEvent) -> void:
-	var from_keys: Variant = Prompts.device_of(event)
-	if from_keys == false and event.is_pressed() and not _p1_on_keys:
-		_set_p1_on_keys(true)
-	elif from_keys == true and _p1_on_keys and _p1_pads.has(event.device) and not event.is_action_pressed("menu"):
-		_set_p1_on_keys(false)
+	var device := PlayerInput.device_of(event)
+	var press := event.is_pressed() and not event.is_echo() and device != PlayerInput.ANY \
+			and not event is InputEventJoypadMotion
+	if _picking != "" and press:
+		get_viewport().set_input_as_handled()
+		var who := _picking
+		_picking = ""
+		set_device(who, device)
+		return
 	# The menu button closes the in-camp menu before its focused button sees it (Godot's focus moves on Tab).
 	if state != null and menu.visible and menu.page() == "pause" and event.is_action_pressed("menu"):
 		_close_menu()
 		get_viewport().set_input_as_handled()
 		return
-	if not (event is InputEventJoypadButton or event is InputEventJoypadMotion) or event.device == couch_pad:
-		return
-	var free := not _p1_pads.has(event.device)
-	if event.is_action_pressed("menu") and (free or _p1_on_keys) and state != null and not menu.visible:
-		var why := drop_in(event.device)
+	var p1_now := p1_device if p1_device != PlayerInput.ANY else _p1_last
+	if event.is_action_pressed("menu") and device >= 0 and device != couch_pad and p1_now != PlayerInput.ANY \
+			and device != p1_now and state != null and not menu.visible:
+		var why := drop_in(device)
 		if why != "couch.not_now":
 			if why != "":
 				_toast(Tuning.text(why))
 			get_viewport().set_input_as_handled()
 			return
-	if free and _p1_on_keys:
-		if state != null:
-			get_viewport().set_input_as_handled()
-		return
-	if from_keys == true and free:
-		_p1_pads.append(event.device)
+	# Alone on every device, player one moves to the one they press; a stick counts until they touch the keyboard,
+	# so a friend nudging a controller does not take it from a keyboard player.
+	if p1_device == PlayerInput.ANY and device != PlayerInput.ANY and (press or (Prompts.device_of(event) == true
+			and _p1_last != PlayerInput.KEYS)):
+		_p1_last = device
+	if state != null and owner_of(event) == "" and not event.is_action_pressed("dev_menu"):
+		get_viewport().set_input_as_handled()
 
 
-func _set_p1_on_keys(on: bool) -> void:
-	_p1_on_keys = on
-	_p1_input.free_pads = not on
-	_sync_p1_input()
+## Each local player's camper reads its own device: player one on ANY reads every action as before.
+func _sync_inputs() -> void:
+	var me := str(profile.get("id", ""))
+	if campers.has(me):
+		campers[me].input = null if p1_device == PlayerInput.ANY else PlayerInput.new(p1_device)
+	if couch_id != "" and campers.has(couch_id):
+		campers[couch_id].input = PlayerInput.new(couch_pad)
 
 
-## Player one reads their own devices (PlayerInput) when the couch is shared or they are on the keyboard; alone on a
-## controller they read every action as before.
-func _sync_p1_input() -> void:
-	if campers.has(profile.get("id", "")):
-		campers[profile["id"]].input = _p1_input if couch_id != "" or _p1_on_keys else null
-
-
-## Which local player an event belongs to: the couch player for their controller, player one for everything else.
+## Which local player an event belongs to: the couch player for their device, player one for theirs (or every device
+## while alone), and "" for a device nobody on this PC owns.
 func owner_of(event: InputEvent) -> String:
-	if couch_id != "" and (event is InputEventJoypadButton or event is InputEventJoypadMotion) \
-			and event.device == couch_pad:
+	var device := PlayerInput.device_of(event)
+	if couch_id != "" and device == couch_pad:
 		return couch_id
-	return str(profile.get("id", ""))
+	if device == PlayerInput.ANY or p1_device == PlayerInput.ANY or device == p1_device:
+		return str(profile.get("id", ""))
+	return ""
+
+
+## Whether this player's prompts show controller glyphs.
+func _glyph(who: String) -> bool:
+	return _pad if who == profile.get("id", "") else couch_pad != PlayerInput.KEYS
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -656,7 +678,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		$Hud/Dev.visible = not $Hud/Dev.visible
 		_dev_clock = 0.0
 		return
-	if state == null:
+	if state == null or who == "":
 		return
 	if _bench.has(who) and not menu.visible:
 		if event.is_action_pressed("next_kind") or event.is_action_pressed("camera_right"):
@@ -756,6 +778,7 @@ func _open_menu(who: String = "") -> void:
 
 func _close_menu() -> void:
 	menu.visible = false
+	_picking = ""
 	if campers.has(_menu_for):
 		campers[_menu_for].controlled = not (_bench.has(_menu_for) or _packs.has(_menu_for))
 	_menu_for = ""
@@ -791,16 +814,82 @@ func drop_in(pad: int) -> String:
 		p["link_code"] = state.new_link_code()
 	couch_id = id
 	couch_pad = pad
-	_p1_pads.erase(pad)
-	_p1_input.taken.assign([pad])
+	_fix_p1_device()
 	_spawn_camper(id)
-	campers[id].input = PlayerInput.new(pad)
-	_sync_p1_input()
+	_sync_inputs()
 	var both: Array[Camper] = [campers[profile["id"]], campers[id]]
 	couch.follow(both)
 	_toast(Tuning.text("toast.dropped_in") % p["name"])
 	save_camp()
 	return ""
+
+
+## On the couch player one keeps one device: the one they last pressed, or whichever the couch player does not have.
+func _fix_p1_device() -> void:
+	if p1_device == PlayerInput.ANY:
+		p1_device = _p1_last
+	if p1_device == PlayerInput.ANY or p1_device == couch_pad:
+		p1_device = PlayerInput.KEYS
+		if couch_pad == PlayerInput.KEYS:
+			var pads := Input.get_connected_joypads()
+			p1_device = pads[0] if not pads.is_empty() else 0
+
+
+## Gives player one ("p1") or player two ("p2") a device (PlayerInput.KEYS or a controller), from the Players page.
+## The other player's device swaps; player two's first device drops them in. Returns "" or a text key saying why not.
+func set_device(who: String, device: int) -> String:
+	var why := ""
+	if device == PlayerInput.ANY:
+		why = "menu.players_none"
+	elif who == "p1":
+		if couch_id != "" and device == couch_pad:
+			swap_devices()
+		else:
+			p1_device = device
+			_p1_last = device
+	elif couch_id == "":
+		if device == (p1_device if p1_device != PlayerInput.ANY else _p1_last):
+			why = "menu.players_taken"
+		else:
+			why = drop_in(device)
+	elif device == p1_device:
+		swap_devices()
+	else:
+		couch_pad = device
+	_sync_inputs()
+	if why != "":
+		_toast(Tuning.text(why))
+	if menu.visible and menu.page() == "players":
+		_show_players()
+	return why
+
+
+## Player one and the couch player trade devices.
+func swap_devices() -> void:
+	if couch_id == "":
+		return
+	var mine := p1_device
+	p1_device = couch_pad
+	couch_pad = mine
+	_sync_inputs()
+
+
+func _device_name(device: int) -> String:
+	if device == PlayerInput.KEYS:
+		return Tuning.text("menu.device_keys")
+	if device >= 0:
+		return Tuning.text("menu.device_pad") % (device + 1)
+	return Tuning.text("menu.device_any")
+
+
+func _show_players(message: String = "") -> void:
+	var lines: PackedStringArray = [Tuning.text("menu.players_line") % [Tuning.text("menu.player_one"),
+			_device_name(p1_device)],
+		Tuning.text("menu.players_line") % [Tuning.text("menu.player_two"),
+			_device_name(couch_pad) if couch_id != "" else Tuning.text("menu.device_nobody")]]
+	if message != "":
+		lines.append(message)
+	menu.show_players("\n".join(lines), couch_id != "")
 
 
 ## The couch player leaves this PC; their character, Pack and spot wait in the save. Anything they carried goes
@@ -828,8 +917,8 @@ func drop_out(id: String) -> void:
 func _end_couch() -> void:
 	couch_id = ""
 	couch_pad = -1
-	_p1_input.taken.clear()
-	_sync_p1_input()
+	p1_device = PlayerInput.ANY
+	_sync_inputs()
 	couch.follow([] as Array[Camper])
 
 
@@ -840,10 +929,9 @@ func _on_joy_connection(device: int, connected: bool) -> void:
 	var name: String = state.camp["profiles"][couch_id]["name"]
 	if not connected and device == couch_pad:
 		_toast(Tuning.text("toast.pad_asleep") % name)
-	elif connected and not Input.get_connected_joypads().has(couch_pad) and not _p1_pads.has(device):
+	elif connected and couch_pad >= 0 and not Input.get_connected_joypads().has(couch_pad) and device != p1_device:
 		couch_pad = device
-		_p1_input.taken.assign([device])
-		campers[couch_id].input = PlayerInput.new(device)
+		_sync_inputs()
 		_toast(Tuning.text("toast.pad_back") % name)
 
 
@@ -1935,7 +2023,7 @@ func _refresh_boards() -> void:
 			continue
 		var board: Clipboard = _boards[who]
 		board.show_text(clipboard_text(who, board.tab_name()), Prompts.fill(Tuning.text("clipboard.hint"),
-				_pad if who == profile["id"] else true))
+				_glyph(who)))
 		_fit_panel(board, who)
 
 
@@ -1955,7 +2043,7 @@ func clipboard_text(who: String, tab: String) -> String:
 					any = true
 			if not any:
 				lines.append(Tuning.text("report.none"))
-			lines.append(Prompts.fill(Tuning.text("clipboard.answer"), _pad if who == profile["id"] else true))
+			lines.append(Prompts.fill(Tuning.text("clipboard.answer"), _glyph(who)))
 			lines.append("")
 			lines.append(Tuning.text("clipboard.staying"))
 			if (state.camp["stays"] as Dictionary).is_empty():
@@ -2057,7 +2145,7 @@ func _refresh_docks() -> void:
 			_docks[who] = made
 		var dock: HudDock = _docks[who]
 		dock.dock(couch_id != "" and who != couch_id)
-		var pad: Variant = _pad if who == profile["id"] else true
+		var pad: Variant = _glyph(who)
 		var kinds := state.build.available()
 		var tool_names: Array[String] = []
 		for t in tools():
@@ -2226,7 +2314,7 @@ func _refresh_packs() -> void:
 			continue
 		var panel: PackPanel = _packs[who]["panel"]
 		panel.show_pack(Tuning.text("pack.title") % state.camp["profiles"][who]["name"], state.pack.slots(who),
-				int(_packs[who]["pick"]), Prompts.fill(Tuning.text("pack.hint"), _pad if who == profile["id"] else true))
+				int(_packs[who]["pick"]), Prompts.fill(Tuning.text("pack.hint"), _glyph(who)))
 
 
 ## Dropped bundles on screen follow the camp's. A loose piece new since the last look pops out of its tree in an arc
@@ -2475,7 +2563,7 @@ func _refresh_bench() -> void:
 			continue
 		var panel: Clipboard = _bench[who]["panel"]
 		panel.show_text(bench_text(who, int(_bench[who]["pick"])), Prompts.fill(Tuning.text("bench.hint"),
-				_pad if who == profile["id"] else true))
+				_glyph(who)))
 		_fit_panel(panel, who)
 
 

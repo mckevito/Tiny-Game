@@ -1,45 +1,50 @@
 class_name PlayerInput
 extends RefCounted
-## One player's share of the input devices, for couch play. Player one has the keyboard, the mouse and every
-## controller that is not someone else's (only the ones they have used while they are on the keyboard); a couch player
-## has exactly one controller. Reads the bindings in
-## data/input.json (with this PC's remaps, InputSetup.row) for those devices only, so a second controller never steers player one.
+## One player's share of the input devices, for couch play. Alone, player one has every device (ANY); on the couch
+## each player has exactly one: the keyboard and mouse (KEYS) or one controller. Reads the bindings in data/input.json
+## (with this PC's remaps, InputSetup.row) for those devices only, so the other player's device never steers them.
 
-## The controller this player owns, or -1 for player one (keyboard, mouse and every free controller).
-var pad := -1
-## Controllers owned by other players; player one skips them. Shared with the camp, which fills it.
+## Every device not taken by someone else.
+const ANY := -1
+## The keyboard and mouse.
+const KEYS := -2
+
+## The device this player owns: a controller (0 and up), KEYS, or ANY.
+var pad := ANY
+## Controllers owned by other players; an ANY player skips them.
 var taken: Array[int] = []
-## Player one only: false while they are on the keyboard and mouse, so a controller they have not used (in `mine`)
-## stays free for a couch player and never steers them.
-var free_pads := true
-## Player one only: the controllers they have used. Shared with the camp, which fills it.
-var mine: Array[int] = []
 
 
-func _init(own_pad: int = -1, others: Array[int] = [], used: Array[int] = []) -> void:
-	pad = own_pad
+func _init(own: int = ANY, others: Array[int] = []) -> void:
+	pad = own
 	taken = others
-	mine = used
+
+
+## The device an event came from (KEYS or a controller), or ANY for events that belong to no device (mouse motion).
+static func device_of(event: InputEvent) -> int:
+	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
+		return event.device
+	if event is InputEventKey or event is InputEventMouseButton:
+		return KEYS
+	return ANY
 
 
 ## True when this event came from one of this player's devices.
 func owns_event(event: InputEvent) -> bool:
-	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
-		return event.device == pad if pad >= 0 else _counts(event.device)
-	return pad < 0
-
-
-func _counts(device: int) -> bool:
-	return not taken.has(device) and (free_pads or mine.has(device))
+	var device := device_of(event)
+	if pad == ANY:
+		return not taken.has(device)
+	return device == pad or (device == ANY and pad == KEYS)
 
 
 func _pads() -> Array[int]:
 	if pad >= 0:
 		return [pad]
 	var out: Array[int] = []
-	for device in Input.get_connected_joypads():
-		if _counts(device):
-			out.append(device)
+	if pad == ANY:
+		for device in Input.get_connected_joypads():
+			if not taken.has(device):
+				out.append(device)
 	return out
 
 
@@ -48,7 +53,7 @@ func strength(action: String) -> float:
 	var row := InputSetup.row(action)
 	var deadzone := InputSetup.deadzone()
 	var best := 0.0
-	if pad < 0:
+	if pad == ANY or pad == KEYS:
 		for key_name: String in row.get("keys", []):
 			if Input.is_physical_key_pressed(OS.find_keycode_from_string(key_name)):
 				return 1.0
