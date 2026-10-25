@@ -266,6 +266,17 @@
     {"shape": "box", "size": [0.17, 0.2, 0.035], "pos": [0, -0.22, 0], "round": 0.04, "color": "stone_grey"},
     {"shape": "stitch", "from": [-0.07, -0.14, 0.02], "to": [0.07, -0.14, 0.02], "thick": 0.8, "color": "warm_cream"}
   ]},
+  "kite_prop": {"parts": [
+    {"shape": "cylinder", "size": [0.07, 0.08, 0.07], "pos": [0, 0.0, 0], "rot": [0, 0, 90], "color": "wood_felt"},
+    {"shape": "cylinder", "size": [0.012, 2.9, 0.012], "pos": [0, 1.2, -0.8], "rot": [-33.7, 0, 0], "color": "warm_cream"},
+    {"shape": "box", "size": [0.5, 0.5, 0.03], "pos": [0, 2.4, -1.6], "rot": [20, 0, 45], "round": 0.02, "color": "rust_canvas"},
+    {"shape": "stitch", "from": [0, 2.08, -1.7], "to": [0, 2.72, -1.5], "thick": 0.8, "color": "honey_thread"},
+    {"shape": "sphere", "size": [0.09, 0.07, 0.03], "pos": [0, 2.0, -1.62], "color": "honey_thread"},
+    {"shape": "sphere", "size": [0.08, 0.06, 0.03], "pos": [0.06, 1.84, -1.58], "color": "teal_felt"},
+    {"shape": "sphere", "size": [0.07, 0.05, 0.03], "pos": [0, 1.68, -1.54], "color": "honey_thread"}]},
+  "frisbee": {"parts": [
+    {"shape": "cylinder", "size": [0.34, 0.04, 0.34], "pos": [0, 0, 0], "color": "rust_canvas"},
+    {"shape": "ring", "size": [0.3, 0, 0.3], "pos": [0, 0.022, 0], "color": "honey_thread"}]},
   "clipboard_prop": {"parts": [
     {"shape": "box", "size": [0.26, 0.34, 0.025], "pos": [0, 0.17, 0], "round": 0.02, "color": "wood_felt"},
     {"shape": "box", "size": [0.22, 0.27, 0.01], "pos": [0, 0.155, -0.016], "round": 0.01, "color": "warm_cream"},

@@ -59,6 +59,10 @@ var _toast_left := 0.0
 ## Stage A: stay id -> the guest's camper, and stay id -> its tent on the pitch.
 var visitors := {}
 var _tents := {}
+## First-minutes round 4: what each guest on screen is doing (stay id -> a GuestPlans row), and the frisbees in the
+## air (pair key -> {"node", "t" (seconds into this throw), "from" (the thrower's stay id)}).
+var _doing := {}
+var _discs := {}
 ## Local players in build mode: profile id -> {"kind", "yaw", "ghost" (Node3D), "tile" (MeshInstance3D)}.
 var _building := {}
 var _clock_send := 0.0
@@ -348,6 +352,10 @@ func _clear_world() -> void:
 	objects.clear()
 	visitors.clear()
 	_tents.clear()
+	_doing.clear()
+	for key: String in _discs:
+		(_discs[key]["node"] as Node3D).queue_free()
+	_discs.clear()
 	_forage_nodes.clear()
 	for index: int in _tree_props:
 		clearing.placed[index].get_child(0).visible = true
@@ -475,6 +483,7 @@ func _process(delta: float) -> void:
 	_tick_wobble(delta)
 	_tick_wildlife(delta)
 	_tick_tents()
+	_tick_guests(delta)
 	_board_clock -= delta
 	if _board_clock <= 0.0:
 		_refresh_boards()
@@ -1773,9 +1782,83 @@ func guest_label(stay_id: String) -> String:
 	return str(stay["name"]) + ("\n" + Tuning.text("request.say." + kind) if kind != "" else "")
 
 
+## Each frame: guests whose tent is up go and do what GuestPlans says (both PCs work it out alike from the shared day):
+## walk there, then hold its prop, sit down or face what they are looking at. Asleep, they are back by their tent.
+func _tick_guests(delta: float) -> void:
+	if state == null:
+		return
+	var plans := GuestPlans.plan(state, guests_asleep())
+	for id: String in visitors:
+		var c: Camper = visitors[id]
+		if not _tents.has(id) or not plans.has(id) or not is_instance_valid(c):
+			continue
+		var want: Dictionary = plans[id]
+		var at := Vector3(want["at"].x, 0.0, want["at"].y)
+		var was: Dictionary = _doing.get(id, {})
+		if was.get("kind", "") != want["kind"] or was.get("at", Vector2.INF) != want["at"] or was.get("pair", "") != want["pair"]:
+			_doing[id] = want.duplicate()
+			c.sit(0.0)
+			c.hold("hands")
+			if guests_asleep():
+				c.position = at
+				c.walk_target = null
+			else:
+				c.walk_target = at
+		if c.walk_target == null and not _doing[id].get("settled", false):
+			_doing[id]["settled"] = true
+			var to: Vector2 = want["look"] - want["at"]
+			c.rotation.y = atan2(-to.x, -to.y)
+			c.hold(str(want["prop"]))
+			c.sit(float(want["sit_y"]))
+	for id: String in _doing.keys():
+		if not visitors.has(id):
+			_doing.erase(id)
+	_tick_frisbees(delta)
+
+
+## Two settled frisbee players throw a felt disc back and forth: it flies in an arc, spinning, and the catcher holds
+## it a moment before throwing it back. Seen on each PC alone; it changes nothing in the camp.
+func _tick_frisbees(delta: float) -> void:
+	var live := {}
+	for a: String in _doing:
+		var b: String = _doing[a].get("pair", "")
+		if b == "" or a > b or not _doing.has(b) or not _doing[a].get("settled", false) or not _doing[b].get("settled", false):
+			continue
+		var key := a + "|" + b
+		live[key] = true
+		if not _discs.has(key):
+			var disc := FeltBuilder.build(str(Tuning.value("guests", "activities.frisbee.model", "frisbee")))
+			add_child(disc)
+			_discs[key] = {"node": disc, "t": 0.0, "from": a}
+		var row: Dictionary = _discs[key]
+		var flight := maxf(Tuning.num("guests", "activities.frisbee.flight_s", 1.3), 0.1)
+		var hold := Tuning.num("guests", "activities.frisbee.hold_s", 0.8)
+		row["t"] = float(row["t"]) + delta
+		if float(row["t"]) >= flight + hold:
+			row["t"] = 0.0
+			row["from"] = b if row["from"] == a else a
+		var from_id: String = row["from"]
+		var to_id: String = b if from_id == a else a
+		var hand := Vector3(0, Tuning.num("guests", "activities.frisbee.hand_y_m", 0.6), 0)
+		var reach: Vector3 = (visitors[to_id].position - visitors[from_id].position).normalized() \
+				* Tuning.num("guests", "activities.frisbee.reach_m", 0.35)
+		var p0: Vector3 = visitors[from_id].position + hand + reach
+		var p1: Vector3 = visitors[to_id].position + hand - reach
+		var k := minf(float(row["t"]) / flight, 1.0)
+		var disc: Node3D = row["node"]
+		disc.position = p0.lerp(p1, k) + Vector3.UP * sin(k * PI) * Tuning.num("guests", "activities.frisbee.arc_m", 0.9)
+		disc.rotation.y += delta * TAU * Tuning.num("guests", "activities.frisbee.spin_hz", 2.5) * (1.0 if k < 1.0 else 0.0)
+	for key: String in _discs.keys():
+		if not live.has(key):
+			(_discs[key]["node"] as Node3D).queue_free()
+			_discs.erase(key)
+
+
 func _send_home(id: String) -> void:
 	var c: Camper = visitors[id]
 	visitors.erase(id)
+	c.sit(0.0)
+	c.hold("hands")
 	if _tents.has(id):
 		_tents[id].queue_free()
 		_tents.erase(id)

@@ -20,6 +20,9 @@ extends SceneTree
 ## to sweep it up (+1 tags), then digs the stump with the shovel; a throwaway save.
 ## --fire saves the camp fire at each level at dusk (fire_<level>.png) with the camp board put up beside the camper
 ## (from the kit), a throwaway save.
+## --guests saves three guests busy at once (guests_<n>.png, a few slots of the day so each kind shows: fishing,
+## photos, kites, sitting on the log bench or the fire ring's logs, a frisbee in the air), each with a closer look at
+## one busy guest (guests_<n>_close.png), a throwaway save.
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
@@ -49,6 +52,7 @@ func _run() -> void:
 	var hero := false
 	var chop := false
 	var fire := false
+	var guests := false
 	var swap := {}
 	var turn := ""
 	var glb := ""
@@ -64,6 +68,7 @@ func _run() -> void:
 		hero = hero or arg == "--hero"
 		chop = chop or arg == "--chop"
 		fire = fire or arg == "--fire"
+		guests = guests or arg == "--guests"
 		if arg.begins_with("--turn="):
 			turn = arg.trim_prefix("--turn=")
 		if arg.begins_with("--glb="):
@@ -83,6 +88,10 @@ func _run() -> void:
 		return
 	if stage_b:
 		await _stage_b(out)
+		quit(0)
+		return
+	if guests:
+		await _guests(out)
 		quit(0)
 		return
 	if fire:
@@ -473,6 +482,73 @@ func _fire(out: String) -> void:
 		camp._sync_fire()
 		await _settle()
 		_save(out + "/fire_%d.png" % level)
+
+
+func _guests(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.start_solo(1)
+	camp.report.visible = false
+	var s: CampState = camp.state
+	s.camp["coins"] = 500
+	s.camp["kit"]["log_bench"] = 1
+	s.camp["fire"] = {"level": 1}
+	camp._sync_fire()
+	for p: Vector2 in [Vector2(3, 5), Vector2(-4, 7), Vector2(4, 9)]:
+		print(s.build.build("p_capture_one", "pitch", p, 0.0))
+		camp._show_object(s.build.last_id)
+	print(s.build.build("p_capture_one", "log_bench", Vector2(-1, 3), 180.0))
+	camp._show_object(s.build.last_id)
+	var me: Camper = camp.campers["p_capture_one"]
+	me.position = Vector3(0.5, 0, 3.5)
+	s.set_player_pos("p_capture_one", Vector2(0.5, 3.5), 0.0)
+	s.camp["calendar"]["minute"] = (Tuning.num("day", "stays.arrive_hour") - Tuning.num("day", "clock.start_hour")) * 60.0
+	for i in 3:
+		s.day.maybe_arrive()
+		s.camp["calendar"]["minute"] = float(s.camp["calendar"]["minute"]) + Tuning.num("day", "stays.gap_min")
+	for id: String in s.camp["stays"]:
+		s.camp["stays"][id]["request"] = {"kind": "fish", "done": true}
+		s.camp["stays"][id]["next_at"] = INF
+	camp._sync_stays(false)
+	camp.camera._want_distance = Tuning.num("tuning", "camera.max_distance_m")
+	var slot_min := Tuning.num("guests", "activities.slot_min")
+	var shots := 0
+	var shown := {}
+	for slot in range(1, int(CampDay.day_minutes() / slot_min) - 4):
+		s.camp["calendar"]["minute"] = (slot + 0.5) * slot_min
+		var kinds: Array = GuestPlans.plan(s, false).values().map(func(p: Dictionary) -> String: return p["kind"])
+		if kinds.all(func(k: String) -> bool: return shown.has(k)):
+			continue
+		for k: String in kinds:
+			shown[k] = true
+		print("slot %d: %s" % [slot, kinds])
+		await process_frame
+		for id: String in camp.visitors:
+			var c: Camper = camp.visitors[id]
+			if c.walk_target is Vector3:
+				c.position = c.walk_target
+		me.position = Vector3(0.5, 0, 3.5)
+		camp.camera._want_distance = Tuning.num("tuning", "camera.max_distance_m")
+		await _settle()
+		_save(out + "/guests_%d.png" % shots)
+		# A closer look at the first guest who is out doing something, the player stood just behind them.
+		for id: String in camp.visitors:
+			if camp._doing.get(id, {}).get("kind", "rest") != "rest":
+				me.position = camp.visitors[id].position + Vector3(0.6, 0, 2.4)
+				camp.camera._want_distance = Tuning.num("tuning", "camera.distance_m")
+				await _settle()
+				for key: String in camp._discs:
+					camp._discs[key]["t"] = Tuning.num("guests", "activities.frisbee.flight_s") * 0.45
+				await process_frame
+				_save(out + "/guests_%d_close.png" % shots)
+				break
+		shots += 1
 
 
 func _menus(out: String) -> void:
