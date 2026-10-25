@@ -2,7 +2,7 @@ class_name PlayerInput
 extends RefCounted
 ## One player's share of the input devices, for couch play. Player one has the keyboard, the mouse and every
 ## controller that is not someone else's; a couch player has exactly one controller. Reads the bindings in
-## data/input.json for those devices only, so a second controller never steers player one.
+## data/input.json (with this PC's remaps, InputSetup.row) for those devices only, so a second controller never steers player one.
 
 ## The controller this player owns, or -1 for player one (keyboard, mouse and every free controller).
 var pad := -1
@@ -34,8 +34,8 @@ func _pads() -> Array[int]:
 
 ## How far an action is pressed (0 to 1) on this player's devices.
 func strength(action: String) -> float:
-	var row: Dictionary = Tuning.value("input", "actions." + action, {})
-	var deadzone := float(Tuning.value("input", "deadzone", 0.2))
+	var row := InputSetup.row(action)
+	var deadzone := InputSetup.deadzone()
 	var best := 0.0
 	if pad < 0:
 		for key_name: String in row.get("keys", []):

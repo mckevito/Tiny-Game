@@ -1,9 +1,12 @@
 class_name CampMenu
 extends PanelContainer
-## The start menu (play alone, host, join, with an optional link code) and the in-camp menu (back to camp, ready for
-## bed, the booking board (Stage B), leave, or hop off the couch for a couch player). Works with the keyboard and
-## mouse or a pad: buttons take focus, so the D-pad or left stick moves between them and Cross presses.
-## Typing a name or an address needs a keyboard; both are remembered for next time. Text: data/text.json "menu"; sizes: data/tuning.json "hud".
+## Every menu page in one felt panel over the clearing: the title (start game, options, controls, quit), the start
+## page (play alone, host, join, with an optional link code), the in-camp menu (back to camp, ready for bed, the
+## booking board (Stage B), options, leave, or hop off the couch for a couch player) and the one Options screen
+## (OptionsScreen), which the title and the in-camp menu both open. Works with the keyboard and mouse or a pad:
+## buttons take focus (a clear ring shows it), so the D-pad or left stick moves between them, Cross presses and
+## cancel goes back a page. Typing a name or an address needs a keyboard; both are remembered for next time.
+## Text: data/text.json "menu" and "title"; sizes and look: data/tuning.json "hud", data/settings.json "look".
 
 signal chose(action: String)
 
@@ -12,31 +15,45 @@ var address_edit := LineEdit.new()
 var link_edit := LineEdit.new()
 var slot_pick := OptionButton.new()
 var status := Label.new()
+var options := OptionsScreen.new()
+var _heading := Label.new()
+var _tagline := Label.new()
+var _title := VBoxContainer.new()
 var _start := VBoxContainer.new()
 var _pause := VBoxContainer.new()
+var _first_title: Button
 var _first_start: Button
 var _first_pause: Button
 var _leave: Button
 var _leave_couch: Button
-var _quality: Button
 var _sleep: Button
 ## Stage B's booking board: accept, a day later, decline (shown while a booking can be changed).
 var _booking: Array[Button] = []
+## The page Options goes back to ("title" or "pause"), and the in-camp text to show again there.
+var _options_from := "title"
+var _pause_info := ""
+var _pause_couch := false
 
 
 func _ready() -> void:
-	theme = Theme.new()
-	theme.default_font_size = int(Tuning.num("tuning", "hud.menu_font_px", 28))
+	theme = UiLook.theme()
+	add_theme_stylebox_override("panel", UiLook.panel())
 	var box := VBoxContainer.new()
 	box.custom_minimum_size.x = Tuning.num("tuning", "hud.menu_width_px", 560)
 	add_child(box)
-	var title := Label.new()
-	title.text = Tuning.text("menu.title")
-	title.add_theme_font_size_override("font_size", int(Tuning.num("tuning", "hud.title_font_px", 40)))
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
-	box.add_child(_start)
-	box.add_child(_pause)
+	_heading.text = Tuning.text("menu.title")
+	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(_heading)
+	_tagline.text = Tuning.text("title.tagline")
+	_tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tagline.add_theme_font_size_override("font_size", int(UiLook.num("tagline_font_px", 26)))
+	box.add_child(_tagline)
+	for page in [_title, _start, _pause, options]:
+		box.add_child(page)
+	_first_title = _page_button(_title, "title.start", show_start.bind(""))
+	_page_button(_title, "title.options", show_options.bind("", "title"))
+	_page_button(_title, "title.controls", show_options.bind("controls", "title"))
+	_page_button(_title, "title.quit", func() -> void: get_tree().quit())
 	name_edit.placeholder_text = Tuning.text("menu.name")
 	_start.add_child(name_edit)
 	for i in CampSave.slot_count():
@@ -49,14 +66,18 @@ func _ready() -> void:
 	link_edit.placeholder_text = Tuning.text("menu.link_code")
 	_start.add_child(link_edit)
 	_button(_start, "join")
+	_page_button(_start, "title.back", show_title)
 	_first_pause = _button(_pause, "resume")
 	_sleep = _button(_pause, "sleep")
 	for choice in ["booking_accept", "booking_later", "booking_decline"]:
 		_booking.append(_button(_pause, choice))
+	_page_button(_pause, "title.options", func() -> void: show_options("", "pause"))
 	_leave = _button(_pause, "leave")
 	_leave_couch = _button(_pause, "leave_couch")
-	_quality = _button(_pause, "quality")
+	options.closed.connect(_options_closed)
+	options.picture_changed.connect(func(_preset: String) -> void: chose.emit("picture"))
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.custom_minimum_size.x = Tuning.num("tuning", "hud.menu_width_px", 560)
 	box.add_child(status)
 	grow_horizontal = Control.GROW_DIRECTION_BOTH
 	grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -70,37 +91,79 @@ func _button(parent: Control, action: String) -> Button:
 	return b
 
 
-## The picture button's label (the camp knows the preset).
-func set_quality(label: String) -> void:
-	_quality.text = label
+## A button that moves between pages inside the menu (the camp is not told).
+func _page_button(parent: Control, text_key: String, go: Callable) -> Button:
+	var b := Button.new()
+	b.text = Tuning.text(text_key)
+	b.pressed.connect(go)
+	parent.add_child(b)
+	return b
 
 
-func slot() -> int:
-	return slot_pick.get_selected_id()
+## The page showing now: "title", "start", "pause" or "options".
+func page() -> String:
+	for p: Array in [[_title, "title"], [_start, "start"], [_pause, "pause"], [options, "options"]]:
+		if p[0].visible:
+			return p[1]
+	return ""
 
 
-func show_start(message: String = "") -> void:
-	_start.visible = true
-	_pause.visible = false
+func _show(which: Control, message: String, focus: Control) -> void:
+	for p in [_title, _start, _pause, options]:
+		p.visible = p == which
+	var big := which == _title
+	_heading.add_theme_font_size_override("font_size", int(UiLook.num("title_font_px", 56)) if big
+			else int(Tuning.num("tuning", "hud.title_font_px", 40)))
+	_heading.visible = which != options
+	_tagline.visible = big
 	status.text = message
 	status.visible = message != ""
 	visible = true
 	_fit.call_deferred()
-	_first_start.grab_focus.call_deferred()
+	if focus:
+		focus.grab_focus.call_deferred()
+
+
+## The landing page: start game, options, controls, quit.
+func show_title() -> void:
+	_show(_title, "", _first_title)
+
+
+func show_start(message: String = "") -> void:
+	_show(_start, message, _first_start)
 
 
 ## The in-camp menu. A couch player gets "hop off the couch" instead of "leave camp"; `info` is shown below
 ## (link codes of couch characters).
 func show_pause(couch_player: bool = false, info: String = "") -> void:
-	_start.visible = false
-	_pause.visible = true
+	_pause_couch = couch_player
+	_pause_info = info
 	_leave.visible = not couch_player
 	_leave_couch.visible = couch_player
-	status.text = info
-	status.visible = info != ""
-	visible = true
+	_show(_pause, info, _first_pause)
+
+
+## The Options screen at a tab ("" for the last one); back returns to `from` ("title" or "pause").
+func show_options(tab: String = "", from: String = "") -> void:
+	if from != "":
+		_options_from = from
+	_show(options, "", null)
+	options.open(tab)
 	_fit.call_deferred()
-	_first_pause.grab_focus.call_deferred()
+
+
+func _options_closed() -> void:
+	if _options_from == "pause":
+		show_pause(_pause_couch, _pause_info)
+	else:
+		show_title()
+
+
+## Cancel on the start page goes back to the title (Options handles its own; the camp closes the in-camp menu).
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and _start.visible and (event.is_action_pressed("cancel") or event.is_action_pressed("ui_cancel")):
+		get_viewport().set_input_as_handled()
+		show_title()
 
 
 ## The bed button: "Ready for bed", "Not ready for bed yet", or greyed out before the evening with `closed_text`.

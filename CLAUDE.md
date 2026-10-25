@@ -50,9 +50,10 @@ Review captures from the play camera (daylight and dusk) come from `scripts/tool
 `handoff/build/HANDOFF.md`.
 
 ## Layout
-- `scripts/core/`: shared plumbing (tuning tables, text).
+- `scripts/core/`: shared plumbing (tuning tables, text, input, this PC's settings).
 - `scripts/art/`: the felt material and the builder that makes models from `data/models.json`.
 - `scripts/camp/`: the camp scene, its rules and save, the clearing, campers, play camera and light moods.
+- `scripts/ui/`: the shared menu look and the one Options screen.
 - `scripts/net/`: online identity (the local profile ID); the netcode itself is in `scripts/camp/camp.gd`.
 - `scripts/tools/`: dev-only scripts, such as the review capture (`capture.gd`).
 - `scenes/`: the camp (the main scene) and the sandbox.

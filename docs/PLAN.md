@@ -129,7 +129,7 @@ together actions. Never cut both input methods, two-player reliability, decorati
 save recovery.
 
 ## Later (not in v1)
-The clipboard's map tab with plan marks both players see (next round, owner). A free photo mode, text chat, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
+The clipboard's map tab with plan marks both players see (next round, owner). A free photo mode, text chat, separate remaps for each couch player, a credits page, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
 two players, a public release (itch.io or Steam), Steam's relay, consoles, voice acting.
 
 ## Decision log
@@ -178,3 +178,8 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   chopping and wood recipes, daily finds, animals, a per-player clipboard (Today, Bookings, Supplies) and a long log
   that goes faster carried together; the morning report says what is new tomorrow. The clipboard's map tab follows.
 - 25 Oct 2026, owner: chopped trees fall and drop a sapling that players replant, like Animal Crossing.
+- 25 Oct 2026, owner: basic quality of life now, alongside Stage B: a title page with Start game, an Options screen
+  and controls. **Proposed** (built): one Options screen opened from the title and the in-camp menu, with picture
+  (the existing presets), window, vsync, frame limit, four volumes, remapping on both devices, stick deadzone, camera
+  turn speed, interface size and still trees; settings stay on each PC and are never synced. This brings remapping
+  and the accessibility basics forward from Stage E.
