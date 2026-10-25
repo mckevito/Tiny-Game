@@ -26,7 +26,17 @@ func _spot(model: String) -> Vector2:
 
 
 func _beside(model: String) -> Vector2:
+	if model == "project_board":
+		var spot: Array = Tuning.value("save", "board_spot")
+		return Vector2(float(spot[0]), float(spot[1])) + Vector2(0.0, -0.9)
 	return _spot(model) + Vector2(0.0, -0.9)
+
+
+## Puts the camp board up where an older camp had it (a new camp keeps it in the kit until the players place it).
+func _put_up_board(s: CampState) -> void:
+	var spot: Array = Tuning.value("save", "board_spot")
+	if s.build.build("p_host", "project_board", Vector2(float(spot[0]), float(spot[1])), 0.0) != "":
+		push_error("the camp board should go up at board_spot")
 
 
 func test_the_sell_crate_pays_at_night_and_gives_back_until_then() -> String:
@@ -70,6 +80,9 @@ func test_camp_projects_fill_from_both_players_and_open_a_recipe_once() -> Strin
 	if kind == "" or s.build.known_recipes().any(func(r: Dictionary) -> bool: return r["kind"] == kind):
 		return "the first project's recipe should be closed until it is done"
 	var board := _beside("project_board")
+	if CampProjects.near_board(s, board):
+		return "a new camp has no board up until the players put it up"
+	_put_up_board(s)
 	s.set_player_pos("p_host", board, 0.0)
 	s.set_player_pos("p_guest", board, 0.0)
 	if s.projects.give("p_host") != "deny.nothing_for_project":
@@ -114,6 +127,50 @@ func test_a_version_5_save_gets_the_crate_and_projects() -> String:
 	var camp := CampSave.upgrade(old)
 	if not (camp["crate"] is Array and camp["shipped"] is Dictionary and camp["projects"]["done"] is Array):
 		return "an older save should get an empty crate, shipped list and projects"
+	return ""
+
+
+## First minutes, gameplay round 2: the camp fire grows in levels, paid like a recipe at the fire; each level counts
+## toward the rating; the camp board goes up from the kit; an older save gets its board put up where it stood.
+func test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit() -> String:
+	var s := _state()
+	var levels := CampBuild.fire_levels()
+	s.set_player_pos("p_host", Vector2(1.3, 0.3), 0.0)
+	var first: Dictionary = s.build.next_fire()
+	if s.build.fire_level() != 0 or first.is_empty():
+		return "a new camp's fire should be plain, with a level to grow to"
+	if s.build.upgrade_fire("p_host") != "deny.materials":
+		return "upgrading without the materials should say so"
+	var points := s.rating.points()
+	for level: Dictionary in levels:
+		for item: String in level["items"]:
+			s.pack.add_to_box(item, int(level["items"][item]))
+		var coins := int(s.camp["coins"])
+		if s.build.upgrade_fire("p_host") != "" or int(s.camp["coins"]) != coins - int(level["coins"]):
+			return "with the materials and coins the fire should grow to %s" % level["id"]
+	if s.build.fire_level() != levels.size() or not s.build.next_fire().is_empty():
+		return "the fire should stop at its last level"
+	if s.build.upgrade_fire("p_host") != "deny.fire_done":
+		return "a fire at its last level should say it is as big as it gets"
+	if s.rating.points() <= points:
+		return "a bigger fire should count toward the camp rating"
+	s.set_player_pos("p_guest", Vector2(9, 9), 0.0)
+	if s.build.upgrade_fire("p_guest") not in ["deny.too_far", "deny.fire_done"]:
+		return "the fire is upgraded at the fire"
+	if s.build.in_kit("project_board") != 1 or CampProjects.near_board(s, _beside("project_board")):
+		return "a new camp's board should wait in the kit"
+	_put_up_board(s)
+	if s.build.in_kit("project_board") != 0 or not CampProjects.near_board(s, _beside("project_board")):
+		return "the board should go up from the kit, and be read where it stands"
+	var old := CampSave.new_camp()
+	old.erase("fire")
+	old["kit"] = {}
+	old["version"] = 6
+	var camp := CampSave.upgrade(old)
+	var boards := (camp["objects"] as Dictionary).values().filter(
+			func(o: Dictionary) -> bool: return o["model"] == "project_board")
+	if boards.size() != 1 or int(camp["fire"]["level"]) != 0 or camp["kit"].has("project_board"):
+		return "a version 6 save should get its board put up where the scenery board stood, and a plain fire"
 	return ""
 
 
@@ -170,6 +227,22 @@ func test_the_guest_pc_sells_and_gives_to_a_project_from_the_buttons() -> String
 	guest.start_join("127.0.0.1", 24741)
 	if not await _until(func() -> bool: return guest.state != null and host.campers.size() == 2):
 		why = "the guest never got in"
+	if why == "":
+		var spot: Array = Tuning.value("save", "board_spot")
+		host.ask("build", ["project_board", Vector2(float(spot[0]), float(spot[1])), 0.0], "p_host")
+		if not await _until(func() -> bool: return guest.objects.size() == host.objects.size()):
+			why = "the guest PC should see the camp board go up"
+	if why == "":
+		var first: Dictionary = CampBuild.fire_levels()[0]
+		for item: String in first["items"]:
+			host.state.pack.add_to_box(item, int(first["items"][item]))
+		host.campers["p_host"].position = Vector3(1.3, 0, 0.3)
+		host.ask("upgrade_fire", [], "p_host")
+		var fire: Node3D = guest.clearing.placed[Tuning.table("clearing")["placements"].map(
+				func(r: Dictionary) -> String: return r["model"]).find("fire_pit")]
+		if not await _until(func() -> bool: return guest.state.build.fire_level() == 1 \
+				and fire.get_node_or_null("Upgrade") != null):
+			why = "the guest PC should see the fire grow"
 	if why == "":
 		host.state.pack.add("p_guest", "stick", 6)
 		host.state.pack.add("p_guest", "berries", 4)

@@ -1,6 +1,7 @@
 class_name LightMoods
 extends RefCounted
-## Applies a lighting mood from data/lighting.json to the sun, the environment and the fire lights.
+## Applies a lighting mood from data/lighting.json to the sun, the environment and the fire lights (each scaled by
+## its "scale" meta: a bigger camp fire, data/craft.json fire).
 
 
 static func names() -> Array:
@@ -26,8 +27,8 @@ static func apply(mood: String, sun: DirectionalLight3D, env: Environment, fires
 	_soften(sun, env, m)
 	for light in fires:
 		light.light_color = Color.html(str(m.get("fire_color", "#FFAA55")))
-		light.light_energy = float(m.get("fire_energy", 1.0))
-		light.omni_range = float(m.get("fire_range_m", 4.0))
+		light.light_energy = float(m.get("fire_energy", 1.0)) * float(light.get_meta("scale", 1.0))
+		light.omni_range = float(m.get("fire_range_m", 4.0)) * float(light.get_meta("scale", 1.0))
 		light.set_meta("base_energy", light.light_energy)
 
 
@@ -54,8 +55,8 @@ static func blend(a: String, b: String, t: float, sun: DirectionalLight3D, env: 
 			and bool(Quality.preset(Quality.current).get("glow", true))
 	for light in fires:
 		light.light_color = col.call("fire_color", "#FFAA55")
-		light.light_energy = num.call("fire_energy", 1.0)
-		light.omni_range = num.call("fire_range_m", 4.0)
+		light.light_energy = num.call("fire_energy", 1.0) * float(light.get_meta("scale", 1.0))
+		light.omni_range = num.call("fire_range_m", 4.0) * float(light.get_meta("scale", 1.0))
 		light.set_meta("base_energy", light.light_energy)
 
 

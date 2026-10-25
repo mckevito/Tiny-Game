@@ -35,9 +35,14 @@ static func near_crate(pos: Vector2) -> bool:
 			Tuning.num("projects", "reach_m", 1.4)
 
 
-static func near_board(pos: Vector2) -> bool:
-	return pos.distance_to(_spot(str(Tuning.value("projects", "board_model", "project_board")))) <= \
-			Tuning.num("projects", "reach_m", 1.4)
+## True when a spot is within reach of the camp board, wherever the players put it up (none until they do).
+static func near_board(camp_state: CampState, pos: Vector2) -> bool:
+	var model := str(Tuning.value("projects", "board_model", "project_board"))
+	for id: String in camp_state.camp["objects"]:
+		if str(camp_state.camp["objects"][id].get("model", "")) == model and not camp_state.carriers.has(id) \
+				and pos.distance_to(camp_state.object_pos(id)) <= Tuning.num("projects", "reach_m", 1.4):
+			return true
+	return false
 
 
 ## What the crate pays for one of an item (0: the crate does not take it).
@@ -181,7 +186,7 @@ func give(profile_id: String) -> String:
 	finished = ""
 	if not state.online.has(profile_id):
 		return "deny.not_here"
-	if not near_board(state.player_pos(profile_id)):
+	if not near_board(state, state.player_pos(profile_id)):
 		return "deny.too_far"
 	var r := current()
 	if r.is_empty():

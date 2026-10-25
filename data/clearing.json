@@ -31,7 +31,6 @@
     {"model": "bush", "pos": [6.0, 2.8], "yaw": 220},
     {"model": "workbench", "pos": [-3.8, 1.4], "face": [0, 0]},
     {"model": "camp_box", "pos": [-2.4, -0.4], "face": [0, 0]},
-    {"model": "sell_crate", "pos": [-0.4, -2.8], "face": [0, 0]},
-    {"model": "project_board", "pos": [-5.8, 0.2], "face": [0, 0]}
+    {"model": "sell_crate", "pos": [-0.4, -2.8], "face": [0, 0]}
   ]
 }

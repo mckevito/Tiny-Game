@@ -160,8 +160,8 @@ func test_forage_spots_refill_each_morning_and_berries_wait_for_day_two() -> Str
 func test_crafted_things_go_into_the_kit_and_build_mode_places_them() -> String:
 	var state := _camp()
 	var at := Vector2(-3.2, 7.9)
-	if Array(state.build.available()) != ["pitch"]:
-		return "a new camp's kit should hold only the free tent pitch, got %s" % [state.build.available()]
+	if Array(state.build.available()) != ["pitch", "project_board"]:
+		return "a new camp's kit should hold the free tent pitch and the camp board, got %s" % [state.build.available()]
 	if state.build.build("p_host", "log_bench", at, 0.0) != "deny.not_in_kit":
 		return "a log bench not crafted yet should say so"
 	state.set_player_pos("p_host", CampBuild.bench_pos() + Vector2(0.0, 1.2), 0.0)

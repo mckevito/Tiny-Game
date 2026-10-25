@@ -135,6 +135,53 @@ func craft(profile_id: String, kind: String) -> String:
 	return ""
 
 
+# --- The camp fire's levels (data/craft.json fire) ---------------------------------------------------------------
+
+static func fire_levels() -> Array:
+	return Tuning.value("craft", "fire.levels", [])
+
+
+## How far the camp fire has been upgraded: 0 (the plain fire pit) to the number of levels.
+func fire_level() -> int:
+	return int(state.camp.get("fire", {}).get("level", 0))
+
+
+## The next level the fire can grow to ({id, coins, items, model, light_scale}), or {} when it is as big as it gets.
+func next_fire() -> Dictionary:
+	var levels := fire_levels()
+	return levels[fire_level()] if fire_level() < levels.size() else {}
+
+
+## "" when a player could upgrade the fire now, or the text key saying what is missing.
+func can_upgrade_fire(profile_id: String) -> String:
+	var r := next_fire()
+	if r.is_empty():
+		return "deny.fire_done"
+	if int(state.camp.get("coins", 0)) < int(r.get("coins", 0)):
+		return "deny.coins"
+	for item: String in r.get("items", {}):
+		if state.pack.have(profile_id, item) < int(r["items"][item]):
+			return "deny.materials"
+	return ""
+
+
+## Grows the fire one level, paid like a recipe from the player's Pack, then the camp box, and the camp's coins.
+func upgrade_fire(profile_id: String) -> String:
+	if not state.online.has(profile_id):
+		return "deny.not_here"
+	if not CampPack.can_cook_at(state.player_pos(profile_id)):
+		return "deny.too_far"
+	var why := can_upgrade_fire(profile_id)
+	if why != "":
+		return why
+	var r := next_fire()
+	state.camp["coins"] = int(state.camp.get("coins", 0)) - int(r.get("coins", 0))
+	for item: String in r.get("items", {}):
+		state.pack.spend(profile_id, item, int(r["items"][item]))
+	state.camp["fire"] = {"level": fire_level() + 1}
+	return ""
+
+
 ## The grid point nearest to a spot on the ground.
 static func snap(pos: Vector2) -> Vector2:
 	var g := maxf(Tuning.num("build", "grid_m", 1.0), 0.01)
