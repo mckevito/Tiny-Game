@@ -4,8 +4,9 @@
     "hint_pad": "Left stick to walk · L1 and R1 turn the camera · D-pad up and down zoom · Create changes the light"
   },
   "mood": {
-    "day": "Daylight",
-    "dusk": "Dusk"
+    "okay": "okay",
+    "happy": "happy",
+    "delighted": "delighted"
   },
   "profile": {
     "default_name": "Camper",
@@ -14,14 +15,22 @@
   "prompt": {
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
-    "controls": "{move} to walk · {camera} turn the camera · {interact} pick up or put down · {build} build · {menu} for the menu",
+    "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {menu} for the menu",
     "drop_in": "A friend can drop in: {menu} on a second controller",
     "for_player": "%s: %s",
-    "build_here": "{interact} Make a %s here (%d coins) · {rotate} turn · {undo} undo · {build} done",
-    "build_blocked": "%s · {rotate} turn · {undo} undo · {build} done",
+    "build_here": "{interact} Make a %s here (%d coins) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
+    "build_blocked": "%s · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
     "pack_here": "{interact} Pack away this %s (+%d coins) · {undo} undo · {build} done",
     "sleep_wait": "Ready for bed: %s (%d of %d). {menu} for the menu to join in.",
-    "bed_open": "The evening is here. When you are ready, {menu} and choose Ready for bed."
+    "bed_open": "The evening is here. When you are ready, {menu} and choose Ready for bed.",
+    "fish": "{interact} Fish",
+    "fishing": "Fishing…",
+    "cook": "{interact} Grill your %s",
+    "cooking": "Grilling…",
+    "give": "{interact} Give %s your %s",
+    "pockets": "Pockets: %s",
+    "pockets_for": "%s's pockets: %s",
+    "report_close": "{interact} Start the day"
   },
   "menu": {
     "title": "Our Little Campground",
@@ -41,7 +50,12 @@
     "hosting": "Hosting camp %d. Your friend can join now.",
     "sleep": "Ready for bed",
     "not_sleep": "Not ready for bed yet",
-    "sleep_closed": "Bed opens in the evening (from %s)"
+    "sleep_closed": "Bed opens in the evening (from %s)",
+    "bookings": "Booking board",
+    "booking_accept": "Accept booking",
+    "booking_later": "Ask them to come a day later",
+    "booking_decline": "Decline booking",
+    "board_empty": "No bookings on the board right now."
   },
   "join": {
     "full": "That camp already has two campers.",
@@ -78,7 +92,14 @@
     "too_early": "It is a little early for bed. Bed opens in the evening.",
     "not_here": "You are not in the camp.",
     "building": "Put the build tools away first.",
-    "not_buildable": "That can't be built here."
+    "not_buildable": "That can't be built here.",
+    "pockets_full": "Your pockets are full. Give something away first.",
+    "no_water": "Find the water's edge to fish.",
+    "no_fire": "Grilling needs the campfire.",
+    "no_fish": "You need a fish to grill.",
+    "nothing_to_give": "You have nothing they asked for.",
+    "no_request": "They don't need anything right now.",
+    "no_booking": "That booking isn't on the board any more."
   },
   "toast": {
     "joined": "%s joined the camp.",
@@ -88,10 +109,20 @@
     "pad_asleep": "%s's controller went quiet. Their camper waits.",
     "pad_back": "%s's controller is back.",
     "linked": "You are playing %s from this PC now. It stays yours here.",
-    "undone": "Undone."
+    "undone": "Undone.",
+    "caught": "You caught a %s!",
+    "grilled": "You grilled a %s.",
+    "thanks": "%s says thank you! +%d coins.",
+    "booking_accepted": "%s will come on %s.",
+    "booking_later": "%s will come on %s instead.",
+    "booking_declined": "You let %s know there's no room this time. No hard feelings.",
+    "booking_arrived": "%s have arrived!",
+    "booking_offer": "A new booking is on the board: %s."
   },
   "build": {
-    "pitch": "tent pitch"
+    "pitch": "tent pitch",
+    "water_point": "water point",
+    "lantern_post": "lantern post"
   },
   "clock": {
     "line": "%s, day %d · %s · %d coins",
@@ -103,7 +134,8 @@
       "summer": "Summer",
       "autumn": "Autumn",
       "winter": "Winter"
-    }
+    },
+    "day_label": "%s day %d"
   },
   "night": {
     "title": "Good night",
@@ -122,5 +154,100 @@
     ],
     "arrived": "%s has come to stay at your %s.",
     "left": "%s headed home with a wave."
+  },
+  "improvement": {
+    "water_point": "comfort for guests nearby",
+    "lantern_post": "a warm glow for guests nearby"
+  },
+  "items": {
+    "perch": "perch",
+    "trout": "trout",
+    "sunfish": "sunfish",
+    "grilled_perch": "grilled perch",
+    "grilled_trout": "grilled trout",
+    "grilled_sunfish": "grilled sunfish"
+  },
+  "request": {
+    "say": {
+      "fish": "A fresh fish, please!",
+      "meal": "Something warm from the fire?",
+      "chair": "A chair by my tent?"
+    },
+    "want": {
+      "fish": "a fresh fish",
+      "meal": "something grilled at the fire",
+      "chair": "a camp chair by their tent"
+    }
+  },
+  "cause": {
+    "loved": {
+      "water": "the fresh water close by",
+      "chair": "a chair by the tent",
+      "request": "your kindness",
+      "pond": "the pond nearby",
+      "lantern": "the lantern light",
+      "fire": "the campfire close by"
+    },
+    "wished": {
+      "water": "fresh water nearer the tent",
+      "chair": "a chair by the tent",
+      "request": "help with their request",
+      "pond": "a pitch nearer the pond",
+      "lantern": "a lantern nearby",
+      "fire": "a pitch nearer the campfire"
+    }
+  },
+  "booking": {
+    "ferns": {
+      "name": "The Fern family",
+      "guests": [
+        "Fern",
+        "Basil"
+      ]
+    },
+    "birdwatchers": {
+      "name": "The birdwatching club",
+      "guests": [
+        "Heron",
+        "Linnet",
+        "Sorrel"
+      ]
+    },
+    "line": "%s (%s), %s. Needs %d tent pitches.",
+    "extras": " Nice to have: %s.",
+    "extra": "%s (+%d coins)",
+    "state": {
+      "offered": "on the board",
+      "accepted": "booked",
+      "arrived": "staying now"
+    },
+    "waiting": " Waiting for %d more free pitches; they'll come the first morning you have room."
+  },
+  "report": {
+    "morning": "Good morning! %s, day %d.",
+    "earned": "Last night the camp earned %d coins.",
+    "paid": "%s paid %d coins for the %s.",
+    "review": "%s left %s: they loved %s.",
+    "review_none": "%s left %s.",
+    "wish": " Next time they'd like %s.",
+    "tip": " Tip: +%d coins.",
+    "bonus": "%s's extras (%s): +%d coins.",
+    "quiet": "A quiet night, nobody stayed.",
+    "bookings": "Bookings",
+    "none": "No bookings yet.",
+    "today": "Today",
+    "goal_quick": "Quick task: %s",
+    "goal_project": "Project: %s",
+    "goal_dream": "Dream: %s"
+  },
+  "goal": {
+    "request": "%s would love %s.",
+    "fish": "catch a fish at the pond.",
+    "pitches": "make %d more tent pitch(es) before %s come on %s.",
+    "ready": "%s come on %s, and you have room.",
+    "offer": "look at the booking board: %s would like to come on %s.",
+    "pitch": "make another tent pitch for more guests.",
+    "build": "save up for a %s (%d coins): %s.",
+    "cosy": "make the camp cosier with chairs by the tents."
   }
 }

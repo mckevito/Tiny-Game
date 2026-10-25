@@ -102,8 +102,10 @@ func everyone_ready() -> bool:
 	return true
 
 
-## The night: each guest pays for their pitch, the calendar turns to the next morning, and guests whose stay is
-## over head home. Returns the night's summary {night, coins, lines, left}, or {} when this day already paid.
+## The night: each guest pays for their pitch, a guest whose stay is over is scored and tips (Stage B), a booking
+## that arrived today pays its extras bonus, the calendar turns to the next morning, and guests whose stay is over
+## head home. Returns the night's summary {night, coins, lines, left, reviews, bonuses}, or {} when this day already
+## paid.
 func settle_night() -> Dictionary:
 	var night := today()
 	if int(state.camp.get("last_settled", 0)) >= night:
@@ -112,6 +114,7 @@ func settle_night() -> Dictionary:
 	var lines: Array = []
 	var total := 0
 	var left: Array = []
+	var reviews: Array = []
 	for id: String in stays:
 		var stay: Dictionary = stays[id]
 		var kind := CampBuild.kind_of(state, str(stay.get("pitch", "")))
@@ -121,13 +124,21 @@ func settle_night() -> Dictionary:
 		stay["nights_left"] = int(stay.get("nights_left", 1)) - 1
 		if stay["nights_left"] <= 0:
 			left.append(id)
+			var review := state.guests.review(id)
+			total += int(review["tip"])
+			reviews.append(review)
+	var bonuses := state.guests.settle_bonuses()
+	for b: Dictionary in bonuses:
+		total += int(b["coins"])
 	state.camp["coins"] = int(state.camp.get("coins", 0)) + total
-	var summary := {"night": night, "coins": total, "lines": lines, "left": left}
+	var summary := {"night": night, "coins": total, "lines": lines, "left": left, "reviews": reviews, "bonuses": bonuses}
 	(state.camp["ledger"] as Array).append(summary.duplicate(true))
 	state.camp["last_settled"] = night
 	for id in left:
 		stays.erase(id)
+	state.guests.finish_departed()
 	_next_morning()
+	state.guests.refresh_offers()
 	votes.clear()
 	state.build.undo.clear()
 	return summary
@@ -137,30 +148,42 @@ func settle_night() -> Dictionary:
 
 ## A built pitch nobody is staying at, or "".
 func free_pitch() -> String:
-	var taken := {}
-	for stay: Dictionary in state.camp["stays"].values():
-		taken[stay.get("pitch", "")] = true
-	for id: String in state.camp["objects"]:
-		if CampBuild.kind_of(state, id) == "pitch" and not taken.has(id):
-			return id
-	return ""
+	var free := state.guests.free_pitches()
+	return free[0] if not free.is_empty() else ""
 
 
-## From the arrival hour a guest comes to a free pitch, if there is one and the camp has room. Returns the new stay's
-## id, or "".
+## Everyone who comes now: from the arrival hour a booking due today arrives first (Stage B), then a walk-in guest.
+## Returns the new stay ids.
+func arrivals() -> Array[String]:
+	var made := state.guests.maybe_arrive()
+	var walk_in := maybe_arrive()
+	if walk_in != "":
+		made.append(walk_in)
+	return made
+
+
+## From the arrival hour a walk-in guest comes to a free pitch, if there is one past those a booking due today still
+## waits for and the camp has room for another walk-in. They bring a request (Stage B). Returns the new stay's id,
+## or "".
 func maybe_arrive() -> String:
-	if hour() < _n("stays.arrive_hour", 9.0) or state.camp["stays"].size() >= int(_n("stays.max_stays", 1)):
+	if hour() < _n("stays.arrive_hour", 9.0):
 		return ""
-	var pitch := free_pitch()
-	if pitch == "":
+	var walk_ins := 0
+	for stay: Dictionary in state.camp["stays"].values():
+		walk_ins += 0 if stay.has("booking") else 1
+	if walk_ins >= int(_n("stays.max_stays", 1)):
+		return ""
+	var free := state.guests.free_pitches()
+	if free.size() <= state.guests.pitches_held():
 		return ""
 	var n := int(state.camp.get("next_object_id", 1))
 	state.camp["next_object_id"] = n + 1
 	var looks: Array = Tuning.value("day", "stays.looks", ["guest_a"])
 	var names: Array = Tuning.value("text", "guest.names", ["Guest"])
 	var id := "stay_%d" % n
-	state.camp["stays"][id] = {"pitch": pitch, "name": str(names[n % names.size()]),
-			"look": str(looks[n % looks.size()]), "nights_left": int(_n("stays.nights", 1)), "arrived": today()}
+	state.camp["stays"][id] = {"pitch": free[0], "name": str(names[n % names.size()]),
+			"look": str(looks[n % looks.size()]), "nights_left": int(_n("stays.nights", 1)), "arrived": today(),
+			"request": CampGuests.new_request(n)}
 	return id
 
 

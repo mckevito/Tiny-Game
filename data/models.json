@@ -145,6 +145,39 @@
     ]
   },
 
+  "water_point": {
+    "collide": {"radius": 0.3, "height": 1.0},
+    "parts": [
+      {"shape": "cylinder", "size": [0.9, 0.06, 0.9], "pos": [0, 0.03, 0], "color": "stone_grey"},
+      {"shape": "cylinder", "size": [0.62, 0.26, 0.62], "pos": [0, 0.19, 0.08], "taper": 1.15, "color": "stone_grey"},
+      {"shape": "cylinder", "size": [0.48, 0.03, 0.48], "pos": [0, 0.31, 0.08], "color": "pond_blue"},
+      {"shape": "box", "size": [0.16, 1.0, 0.16], "pos": [0, 0.5, -0.3], "round": 0.03, "color": "wood_felt"},
+      {"shape": "cylinder", "size": [0.06, 0.3, 0.06], "pos": [0, 0.86, -0.15], "rot": [90, 0, 0], "color": "teal_felt"},
+      {"shape": "cylinder", "size": [0.06, 0.14, 0.06], "pos": [0, 0.79, -0.01], "color": "teal_felt"},
+      {"shape": "sphere", "size": [0.16, 0.06, 0.16], "pos": [0, 1.02, -0.3], "color": "honey_thread"},
+      {"shape": "stitch", "from": [-0.06, 0.2, -0.385], "to": [-0.06, 0.92, -0.385], "color": "honey_thread"},
+      {"shape": "stitch", "from": [0.06, 0.2, -0.385], "to": [0.06, 0.92, -0.385], "color": "honey_thread"}
+    ]
+  },
+  "lantern_post": {
+    "collide": {"radius": 0.15, "height": 1.6},
+    "parts": [
+      {"shape": "cylinder", "size": [0.4, 0.05, 0.4], "pos": [0, 0.025, 0], "color": "stone_grey"},
+      {"shape": "cylinder", "size": [0.1, 1.6, 0.1], "pos": [0, 0.8, 0], "color": "wood_felt"},
+      {"shape": "box", "size": [0.08, 0.07, 0.5], "pos": [0, 1.56, -0.22], "round": 0.02, "color": "wood_felt"},
+      {"shape": "cylinder", "size": [0.03, 0.12, 0.03], "pos": [0, 1.46, -0.42], "color": "ink_brown"},
+      {"shape": "cylinder", "size": [0.24, 0.26, 0.24], "pos": [0, 1.26, -0.42], "glow": 1.0, "color": "flame_felt"},
+      {"shape": "cone", "size": [0.32, 0.14, 0.32], "pos": [0, 1.42, -0.42], "color": "rust_canvas"},
+      {"shape": "cylinder", "size": [0.28, 0.04, 0.28], "pos": [0, 1.12, -0.42], "color": "rust_canvas"},
+      {"shape": "stitch", "from": [-0.05, 0.1, -0.055], "to": [-0.05, 1.5, -0.055], "color": "honey_thread"}
+    ]
+  },
+  "bobber": {"parts": [
+    {"shape": "sphere", "size": [0.16, 0.12, 0.16], "pos": [0, 0.08, 0], "color": "warm_cream"},
+    {"shape": "sphere", "size": [0.16, 0.09, 0.16], "pos": [0, 0.13, 0], "color": "rust_canvas"},
+    {"shape": "cylinder", "size": [0.02, 0.1, 0.02], "pos": [0, 0.21, 0], "color": "ink_brown"}
+  ]},
+
   "fire_pit": {
     "collide": {"radius": 0.6, "height": 0.4},
     "light": {"pos": [0, 0.7, 0]},

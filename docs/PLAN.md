@@ -163,3 +163,10 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   pays 15; one guest at a time, one night each, arriving from 9 am; undo is per player and clears each night; F1 runs
   the clock 30 times faster on the host.
 - 25 Oct 2026, owner: Stage A (core proof) is signed off.
+- 25 Oct 2026, owner: no separate sign-off PRs. The owner's sign-off in chat plus a merged PR counts as signed off;
+  the next build PR records it.
+- 25 Oct 2026, owner approved (Stage B picks): each guest brings one small request (a fish, a grilled fish or a chair
+  by their tent) with a tip; the improvement choice is a water point (comfort) or a lantern post (atmosphere); a
+  booking board in the menu offers advance bookings to accept, move a day later or decline, with no penalty;
+  fishing at the pond (3 fish, never fails) and grilling a fish at the fire; each stay leaves a line naming what the
+  guest loved and wished for; a morning report with last night's coins, those lines, the bookings and three goals.

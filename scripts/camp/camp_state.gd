@@ -7,7 +7,7 @@ extends RefCounted
 ## The camp save (see CampSave), or on a guest the part of it the host shared.
 var camp: Dictionary
 ## The parts of the camp a guest PC mirrors besides objects and profiles: the day, the coins and the guests.
-const SHARED: Array[String] = ["calendar", "coins", "wood", "stays", "last_settled", "ledger"]
+const SHARED: Array[String] = ["calendar", "coins", "wood", "stays", "last_settled", "ledger", "reservations"]
 ## Object id -> profile id of whoever carries it. Not saved: a carried thing stays at its last spot in the save.
 var carriers := {}
 ## Profile ids of the players in the camp right now.
@@ -15,6 +15,9 @@ var online: Array[String] = []
 ## Stage A: the day, sleep and night (CampDay), and grid placement (CampBuild).
 var day: CampDay
 var build: CampBuild
+## Stage B: requests, satisfaction and bookings (CampGuests), and fishing and grilling (CampPockets).
+var guests: CampGuests
+var pockets: CampPockets
 
 
 func _init(data: Dictionary) -> void:
@@ -29,6 +32,8 @@ func _init(data: Dictionary) -> void:
 			camp[key] = v.duplicate(true) if v is Dictionary or v is Array else v
 	day = CampDay.new(self)
 	build = CampBuild.new(self)
+	guests = CampGuests.new(self)
+	pockets = CampPockets.new(self)
 
 
 static func _num(key: String) -> float:
@@ -208,9 +213,13 @@ func snapshot() -> Dictionary:
 	return snap
 
 
-## The shared day as a guest PC mirrors it: SHARED plus who is ready for bed.
+## The shared day as a guest PC mirrors it: SHARED plus who is ready for bed and what the players in the camp carry
+## in their pockets.
 func shared() -> Dictionary:
-	var out := {"votes": day.votes.duplicate()}
+	var held := {}
+	for id in online:
+		held[id] = camp["profiles"][id].get("pockets", [])
+	var out := {"votes": day.votes.duplicate(), "pockets": held}
 	for key in SHARED:
 		out[key] = camp[key]
 	return out
@@ -223,6 +232,9 @@ func apply_shared(data: Dictionary) -> void:
 			camp[key] = data[key]
 	if data.has("votes"):
 		day.votes.assign(data["votes"])
+	for id: String in data.get("pockets", {}):
+		if camp["profiles"].has(id):
+			camp["profiles"][id]["pockets"] = data["pockets"][id]
 
 
 ## A guest's mirror of the camp, built from the host's snapshot.
