@@ -104,3 +104,7 @@ Build owns how the game loads them.
   but never stash during a merge. Lesson: wrote the code while the title-screen PR was open and merged main after;
   only two conflicts, both doc-comment or text-table lines.
 
+- 25 Oct 2026: Fix: Play alone and Host crashed on main after the title screen merged. Why: rewriting `camp_menu.gd`
+  dropped `slot()`, and no test pressed the real start buttons (tests called `start_solo` directly). Stops it: a test
+  presses Play alone and Host on the start page; when rewriting a file, list every method other scripts call on it
+  (`grep "menu\.[a-z_]*("`) and check each still exists.

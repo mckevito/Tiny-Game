@@ -281,6 +281,7 @@ owner's try. Research notes are outside the repo (project files, "Title screen a
 | Remapping from the screen: choose a key button, press the new key; the stop key keeps the old one | `test_settings.test_options_from_the_camp_menu_rebinds_and_goes_back` | Passing |
 | The picture preset in Options reaches the camp's views (the existing Sharp and Light presets) | same test | Passing |
 | Every option, choice and action has words | `test_settings.test_every_option_and_action_has_words` | Passing |
+| Play alone and Host start a camp from the real start-page buttons, in the slot picked | `test_settings.test_play_alone_and_host_start_from_the_menu_buttons` | Passing |
 
 ### How to try it
 1. Start the game: the title sits over the clearing. Move with the D-pad, the stick or the arrow keys; the focused
