@@ -172,6 +172,36 @@ func test_pad_remaps_reach_each_couch_players_own_input() -> String:
 	return out
 
 
+func test_cross_presses_menu_buttons_and_circle_goes_back() -> String:
+	_defaults()
+	var camp := _camp()
+	await _tree().process_frame
+	await _tree().process_frame
+	var menu: CampMenu = camp.menu
+	var out := ""
+	for pair: Array in [["ui_accept", "interact"], ["ui_cancel", "cancel"]]:
+		var pads: Array[int] = []
+		for ev in InputMap.action_get_events(pair[0]):
+			if ev is InputEventJoypadButton:
+				pads.append(ev.button_index)
+		if pads != InputSetup.row(pair[1])["joy_buttons"]:
+			out = "%s should take %s's pad buttons, got %s" % [pair[0], pair[1], pads]
+	if out == "":
+		menu._first_title.grab_focus()
+		for pressed in [true, false]:
+			var ev := InputEventJoypadButton.new()
+			ev.device = 0
+			ev.button_index = JOY_BUTTON_A
+			ev.pressed = pressed
+			Input.parse_input_event(ev)
+			await _tree().process_frame
+		await _tree().process_frame
+		if menu.page() != "start":
+			out = "Cross on the focused Start game button should open the start page (page %s)" % menu.page()
+	await _done(camp)
+	return out
+
+
 func test_title_start_options_and_back_with_focus_on_every_page() -> String:
 	_defaults()
 	var camp := _camp()

@@ -272,9 +272,19 @@ func test_players_page_picks_swaps_and_clears_devices() -> String:
 		if camp.couch_pad != 1 or camp.p1_device != 0:
 			why = "player two should be able to move to another controller"
 	if why == "":
+		camp._on_menu("players_p2")
+		camp._input(_pad_button(0, 0))
+		if camp.couch_pad != 0 or camp.p1_device != 1:
+			why = "player two choosing player one's controller should swap them"
+	if why == "":
 		camp._on_menu("players_nobody")
 		if camp.couch_id != "" or camp.p1_device != PlayerInput.ANY or camp.menu.page() != "players":
 			why = "player two: nobody should drop them out, give player one every device and stay on the page"
+	if why == "":
+		camp._on_menu("players_p2")
+		camp._input(_pad_button(0, 0))
+		if camp.couch_id != "" or not camp.menu.status.text.contains(Tuning.text("menu.players_taken")):
+			why = "choosing player one's own device for player two should say why on the page, got: " + camp.menu.status.text
 	await _done()
 	return why
 

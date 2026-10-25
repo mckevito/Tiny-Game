@@ -31,6 +31,24 @@ static func apply() -> void:
 			ev.axis_value = float(axis_row[1])
 			ev.device = -1
 			InputMap.action_add_event(action, ev)
+	_apply_ui()
+
+
+## Godot's menu actions (ui_accept, ui_cancel) get the pad buttons of the game actions named in data/input.json "ui",
+## replacing any pad buttons from an earlier apply, so a pad presses menu buttons with its own Cross and Circle.
+static func _apply_ui() -> void:
+	var ui: Dictionary = Tuning.table("input").get("ui", {})
+	for ui_action: String in ui:
+		if ui_action.begins_with("_") or not InputMap.has_action(ui_action):
+			continue
+		for ev in InputMap.action_get_events(ui_action):
+			if ev is InputEventJoypadButton:
+				InputMap.action_erase_event(ui_action, ev)
+		for button: int in row(str(ui[ui_action])).get("joy_buttons", []):
+			var ev := InputEventJoypadButton.new()
+			ev.button_index = button
+			ev.device = -1
+			InputMap.action_add_event(ui_action, ev)
 
 
 ## An action's bindings from the table with this PC's remaps on top: a remap replaces the first key or pad button,
