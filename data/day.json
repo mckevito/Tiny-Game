@@ -20,7 +20,7 @@
     "entry": [0.8, 11.0],
     "walk_speed_mps": 1.6,
     "stand_offset": [-1.25, 0.9],
-    "looks": ["guest_a", "guest_b"]
+    "looks": ["guest_a", "guest_b", "guest_c"]
   },
   "lodging": {"pitch": 15}
 }

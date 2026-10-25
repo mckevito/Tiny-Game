@@ -70,6 +70,9 @@ and the recipe as the quality bar for the whole game (25 Oct 2026): both players
 | Both sculpted campers keep their stitch map and shade, and are painted from the palette | `test_felt_models.test_sculpted_camper_is_painted_from_the_palette` and `..._keeps_its_stitch_map_and_baked_shade` (both campers) | Passing |
 | The two players look different (sweater, headwear, hair) | `test_felt_models.test_the_two_sculpted_players_look_different` | Passing |
 | Player two, made by the recipe, matches player one's quality | Owner's verdict (side by side, against the sheet, in camp day and dusk) | Signed off (owner, 25 Oct 2026) |
+| Guests read apart from the players and each other (sweater, headwear, hair), and every guest look is a model | `test_felt_models.test_guests_read_apart_from_the_players_and_each_other`, `..._every_guest_look_is_a_model` | Passing |
+| A guest costs at most two thirds of a player's vertices (three guests and two players on the laptop floor) | `test_felt_models.test_guests_are_lighter_than_the_players` | Passing |
+| The knitted guests (Bea, Olive, Walt) match the players' quality | Owner's verdict (turnaround sheet, in camp day, dusk and play camera) | Waiting |
 | The pilot matches the reference closely enough to roll out | Owner's verdict (sheet beside the reference, day and dusk, walk GIF) | Waiting |
 
 How to look: the capture's `--hero` mode (`handoff/art/HANDOFF.md`), or F5 the sandbox.

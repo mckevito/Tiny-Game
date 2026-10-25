@@ -46,9 +46,25 @@
     "file_slots": ["$skin", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "button_black", "blush_felt", "warm_cream", "$thread", "$hair_shade"],
     "slots": {"skin": "peach_felt", "shirt": "mustard_knit", "pants": "moss_felt", "mitten": "rust_canvas", "hat": "rust_canvas", "hair": "bun_brown", "boots": "boot_brown", "thread": "honey_thread", "hair_shade": "ink_brown"}
   },
+  "knit_guest_bea": {
+    "file": "res://art/characters/knit_guests/knit_guest_bea/knit_guest_bea.glb",
+    "file_slots": ["$skin", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "button_black", "blush_felt", "warm_cream", "$thread", "$hair_shade", "$trim"],
+    "slots": {"skin": "peach_felt", "shirt": "plum_knit", "pants": "denim_felt", "mitten": "honey_thread", "hat": "warm_cream", "hair": "ginger_yarn", "boots": "boot_brown", "thread": "honey_thread", "hair_shade": "ginger_shadow", "trim": "plum_knit"}
+  },
+  "knit_guest_olive": {
+    "file": "res://art/characters/knit_guests/knit_guest_olive/knit_guest_olive.glb",
+    "file_slots": ["$skin", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "button_black", "blush_felt", "warm_cream", "$thread", "$hair_shade", "$trim"],
+    "slots": {"skin": "skin_felt", "shirt": "warm_cream", "pants": "bark_brown", "mitten": "moss_felt", "hat": "moss_felt", "hair": "silver_yarn", "boots": "boot_brown", "thread": "honey_thread", "hair_shade": "silver_shadow", "trim": "wood_felt"}
+  },
+  "knit_guest_walt": {
+    "file": "res://art/characters/knit_guests/knit_guest_walt/knit_guest_walt.glb",
+    "file_slots": ["$skin", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "button_black", "blush_felt", "warm_cream", "$thread", "$hair_shade", "$trim"],
+    "slots": {"skin": "cocoa_felt", "shirt": "cranberry_knit", "pants": "pine_felt", "mitten": "moss_felt", "hat": "denim_felt", "hair": "pewter_yarn", "boots": "boot_brown", "thread": "honey_thread", "hair_shade": "silver_shadow", "trim": "bark_brown"}
+  },
   "camper_a": {"base": "knit_camper"},
-  "guest_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "rust_canvas", "pants": "moss_felt", "hat": "pond_blue", "trim": "honey_thread", "mitten": "warm_cream"}},
-  "guest_b": {"base": "camper", "show": ["bun"], "slots": {"shirt": "pond_blue", "pants": "bark_brown", "hair": "ink_brown", "mitten": "honey_thread"}},
+  "guest_a": {"base": "knit_guest_bea"},
+  "guest_b": {"base": "knit_guest_olive"},
+  "guest_c": {"base": "knit_guest_walt"},
   "camper_b": {"base": "knit_camper_b"},
 
   "tent": {
