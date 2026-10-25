@@ -159,7 +159,7 @@ Signed off: not yet. Built and tested in the cloud; waiting on the owner's try.
 5. To skip ahead, open the F1 panel on the host: the clock runs 30 times faster while it is open.
 
 ### Still open
-- **Proposed** defaults the plan leaves open (data/day.json, data/build.json): bed opens at 6 pm and is chosen from the
+- Defaults the plan left open, **approved by the owner** on 25 Oct 2026 (data/day.json, data/build.json): bed opens at 6 pm and is chosen from the
   menu; the clock waits while the menu is open with no guest PC in; 40 starting coins, a pitch costs 25, a night pays
   15; one guest at a time stays one night and comes from 9 am; undo is per player and clears each night; build mode is
   B or Triangle, turn F or Square, undo Z or D-pad left; F1 speeds the clock 30 times on the host.

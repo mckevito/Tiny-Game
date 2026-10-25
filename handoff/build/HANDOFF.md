@@ -30,7 +30,7 @@
      main camera is player one's half, a SubViewport camera draws player two's half only while split.
    - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale.
 3. **Open work, in order:**
-   1. Stage A sign-off: the owner tries it, says yes or no to the Proposed defaults (STATUS "Still open"), and
+   1. Stage A sign-off: the owner tries it (the defaults in STATUS "Still open" are approved) and
       confirms the four Milestone 3 checks: two-DualSense couch, a link code, a Tailscale join, and the fps on the
       weakest laptop (tune `data/graphics.json` from that).
    2. Stage B (three-day fun test), after Stage A is merged and signed off.
