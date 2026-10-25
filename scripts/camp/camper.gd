@@ -19,6 +19,8 @@ var input: PlayerInput
 ## emits `arrived`; null when it is not walking anywhere.
 var walk_target: Variant = null
 var walk_speed := 1.5
+## A player's walking pace as a share of the usual (a long log carried alone is slow; CampGather.carry_speed).
+var speed_scale := 1.0
 
 signal arrived
 
@@ -64,7 +66,7 @@ func _physics_process(delta: float) -> void:
 	var stick := Vector2.ZERO
 	if controlled:
 		stick = input.move() if input else Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var target := wish_velocity(stick, camera.global_rotation.y if camera else 0.0)
+	var target := wish_velocity(stick, camera.global_rotation.y if camera else 0.0) * speed_scale
 	var accel := Tuning.num("tuning", "movement.acceleration_mps2") * delta
 	velocity.x = move_toward(velocity.x, target.x, accel)
 	velocity.z = move_toward(velocity.z, target.z, accel)

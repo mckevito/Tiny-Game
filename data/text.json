@@ -15,7 +15,7 @@
   "prompt": {
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
-    "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {menu} for the menu",
+    "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {clipboard} clipboard · {menu} for the menu",
     "drop_in": "A friend can drop in: {menu} on a second controller",
     "for_player": "%s: %s",
     "build_here": "{interact} Make a %s here (%s) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
@@ -31,9 +31,12 @@
     "pockets": "Pockets: %s",
     "pockets_for": "%s's pockets: %s",
     "report_close": "{interact} Start the day",
-    "chop": "{interact} Chop wood (%d left today)",
+    "chop": "{interact} Chop wood (%d left in this tree)",
     "chopping": "Chopping…",
-    "forage": "{interact} Pick up the %s"
+    "forage": "{interact} Pick up the %s",
+    "take_sapling": "{interact} Pick up the sapling",
+    "plant": "{interact} Plant a sapling here",
+    "log_alone": "Heavy! It goes faster with a friend beside you."
   },
   "menu": {
     "title": "Our Little Campground",
@@ -104,9 +107,11 @@
     "no_request": "They don't need anything right now.",
     "no_booking": "That booking isn't on the board any more.",
     "wood": "Not quite enough wood for that yet. The trees will give you some.",
-    "tree_resting": "This tree is resting until tomorrow. Try another one.",
     "nothing_here": "There's nothing left here today.",
-    "no_wood": "The fire needs a piece of wood first. Chop a tree or pick up sticks."
+    "no_wood": "The fire needs a piece of wood first. Chop a tree or pick up sticks.",
+    "no_tree": "This tree is down. Plant a sapling at its stump and it will grow back.",
+    "no_stump": "Saplings go in a bare stump.",
+    "no_sapling": "You need a sapling for that. A fallen tree drops one."
   },
   "toast": {
     "joined": "%s joined the camp.",
@@ -128,7 +133,10 @@
     "chopped": "Chop! The wood pile has %d.",
     "found": "You picked up the %s.",
     "spotted_new": "You spotted a %s! It is in the journal now.",
-    "task_done": "Done: %s! +%d coins."
+    "task_done": "Done: %s! +%d coins.",
+    "felled": "Timber! The tree fell and dropped a sapling by its stump.",
+    "planted": "Planted! It will be a tree again in a couple of mornings.",
+    "log_split": "The long log splits into %d wood for the pile!"
   },
   "build": {
     "pitch": "tent pitch",
@@ -181,7 +189,8 @@
     "grilled_trout": "grilled trout",
     "grilled_sunfish": "grilled sunfish",
     "berries": "berries",
-    "stick": "sticks"
+    "stick": "sticks",
+    "sapling": "sapling"
   },
   "request": {
     "say": {
@@ -294,8 +303,13 @@
       "trees": "by the trees",
       "fire": "by the fire",
       "pond": "at the pond",
-      "pitches": "at the pitches"
-    }
+      "pitches": "at the pitches",
+      "stumps": "at a stump",
+      "woods": "from the edge of the woods"
+    },
+    "first_plant": "Plant a sapling at a stump",
+    "plant_trees": "Plant saplings",
+    "bring_log": "Bring the long log to the fire (easier together)"
   },
   "news": {
     "day_2": "berries ripen on the bushes, and deer visit the edge of the woods at dawn and dusk.",
@@ -307,5 +321,24 @@
     "squirrel": "squirrel",
     "deer": "deer",
     "bear": "bear"
+  },
+  "clipboard": {
+    "tab": {
+      "today": "Today",
+      "bookings": "Bookings",
+      "supplies": "Supplies"
+    },
+    "open_tab": "[ %s ]",
+    "hint": "{tabs} turn the page · {clipboard} put it away",
+    "answer": "Answer a new booking from the menu ({menu}).",
+    "staying": "Staying now",
+    "nobody": "Nobody yet. Guests come to a free pitch in the afternoon.",
+    "stay": "%s at the %s: would like %s",
+    "content": "nothing more, happy as can be",
+    "stock": "Wood pile: %d · Coins: %d",
+    "pockets": "%s's pockets: %s",
+    "empty": "empty",
+    "animals": "Animals spotted: %d of %d (%s)",
+    "none_yet": "none yet"
   }
 }

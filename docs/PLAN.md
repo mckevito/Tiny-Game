@@ -129,7 +129,7 @@ together actions. Never cut both input methods, two-player reliability, decorati
 save recovery.
 
 ## Later (not in v1)
-A free photo mode, text chat, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
+The clipboard's map tab with plan marks both players see (next round, owner). A free photo mode, text chat, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
 two players, a public release (itch.io or Steam), Steam's relay, consoles, voice acting.
 
 ## Decision log
@@ -170,3 +170,11 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   booking board in the menu offers advance bookings to accept, move a day later or decline, with no penalty;
   fishing at the pond (3 fish, never fails) and grilling a fish at the fire; each stay leaves a line naming what the
   guest loved and wished for; a morning report with last night's coins, those lines, the bookings and three goals.
+- 25 Oct 2026, owner: Stage B is not signed off after the first play: days 1 to 3 felt blank, with nothing to do or
+  explore. Wanted: a clipboard (visitors, inventory, the map, planning the camp), chopping trees, more to the core loop
+  and a light tutorial, decided after research.
+- 25 Oct 2026, owner: little animals, deer and bears in the world to make it feel alive (cozy: never a threat).
+- 25 Oct 2026, owner picked "items 1-6, map later" from the research: a Today list whose firsts are the tutorial,
+  chopping and wood recipes, daily finds, animals, a per-player clipboard (Today, Bookings, Supplies) and a long log
+  that goes faster carried together; the morning report says what is new tomorrow. The clipboard's map tab follows.
+- 25 Oct 2026, owner: chopped trees fall and drop a sapling that players replant, like Animal Crossing.

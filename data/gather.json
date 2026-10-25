@@ -1,7 +1,8 @@
 {
-  "_about": "Gathering (scripts/camp/camp_gather.gd). Trees never die: each choppable scenery tree (models in trees.models) gives wood_per_day wood a day, one per chop, then rests until the next morning; a chop takes chop_s while the tree wobbles (wobble_deg, wobble_s). A player chops within reach_m of a tree's trunk. Forage spots refill each morning: each has an item, a model drawn while it is there, a spot [x, z] in metres and from_day (a day number) it first appears. A stick goes straight onto the camp's wood pile (wood item); others go into the pockets. Grilling uses cook_wood wood from the pile.",
-  "trees": {"models": ["tree_pine", "tree_round", "tree_puff"], "wood_per_day": 3, "reach_m": 1.6, "chop_s": 0.8,
-    "wobble_deg": 7.0, "wobble_s": 0.5},
+  "_about": "Gathering (scripts/camp/camp_gather.gd). Each choppable scenery tree (models in trees.models) gives wood_per_tree wood, one per chop, then falls: a stump (stump_model) stays and a sapling (sapling_item, drawn as sapling_model) drops beside it at sapling_offset [x, z] metres. A sapling planted at a bare stump grows back into the tree after grow_days mornings. A chop takes chop_s while the tree wobbles (wobble_deg, wobble_s); a player works within reach_m of a tree's trunk. Forage spots refill each morning: each has an item, a model drawn while it is there, a spot [x, z] in metres and from_day (a day number) it first appears. A stick goes straight onto the camp's wood pile (wood item); others go into the pockets. Grilling uses cook_wood wood from the pile. long_log: each morning while the camp has none, a long log (model, carried like a chair) lies at pos [x, z] turned yaw degrees. Carried alone it goes at alone_speed of walking pace; with the other player within help_m it goes at full pace. Set down within fire_m of a fire_model in the clearing it splits into wood on the pile.",
+  "trees": {"models": ["tree_pine", "tree_round", "tree_puff"], "wood_per_tree": 3, "reach_m": 1.6, "chop_s": 0.8,
+    "wobble_deg": 7.0, "wobble_s": 0.5, "stump_model": "tree_stump", "sapling_item": "sapling", "sapling_model": "sapling",
+    "sapling_offset": [0.7, 0.5], "grow_days": 2},
   "forage_reach_m": 1.3,
   "cook_wood": 1,
   "wood_items": ["stick"],
@@ -13,5 +14,6 @@
     {"item": "berries", "model": "berry_cluster", "pos": [-5.8, 1.8], "from_day": 2},
     {"item": "berries", "model": "berry_cluster", "pos": [6.0, 2.8], "from_day": 2},
     {"item": "berries", "model": "berry_cluster", "pos": [3.0, -5.4], "from_day": 2}
-  ]
+  ],
+  "long_log": {"model": "long_log", "pos": [-9.0, 3.6], "yaw": 70, "wood": 6, "alone_speed": 0.45, "help_m": 2.2, "fire_m": 2.6, "fire_model": "fire_pit"}
 }

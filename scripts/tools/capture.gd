@@ -9,7 +9,9 @@ extends SceneTree
 ## --stage-b plays the camp with two pitches, a water point and a lantern post, guests with requests over their
 ## heads and the player fishing at the pond, saving camp_day.png and camp_dusk.png, then report.png (the morning
 ## report after a night). Round 2 adds welcome.png (the first morning's Today list), a log bench by the fire, the
-## animals in the day and dusk shots (day 3: rabbits, squirrels, deer, the bear by the fire) and chop.png.
+## animals in the day and dusk shots (day 3: rabbits, squirrels, deer, the bear by the fire), chop.png, and
+## stump_log_clipboard.png (a felled tree's stump and sapling, a planted sapling, the long log carried and the
+## clipboard open on Supplies).
 
 const SETTLE_FRAMES := 30
 
@@ -235,6 +237,26 @@ func _stage_b(out: String) -> void:
 		await process_frame
 	_save(out + "/chop.png")
 	camp._end_busy("p_capture_one")
+	var fell: Dictionary = CampGather.trees()[1]
+	s.camp["trees"][str(fell["index"])] = {"chops": 0, "stage": "stump", "sapling_out": true, "planted": 0}
+	var grown: Dictionary = CampGather.trees()[2]
+	s.camp["trees"][str(grown["index"])] = {"chops": 0, "stage": "sapling", "sapling_out": false, "planted": 3}
+	camp._sync_trees()
+	me.position = Vector3(fell["pos"].x + 1.6, 0, fell["pos"].y + 1.4)
+	var log_id := ""
+	for id: String in s.camp["objects"]:
+		if str(s.camp["objects"][id]["model"]) == "long_log":
+			log_id = id
+	s.carriers[log_id] = "p_capture_one"
+	camp._apply_object(log_id)
+	camp.toggle_clipboard("p_capture_one")
+	camp._boards["p_capture_one"].flip(2)
+	camp._refresh_boards()
+	await _settle()
+	_save(out + "/stump_log_clipboard.png")
+	camp.toggle_clipboard("p_capture_one")
+	s.carriers.erase(log_id)
+	camp._apply_object(log_id)
 	me.position = Vector3(2.4, 0, -3.6)
 	me.rotation.y = deg_to_rad(-90.0)
 	s.set_player_pos("p_capture_one", Vector2(2.4, -3.6), -90.0)

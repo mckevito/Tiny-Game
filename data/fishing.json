@@ -19,6 +19,7 @@
     "grilled_perch": {"kind": "meal"},
     "grilled_trout": {"kind": "meal"},
     "grilled_sunfish": {"kind": "meal"},
-    "berries": {"kind": "fruit"}
+    "berries": {"kind": "fruit"},
+    "sapling": {"kind": "plant"}
   }
 }

@@ -256,3 +256,73 @@ func test_the_guest_pc_fishes_gives_and_books_through_the_host() -> String:
 			why = "both PCs should read the same report:\n%s\n---\n%s" % [host.report.text(), guest.report.text()]
 	await _done()
 	return why
+
+
+## Round 2 from the buttons: a tree chopped until it falls, its sapling picked up and planted at the stump, the
+## clipboard's tabs, and the long log carried to the fire.
+func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -> String:
+	_fresh()
+	var camp := _camp("RoundTwo", "p_host", "Hana")
+	camp.start_solo(1)
+	var s: CampState = camp.state
+	var why := ""
+	var tree: Dictionary = CampGather.trees()[0]
+	var index := int(tree["index"])
+	_stand(camp, "p_host", (tree["pos"] as Vector2) + Vector2(1.0, 0.0))
+	for i in int(Tuning.num("gather", "trees.wood_per_tree")):
+		if why == "" and not await _use(camp, "p_host"):
+			why = "chop %d should work" % (i + 1)
+	var root: Node3D = camp.clearing.placed[index]
+	if why == "" and (root.get_child(0).visible or (camp._tree_props.get(index, []) as Array).size() != 2):
+		why = "the felled tree should hide, leaving a stump and a sapling beside it"
+	if why == "":
+		camp._unhandled_input(_key("interact"))
+		if s.pockets.first_of("p_host", "plant") != "sapling":
+			why = "interact by the stump should pick up the sapling"
+	if why == "":
+		await _tree().process_frame
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.plant"), false)):
+			why = "with a sapling in the pockets the stump should offer to plant, got " + camp.get_node("Hud/Prompt").text
+		camp._unhandled_input(_key("interact"))
+		if s.gather.tree(index)["stage"] != "sapling" or (camp._tree_props.get(index, []) as Array).size() != 1:
+			why = "interact should plant the sapling at the stump, and show it"
+	# The clipboard: open, flip through every tab, put away.
+	if why == "":
+		camp._unhandled_input(_key("clipboard"))
+		var board: Clipboard = camp._boards.get("p_host")
+		if board == null or not board.text().contains(CampTasks.line(s.tasks.active()[0])):
+			why = "the clipboard key should open the clipboard on its Today tab"
+		elif not camp.camera.hold_turn:
+			why = "while the clipboard is open the turn buttons should flip its tabs, not the camera"
+		else:
+			camp._unhandled_input(_key("camera_right"))
+			if board.tab_name() != "bookings" or not board.text().contains(Tuning.text("booking.ferns.name")):
+				why = "the next tab should show the bookings, got " + board.text()
+			camp._unhandled_input(_key("camera_right"))
+			if why == "" and (board.tab_name() != "supplies" or not board.text().contains(
+					Tuning.text("clipboard.stock") % [int(s.camp["wood"]), int(s.camp["coins"])])):
+				why = "the third tab should show the supplies, got " + board.text()
+			camp._unhandled_input(_key("clipboard"))
+			if why == "" and (camp._boards.has("p_host") or camp.camera.hold_turn):
+				why = "the clipboard key again should put it away"
+	# The long log: slow alone, splits by the fire.
+	if why == "":
+		var log_id := ""
+		for id: String in s.camp["objects"]:
+			if str(s.camp["objects"][id]["model"]) == "long_log":
+				log_id = id
+		_stand(camp, "p_host", s.object_pos(log_id) + Vector2(0.6, 0.0))
+		camp._unhandled_input(_key("interact"))
+		await _tree().physics_frame
+		await _tree().physics_frame
+		var wood := int(s.camp["wood"])
+		if s.carried_by("p_host") != log_id or camp.campers["p_host"].speed_scale >= 1.0:
+			why = "the long log should be picked up and go slowly alone"
+		else:
+			_stand(camp, "p_host", Vector2(0.0, 2.6))
+			camp.campers["p_host"].rotation.y = 0.0
+			camp._unhandled_input(_key("interact"))
+			if s.camp["objects"].has(log_id) or int(s.camp["wood"]) <= wood:
+				why = "set down by the fire the log should split into wood"
+	await _done()
+	return why

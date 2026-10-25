@@ -11,29 +11,51 @@ func _camp() -> CampState:
 	return state
 
 
-func test_a_tree_gives_its_wood_then_rests_until_morning() -> String:
+func test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted() -> String:
 	var state := _camp()
 	var tree: Dictionary = CampGather.trees()[0]
 	var index := int(tree["index"])
-	var per_day := int(Tuning.num("gather", "trees.wood_per_day"))
+	var per_tree := int(Tuning.num("gather", "trees.wood_per_tree"))
 	state.set_player_pos("p_host", (tree["pos"] as Vector2) + Vector2(6, 0), 0.0)
 	if state.gather.chop("p_host", index) != "deny.too_far":
 		return "chopping from far away should say so"
 	state.set_player_pos("p_host", (tree["pos"] as Vector2) + Vector2(1, 0), 0.0)
-	if state.gather.tree_near(state.player_pos("p_host")) != index:
+	var at := state.player_pos("p_host")
+	if state.gather.tree_near(at) != index:
 		return "the tree should be within reach"
-	for i in per_day:
-		if state.gather.chop("p_host", index) != "":
-			return "chop %d should be allowed" % (i + 1)
-	if int(state.camp["wood"]) != per_day:
+	for i in per_tree:
+		if state.gather.chop("p_host", index) != "" or state.gather.felled != (i == per_tree - 1):
+			return "chop %d should be allowed, and only the last should fell the tree" % (i + 1)
+	if int(state.camp["wood"]) != per_tree:
 		return "each chop should add one wood, got %d" % int(state.camp["wood"])
-	if state.gather.chop("p_host", index) != "deny.tree_resting" or state.gather.tree_near(state.player_pos("p_host")) == index:
-		return "a tree with no wood left today should rest, and not be offered"
+	if state.gather.chop("p_host", index) != "deny.no_tree" or state.gather.tree_near(at) == index:
+		return "a fallen tree should not be offered for chopping"
 	if state.gather.chop("p_host", 0) != "deny.not_movable":
 		return "the ground is not a tree"
+	if state.gather.sapling_near(at) != index or state.gather.stump_near(at) >= 0:
+		return "the fallen tree should leave a sapling to pick up by its stump"
+	state.camp["profiles"]["p_host"]["pockets"] = ["perch", "perch", "perch", "perch", "perch", "perch"]
+	if state.gather.take_sapling("p_host", index) != "deny.pockets_full" or state.gather.sapling_near(at) != index:
+		return "with full pockets the sapling should wait by the stump, never lost"
+	state.camp["profiles"]["p_host"]["pockets"] = []
+	if state.gather.plant("p_host", index) != "deny.no_stump":
+		return "planting needs a bare stump first"
+	if state.gather.take_sapling("p_host", index) != "" or state.pockets.first_of("p_host", "plant") != "sapling":
+		return "the sapling should go into the pockets"
+	if state.gather.plant("p_guest", index) != "deny.no_sapling" and state.player_pos("p_guest").distance_to(at) < 2.0:
+		return "planting needs a sapling"
+	if state.gather.plant("p_host", index) != "" or not state.pockets.pockets("p_host").is_empty() \
+			or state.gather.tree(index)["stage"] != "sapling":
+		return "a sapling should be planted at the bare stump"
+	for d in int(Tuning.num("gather", "trees.grow_days")) - 1:
+		state.camp["calendar"]["day"] = int(state.camp["calendar"]["day"]) + 1
+		state.gather.new_day()
+	if state.gather.wood_left(index) != 0:
+		return "a sapling should take its time to grow"
+	state.camp["calendar"]["day"] = int(state.camp["calendar"]["day"]) + 1
 	state.gather.new_day()
-	if state.gather.wood_left(index) != per_day:
-		return "a tree should have its wood again in the morning; trees never die"
+	if state.gather.wood_left(index) != per_tree:
+		return "after grow_days mornings the tree should stand again, full of wood"
 	return ""
 
 
@@ -149,3 +171,28 @@ func test_animals_keep_their_hours_and_days() -> String:
 		why = "a rabbit should hop away from a player who comes close"
 	w.free()
 	return why
+
+
+func test_the_long_log_goes_faster_together_and_splits_by_the_fire() -> String:
+	var state := _camp()
+	var id := state.gather.lay_log()
+	if id == "" or state.gather.lay_log() != "":
+		return "one long log should lie at the edge of the woods, never two"
+	var model := str(state.camp["objects"][id]["model"])
+	if not CampState.can_carry(model):
+		return "the long log should be carried like a chair"
+	var me := Vector3(-9, 0, 3.6)
+	var alone := CampGather.carry_speed(model, me, [Vector3(5, 0, 5)] as Array[Vector3])
+	var together := CampGather.carry_speed(model, me, [me + Vector3(1, 0, 0)] as Array[Vector3])
+	if alone >= 1.0 or together != 1.0 or CampGather.carry_speed("chair", me, [] as Array[Vector3]) != 1.0:
+		return "the log should go slowly alone and at full pace with a friend beside (got %s, %s)" % [alone, together]
+	if CampGather.log_by_fire(model, Vector2(-9, 3.6)) or not CampGather.log_by_fire(model, Vector2(1.5, 1.0)) \
+			or CampGather.log_by_fire("chair", Vector2(1.5, 1.0)):
+		return "only a long log set down by the fire should split"
+	var wood := int(state.camp["wood"])
+	var got := state.gather.split_log(id)
+	if state.camp["objects"].has(id) or int(state.camp["wood"]) != wood + got or got <= 0:
+		return "splitting should turn the log into wood on the pile"
+	if state.gather.lay_log() == "":
+		return "the next morning should lay a new log"
+	return ""
