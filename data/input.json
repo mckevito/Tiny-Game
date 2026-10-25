@@ -1,8 +1,8 @@
 {
   "_about": "Every gameplay action with its default keyboard/mouse and joypad bindings. Keys use Godot key names; joy_buttons and joy_axes use Godot's JoyButton and JoyAxis numbers (0 = Cross / left stick X). glyphs names each action's button per device for prompts: a string writes {action} and gets the glyph of the device that player last used. These are the defaults: each PC can remap them and set the stick deadzone in Options (data/settings.json, scripts/core/settings.gd).",
   "glyphs": {
-    "keyboard": {"interact": "E", "menu": "Tab", "cancel": "Esc", "move": "WASD", "camera": "Q and R", "build": "B", "rotate": "F", "undo": "Z", "next_kind": "C", "clipboard": "J", "tabs": "Q and R", "drop": "G"},
-    "pad": {"interact": "Cross", "menu": "Options", "cancel": "Circle", "move": "Left stick", "camera": "L1 and R1", "build": "Triangle", "rotate": "Square", "undo": "D-pad left", "next_kind": "D-pad right", "clipboard": "Touchpad", "tabs": "L1 and R1", "drop": "D-pad left"}
+    "keyboard": {"interact": "E", "menu": "Tab", "cancel": "Esc", "move": "WASD", "camera": "Q and R", "build": "B", "rotate": "F", "undo": "Z", "next_kind": "C", "clipboard": "J", "tabs": "Q and R", "next_tool": "T", "pack": "I"},
+    "pad": {"interact": "Cross", "menu": "Options", "cancel": "Circle", "move": "Left stick", "camera": "L1 and R1", "build": "Triangle", "rotate": "Square", "undo": "D-pad left", "next_kind": "D-pad right", "clipboard": "Touchpad", "tabs": "L1 and R1", "next_tool": "D-pad up", "pack": "D-pad down"}
   },
   "actions": {
     "move_forward": {"keys": ["W", "Up"], "joy_axes": [[1, -1.0]]},
@@ -14,14 +14,15 @@
     "menu":         {"keys": ["Tab"], "joy_buttons": [6]},
     "camera_left":  {"keys": ["Q"], "joy_buttons": [9]},
     "camera_right": {"keys": ["R"], "joy_buttons": [10]},
-    "zoom_in":      {"keys": ["Equal"], "mouse": [4], "joy_buttons": [11]},
-    "zoom_out":     {"keys": ["Minus"], "mouse": [5], "joy_buttons": [12]},
+    "zoom_in":      {"keys": ["Equal"], "mouse": [4], "joy_buttons": [8]},
+    "zoom_out":     {"keys": ["Minus"], "mouse": [5], "joy_buttons": [7]},
     "build":        {"keys": ["B"], "joy_buttons": [3]},
     "rotate":       {"keys": ["F"], "joy_buttons": [2]},
     "undo":         {"keys": ["Z"], "joy_buttons": [13]},
     "next_kind":    {"keys": ["C"], "joy_buttons": [14]},
     "clipboard":    {"keys": ["J"], "joy_buttons": [20]},
-    "drop":         {"keys": ["G"], "joy_buttons": [13]},
+    "next_tool":    {"keys": ["T"], "joy_buttons": [11]},
+    "pack":         {"keys": ["I"], "joy_buttons": [12]},
     "dev_menu":     {"keys": ["F1"], "joy_buttons": [4]}
   }
 }

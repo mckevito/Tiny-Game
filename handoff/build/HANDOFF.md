@@ -1,4 +1,4 @@
-# Build hand-off, 25 Oct 2026 (Stage B round 3 built, waiting on the owner's play)
+# Build hand-off, 25 Oct 2026 (Stage B round 4 built, waiting on the owner's play)
 
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
@@ -7,8 +7,16 @@
    25 Oct 2026). Four Milestone 3 checks were not confirmed by name (`docs/STATUS.md`, "Still open"). Stage A (core
    proof) is merged (PR #10) and signed off by the owner, 25 Oct 2026. Stage B (three-day fun test) is merged (PR #13)
    but NOT signed off: days 1 to 3 felt blank. Round 2 (owner's pick "items 1-6, map later", plus felling and
-   replanting) is merged (PR #14). Round 3 (owner's pick "items 1-4 now, rest next") is built on branch
-   `claude/project-thread-s2hpsz` and waits on the owner's play and sign-off.
+   replanting) is merged (PR #14), round 3 (Pack, workbench, camp box) is merged (PR #17). Round 4 (owner's round 3
+   feedback) is built on branch `claude/project-thread-s2hpsz` and waits on the owner's play and sign-off.
+   - Round 4: the Pack is `scripts/camp/pack_panel.gd` (PackPanel, was PackBar), opened per player in `_packs`
+     ({panel, pick}; `open_pack`, `close_pack`); interact in it asks the host "drop". `scripts/camp/hud_dock.gd`
+     (HudDock) is each local player's corner dock in `_docks`. The tool in hand is `_tools[who]` (local, not saved;
+     `tool_of`, `has_tool`, `hold_tool`; order and needs in `data/items.json` tools); `action_for` returns
+     "need_tool" when only the missing tool stops a chop or a cast. The picked piece is `_kinds[who]` (`piece(who)`);
+     `toggle_build` starts on it. `_show_hud` hides the hint, toast, docks and panels under the menu each frame;
+     `_hold_camera` keeps Q/R off the camera while a clipboard, workbench or Pack is open. `CampMenu._fit` scales the
+     menu down to fit (`hud.menu_margin_px`). Settings has `window_size` (applied in a window only, centred).
    - Round 3: `scripts/camp/camp_pack.gd` (CampPack, was CampPockets; `state.pack`): each profile's `pack` is
      [{item, n}] (`add` returns how many fit, `remove`, `take(kind)`, `room_for`); the camp `box` (`have` and `spend`
      use the Pack first, then the box; `deposit`); dropped `bundles` in the save (`drop(pid, slot)` joins a nearby
@@ -16,8 +24,7 @@
      `data/items.json`. `CampBuild` now has the build kit (`kit` in the save, shared by both players): `available()`
      is what build mode cycles, kinds marked `free` in `data/build.json` (the pitch) are always there and paid in
      coins, the rest come from the kit and pack back into it; `craft(pid, kind)` at the workbench uses
-     `data/craft.json`. `scripts/camp/pack_bar.gd` (PackBar) is each local player's bottom bar in `_bars`; `_picked`
-     holds the picked slot. The workbench panel reuses `Clipboard` with `heading` set (`open_bench`, `bench_text`,
+     `data/craft.json`. (Round 3's always-on Pack bar became round 4's PackPanel.) The workbench panel reuses `Clipboard` with `heading` set (`open_bench`, `bench_text`,
      `_bench`). New `_request` kinds: "drop", "pick_bundle", "deposit", "craft". The top-right Clock grows left and
      wraps; `project.godot` stretch aspect is `expand`. Save version 5 (pockets -> pack, wood -> box.wood),
      protocol 5.
@@ -140,7 +147,9 @@
    - Numbers read from JSON are floats: `[2, 3].has(3)` on a table array is false. Compare with `int(x) == n`.
    - The workbench sits by the folding chair's spot: a prompt near both chose the bench and chair pickups failed in
      the couch and net tests. `action_for` checks pick_up before bench and deposit, and the bench is at (-3.8, 1.4).
-   - D-pad left is both undo (build mode only) and drop (outside build mode); keep them in different modes.
+   - Headless test windows are 64 × 64 (a 1920 × 1920 visible rect after stretch), which hides anything too tall:
+     a layout test sets `root.size = Vector2i(1920, 1080)` first and puts it back after.
+   - Two panels docked on the same side overlap: opening the Pack or the workbench puts that player's clipboard away.
    - `action_for` returns an `arg` for most actions; pass it on only where the request takes one (the busy chop
      did, grilling did not, and grilling silently failed).
 7. **How to check things:**

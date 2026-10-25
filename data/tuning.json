@@ -66,6 +66,7 @@
     "report_ink_swatch": "ink_brown",
     "title_font_px": 40,
     "menu_width_px": 560,
+    "menu_margin_px": 24,
     "menu_font_px": 28,
     "today_max": 3
   },
@@ -87,10 +88,12 @@
     "edge_swatch": "honey_thread",
     "refresh_s": 0.25
   },
-  "pack_bar": {
-    "_about": "The Pack bar (scripts/camp/pack_bar.gd): each slot is slot_px wide, gap_px apart, with margin_px inside, corner_px corners and an edge_px edge (picked: picked_px, picked_swatch); font_px text; bottom_px above the screen edge; the hint line has a hint_outline_px outline.",
-    "slot_px": 104,
-    "gap_px": 6,
+  "pack_panel": {
+    "_about": "The Pack (scripts/camp/pack_panel.gd), opened with the pack button like Animal Crossing's pockets: a felt panel of columns x rows slots, each slot_w_px by slot_h_px, gap_px apart, with margin_px inside, corner_px corners and an edge_px edge (picked: picked_px, picked_swatch); font_px slot text and title_px for the title; it sits bottom_px above the bottom of its player's half; the panel's own margin is panel_margin_px.",
+    "columns": 4,
+    "slot_w_px": 170,
+    "slot_h_px": 84,
+    "gap_px": 8,
     "margin_px": 6,
     "corner_px": 10,
     "edge_px": 3,
@@ -98,8 +101,23 @@
     "swatch": "warm_cream",
     "edge_swatch": "honey_thread",
     "picked_swatch": "rust_canvas",
-    "font_px": 19,
-    "bottom_px": 12,
-    "hint_outline_px": 6
+    "font_px": 20,
+    "title_px": 26,
+    "bottom_px": 200,
+    "panel_margin_px": 18
+  },
+  "dock": {
+    "_about": "Each player's corner dock (scripts/camp/hud_dock.gd), like Animal Crossing's: the tool in hand and the build piece picked, each a felt chip width_px wide and chip_h_px tall with a row of dots for where it sits in the cycle, and a Pack line. font_px on the chips, caption_px on the captions and the Pack line; gap_px from the screen edges; row_gap_px between rows; the captions have an outline_px outline. Player one's dock is bottom right (bottom left while someone is on the couch); the couch player's is bottom right.",
+    "width_px": 320,
+    "chip_h_px": 50,
+    "font_px": 24,
+    "caption_px": 19,
+    "gap_px": 24,
+    "row_gap_px": 4,
+    "outline_px": 6,
+    "swatch": "warm_cream",
+    "edge_swatch": "rust_canvas",
+    "edge_px": 4,
+    "corner_px": 12
   }
 }

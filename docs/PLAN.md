@@ -191,3 +191,8 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   project files). Owner's pick: items 1-4 now (HUD fix, a Pack with dropping, workbench and build kit, camp box), the
   rest next. **Proposed** (built): an 8-slot Pack per player, dropped stacks lie as bundles that never vanish, a camp
   box for shared materials, the build kit shared by both players, recipe costs in data/craft.json.
+- 25 Oct 2026, owner (round 3 play): the in-camp menu overlapped the Pack bar and the hint; Q and R turned the camera
+  at the workbench; an inventory more like Animal Crossing's, with the build items cycled in the bottom right corner
+  and the tools cycled near it, both shown; window modes (borderless, full screen, windowed). **Proposed** (built):
+  the Pack opens as a grid, a corner dock shows the tool (hands, axe, rod; chopping needs the axe, fishing the rod)
+  and the build piece, the menu hides the HUD and scales to fit, and Options gains a window size.

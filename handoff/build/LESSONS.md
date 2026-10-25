@@ -108,3 +108,12 @@ Build owns how the game loads them.
   dropped `slot()`, and no test pressed the real start buttons (tests called `start_solo` directly). Stops it: a test
   presses Play alone and Host on the start page; when rewriting a file, list every method other scripts call on it
   (`grep "menu\.[a-z_]*("`) and check each still exists.
+- 25 Oct 2026: Stage B round 4 (owner: the menu ran under the Pack bar, Q and R turned the camera at the bench, wanted
+  Animal Crossing's pockets with the tool and build piece shown in the corner, window modes). Faults found: the round
+  3 HUD test passed while the menu ran off the owner's screen (why: headless windows are square, so nothing was ever
+  too tall; stops it: the test sets a 16:9 root size, checks every pair of HUD pieces for overlap and checks the menu
+  at the biggest interface size, proved by putting the old faults back); the camera turned at the bench (why: only the
+  clipboard set `hold_turn`; stops it: `_hold_camera` covers every panel). Window modes were already in Options from
+  the title-screen round, so only a window size was added. Lesson: check what other threads already shipped before
+  building what the owner asks for.
+

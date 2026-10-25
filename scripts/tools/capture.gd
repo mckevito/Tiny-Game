@@ -11,7 +11,8 @@ extends SceneTree
 ## report after a night). Round 2 adds welcome.png (the first morning's Today list), a log bench by the fire, the
 ## animals in the day and dusk shots (day 3: rabbits, squirrels, deer, the bear by the fire), chop.png, and
 ## stump_log_clipboard.png (a felled tree's stump and sapling, a planted sapling, the long log carried and the
-## clipboard open on Supplies). Round 3 adds bench_pack.png: the workbench panel, the Pack bar and a dropped bundle.
+## clipboard open on Supplies). Round 3 adds bench.png (the workbench panel and a dropped bundle); round 4 adds
+## pack_dock.png (the open Pack and the corner dock with a tool in hand) and menu.png (the in-camp menu over the HUD).
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
@@ -241,6 +242,7 @@ func _stage_b(out: String) -> void:
 	me.position = Vector3(tree["pos"].x - 1.0, 0, tree["pos"].y + 0.3)
 	me.rotation.y = deg_to_rad(-90.0)
 	s.set_player_pos("p_capture_one", Vector2(me.position.x, me.position.z), -90.0)
+	camp.hold_tool("p_capture_one", "axe")
 	camp.interact("p_capture_one")
 	camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m")
 	await _settle()
@@ -276,14 +278,26 @@ func _stage_b(out: String) -> void:
 	s.set_player_pos("p_capture_one", Vector2(me.position.x, me.position.z), 0.0)
 	s.camp["bundles"]["bundle_cap"] = {"item": "stick", "n": 4, "pos": [bench.x + 1.4, bench.y - 1.6]}
 	camp._sync_bundles()
-	camp._picked["p_capture_one"] = 2
 	camp.camera.yaw = 0.0
 	camp.open_bench("p_capture_one")
 	camp._bench["p_capture_one"]["pick"] = 1
 	camp._refresh_boards()
 	await _settle()
-	_save(out + "/bench_pack.png")
+	_save(out + "/bench.png")
 	camp.close_bench("p_capture_one")
+	camp.hold_tool("p_capture_one", "axe")
+	camp._kinds["p_capture_one"] = "log_bench"
+	camp.open_pack("p_capture_one")
+	camp._packs["p_capture_one"]["pick"] = 2
+	camp._refresh_boards()
+	await _settle()
+	_save(out + "/pack_dock.png")
+	camp.close_pack("p_capture_one")
+	camp._open_menu("p_capture_one")
+	await _settle()
+	_save(out + "/menu.png")
+	camp._close_menu()
+	camp.hold_tool("p_capture_one", "rod")
 	me.position = Vector3(2.4, 0, -3.6)
 	me.rotation.y = deg_to_rad(-90.0)
 	s.set_player_pos("p_capture_one", Vector2(2.4, -3.6), -90.0)
