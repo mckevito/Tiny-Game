@@ -1,0 +1,16 @@
+{
+  "_about": "Every gameplay action with its default keyboard/mouse and joypad bindings. Keys use Godot key names; joy_buttons and joy_axes use Godot's JoyButton and JoyAxis numbers (0 = Cross / left stick X).",
+  "deadzone": 0.2,
+  "actions": {
+    "move_forward": {"keys": ["W", "Up"], "joy_axes": [[1, -1.0]]},
+    "move_back":    {"keys": ["S", "Down"], "joy_axes": [[1, 1.0]]},
+    "move_left":    {"keys": ["A", "Left"], "joy_axes": [[0, -1.0]]},
+    "move_right":   {"keys": ["D", "Right"], "joy_axes": [[0, 1.0]]},
+    "interact":     {"keys": ["E"], "mouse": [1], "joy_buttons": [0]},
+    "cancel":       {"keys": ["Escape"], "mouse": [2], "joy_buttons": [1]},
+    "menu":         {"keys": ["Tab"], "joy_buttons": [6]},
+    "camera_left":  {"keys": ["Q"], "joy_buttons": [9]},
+    "camera_right": {"keys": ["R"], "joy_buttons": [10]},
+    "dev_menu":     {"keys": ["F1"], "joy_buttons": [4]}
+  }
+}

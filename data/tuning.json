@@ -1,0 +1,13 @@
+{
+  "movement": {
+    "walk_speed_mps": 3.2,
+    "turn_speed_rad_s": 10.0,
+    "acceleration_mps2": 18.0,
+    "gravity_mps2": 9.8
+  },
+  "camera": {
+    "height_m": 9.0,
+    "distance_m": 9.0,
+    "fov_deg": 40.0
+  }
+}
