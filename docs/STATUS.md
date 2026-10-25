@@ -254,6 +254,28 @@ cycles your tool in the bottom right: take out the axe to chop and the rod to fi
 piece shown under it, and B starts building it. Zoom moved to L3 and R3 on the controller. Options, Picture has
 the window mode and a window size.
 
+### Round 5: freedom, tents and a camera (25 Oct 2026)
+From the owner's feedback on round 4: an Apply button in Options; go into your tent and sleep the day away; guests
+in their tents, with a name bubble; day 1 must be finishable on day 1 and the day must never be stuck (the owner gave
+a guest their fish, the guest had nothing more to ask, and bed would not open); gathering must never gate progress
+(easy money any time) while guests' requests are the heart of the day; a camera to photograph the animals.
+
+| Proof | Test | Result |
+|---|---|---|
+| Bed is open all day ("Sleep the day away" before the evening); it still waits for both players | `test_day.test_bed_needs_everyone_and_either_can_cancel` | Passing |
+| A met request is followed by a new one a while later, up to a daily share that grows with the days; none at night; a chair request is not asked twice | `test_guests.test_guests_ask_again_up_to_a_share_that_grows`, `test_stage_b.test_guests_ask_again_tents_and_the_camera_from_the_buttons` | Passing |
+| The corner lists what each guest would love first, then the odd jobs (optional, for coins); "help two guests" is gone from the odd jobs | `test_stage_b.test_guests_ask_again_tents_and_the_camera_from_the_buttons` | Passing |
+| The camp's tent: crawl in at any hour, lie in a sleeping bag with the roof lifted away, ready for bed; interact gets you up; alone, it sleeps the day away | `test_stage_b.test_guests_ask_again_tents_and_the_camera_from_the_buttons` | Passing |
+| Guests sleep in their tents from 8 pm with a name bubble ("Fern · zZ"); the tent opens when a player is close; sleeping guests are not asked for anything | `test_stage_b.test_guests_ask_again_tents_and_the_camera_from_the_buttons` | Passing |
+| The camera (fourth tool): a photo of a nearby animal goes in the field guide (a new clipboard tab), the first of each kind pays a bonus, and a new odd job asks for photos | `test_stage_b.test_guests_ask_again_tents_and_the_camera_from_the_buttons` | Passing |
+| Options: picture and window changes wait for Apply; leaving without it puts them back | `test_settings` (the in-camp Options test) | Passing |
+| Review frames: a guest asleep in an opened tent with its bubble, the player in the camp's tent, the field guide | `tools/capture.gd --stage-b` (guest_tent.png, home_tent.png, guide.png) | Looked at |
+| Day 1 feels free, guests carry the day, and the tents and camera are fun | Owner's play | Waiting on the owner |
+
+How to try round 5: walk to the camp's tent (west of the fire) and press E to crawl in; E again gets you up. After
+8 pm, walk up to a guest's tent to see them asleep. T to the camera, then E near a rabbit or a deer; J and Q/R to the
+Field guide tab. Guests ask for something new about an hour after you help them.
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -286,6 +308,12 @@ the window mode and a window size.
   the kit; the build kit is shared by both players; drop is G or D-pad left (undo keeps D-pad left in build mode);
   the HUD shows 3 Today lines; bench and box reach 1.6 m and 1.4 m.
 - Next round (owner's pick): a sell crate, camp projects, a field guide and the star rating, then the clipboard's map.
+- **Proposed** round 5 numbers (data/guests.json, data/wildlife.json, data/tasks.json, data/settings.json): a guest
+  asks again 60 game minutes after a met request, 3 requests a day from day 1, 4 from day 3, 5 from day 5; guests
+  sleep from 8 pm; the tent opens within 2.8 m; a photo reaches 7 m and the first of each kind pays 5 coins; the
+  photo odd job asks for 2 photos (4 coins); Apply covers picture, window, window size, vsync, frame limit and
+  interface size. Sleepers lie on top of their bag; another player's tent visit and the tool in hand are only shown
+  on their own PC.
 - **Proposed** round 4 choices: tools are hands, axe and fishing rod, every player has all three and the tool in
   hand is not saved; the Pack opens on I or D-pad down and the next tool is T or D-pad up, so zoom moved from the
   D-pad to L3 and R3 and the drop button went away (drop from the open Pack); the window size choices are 1280 × 720

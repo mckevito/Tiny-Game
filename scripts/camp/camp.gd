@@ -77,6 +77,11 @@ var _packs := {}
 var _tools := {}
 var _kinds := {}
 var _bench := {}
+## Round 5: players asleep in the camp's tent on this PC (who -> the sleeper shown in the bag), guests asleep in their
+## tents (stay id -> sleeper), and the name bubbles over the guests' tents.
+var _inside := {}
+var _asleep := {}
+var _bubbles := {}
 var _bundle_nodes := {}
 
 @onready var clearing: Clearing = $Clearing
@@ -287,6 +292,12 @@ func _clear_world() -> void:
 	for who: String in _docks.keys():
 		_docks[who].queue_free()
 	_docks.clear()
+	for who: String in _inside.keys():
+		leave_tent(who, false)
+	for node: Node3D in _asleep.values() + _bubbles.values():
+		node.queue_free()
+	_asleep.clear()
+	_bubbles.clear()
 	for node: Node3D in _bundle_nodes.values():
 		node.queue_free()
 	_bundle_nodes.clear()
@@ -418,6 +429,7 @@ func _process(delta: float) -> void:
 	_tick_busy(delta)
 	_tick_wobble(delta)
 	_tick_wildlife(delta)
+	_tick_tents()
 	_board_clock -= delta
 	if _board_clock <= 0.0:
 		_refresh_boards()
@@ -455,6 +467,8 @@ func _carry_prompt(id: String) -> String:
 		var put := action_for(id)
 		if put.get("what", "") == "place":
 			return Tuning.text("prompt.put_down") + " · " + Tuning.text("prompt.log_alone")
+	if _inside.has(id):
+		return Tuning.text("prompt.in_tent")
 	if _bench.has(id) or _packs.has(id):
 		return ""
 	if _busy.has(id):
@@ -478,6 +492,10 @@ func _carry_prompt(id: String) -> String:
 			return Tuning.text("prompt.pick_bundle") % [Tuning.text("items." + str(b["item"])), int(b["n"])]
 		"bench":
 			return Tuning.text("prompt.bench")
+		"tent":
+			return Tuning.text("prompt.tent")
+		"photo":
+			return Tuning.text("prompt.photo") % Tuning.text("animal." + str(act["arg"]))
 		"deposit":
 			return Tuning.text("prompt.deposit")
 		"plant":
@@ -574,6 +592,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_refresh_boards()
 		get_viewport().set_input_as_handled()
 		return
+	if _inside.has(who) and not menu.visible and (event.is_action_pressed("interact") or event.is_action_pressed("cancel")):
+		leave_tent(who)
+		get_viewport().set_input_as_handled()
+		return
 	if _packs.has(who) and not menu.visible:
 		var count := int(Tuning.num("items", "pack_slots", 8))
 		var cols := int(Tuning.num("tuning", "pack_panel.columns", 4))
@@ -642,8 +664,7 @@ func _open_menu(who: String = "") -> void:
 		if bool(p.get("couch", false)) and str(p.get("link_code", "")) != "" \
 				and (_menu_for == profile["id"] or id == _menu_for):
 			lines.append(Tuning.text("menu.link_info") % [p["name"], CampState.show_code(p["link_code"])])
-	menu.set_sleep(state.day.is_evening(), state.day.votes.has(_menu_for), Tuning.text("menu.sleep_closed")
-			% time_text(Tuning.num("day", "clock.evening_hour", 18.0)))
+	menu.set_sleep(state.day.is_evening(), state.day.votes.has(_menu_for), Tuning.text("menu.sleep_early"))
 	var board := state.guests.current()
 	lines.append(Tuning.text("menu.bookings") + ": " + (state.guests.booking_line(board) if not board.is_empty()
 			else Tuning.text("menu.board_empty")))
@@ -777,6 +798,10 @@ func action_for(who: String) -> Dictionary:
 		return {}
 	if state.carried_by(who) != "":
 		return {"what": "place"}
+	if tool_of(who) == tool_for("photo") and wildlife:
+		var kind := wildlife.nearest(me.position, Tuning.num("wildlife", "photo_m", 7.0))
+		if kind != "":
+			return {"what": "photo", "arg": kind}
 	var at := Vector2(me.position.x, me.position.z)
 	state.set_player_pos(who, at, rad_to_deg(me.rotation.y))
 	var guest := state.guests.guest_near(who)
@@ -799,6 +824,8 @@ func action_for(who: String) -> Dictionary:
 		need = tool_for("chop")
 	if nearest_object(who) != "":
 		return {"what": "pick_up", "arg": nearest_object(who)}
+	if at.distance_to(home_tent_pos()) <= Tuning.num("guests", "tent.reach_m", 2.0):
+		return {"what": "tent"}
 	if CampBuild.near_bench(at):
 		return {"what": "bench"}
 	if CampPack.near_box(at) and state.pack.has_boxable(who):
@@ -833,6 +860,11 @@ func interact(who: String = "") -> void:
 			ask("deposit", [], who)
 		"bench":
 			open_bench(who)
+		"tent":
+			enter_tent(who)
+		"photo":
+			_flash()
+			ask("photo", [act["arg"]], who)
 		"fish", "cook", "chop":
 			_start_busy(who, act["what"], act.get("arg") if act["what"] == "chop" else null)
 
@@ -934,7 +966,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		why = "" if state.pack.deposit(profile_id) > 0 else "deny.nothing_to_box"
 	elif what == "craft" and args.size() == 1 and args[0] is String:
 		why = state.build.craft(profile_id, args[0])
-	elif what == "spot" and args.size() == 1 and args[0] is String:
+	elif (what == "spot" or what == "photo") and args.size() == 1 and args[0] is String:
 		why = "" if Wildlife.kinds().has(args[0]) else "deny.not_movable"
 	if why != "":
 		if peer == 0:
@@ -943,7 +975,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 			_denied.rpc_id(peer, why)
 		return
 	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "forage", "spot", "take_sapling", "plant", "drop",
-			"pick_bundle", "deposit", "craft"]:
+			"pick_bundle", "deposit", "craft", "photo"]:
 		match what:
 			"fish":
 				_say(peer, "toast.caught", [Tuning.text("items." + state.pack.last_item)])
@@ -990,6 +1022,20 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 					seen.append(args[0])
 					_say_all("toast.spotted_new", [Tuning.text("animal." + str(args[0]))])
 				_progress("spot:" + str(args[0]))
+			"photo":
+				var photos: Dictionary = state.camp["journal"].get("photos", {})
+				state.camp["journal"]["photos"] = photos
+				var kind := str(args[0])
+				photos[kind] = int(photos.get(kind, 0)) + 1
+				if not (state.camp["journal"]["wildlife"] as Array).has(kind):
+					state.camp["journal"]["wildlife"].append(kind)
+				if int(photos[kind]) == 1:
+					var bonus := int(Tuning.num("wildlife", "photo_bonus", 5))
+					state.camp["coins"] = int(state.camp.get("coins", 0)) + bonus
+					_say_all("toast.photo_new", [Tuning.text("animal." + kind), bonus])
+				else:
+					_say(peer, "toast.photo_again", [Tuning.text("animal." + kind), int(photos[kind])])
+				_progress("photo:" + kind)
 			"booking":
 				var r := state.guests.row(args[0])
 				var key: String = "toast.booking_" + {"accept": "accepted", "later": "later", "decline": "declined"}[args[1]]
@@ -1197,10 +1243,14 @@ func _tick_day(delta: float) -> void:
 				_say_all("guest.arrived", [row["name"], Tuning.text("build." + CampBuild.kind_of(state, row["pitch"]))])
 		for id: String in booked:
 			_say_all("toast.booking_arrived", [Tuning.text("booking.%s.name" % id)])
-		if not came.is_empty():
+		var asked := state.guests.refresh_requests()
+		if not (came.is_empty() and asked.is_empty()):
 			for met in state.guests.check_near_requests():
 				_say_all("toast.thanks", [state.camp["stays"][met]["name"], state.guests.last_tip])
-		if not (came.is_empty() and offered.is_empty()):
+		for stay in asked:
+			_say_all("toast.new_request", [state.camp["stays"][stay]["name"],
+					Tuning.text("request.want." + state.guests.open_request(stay))])
+		if not (came.is_empty() and offered.is_empty() and asked.is_empty()):
 			_sync_stays(true)
 			_share()
 			save_camp()
@@ -1233,13 +1283,29 @@ func clock_line() -> String:
 			int(cal.get("day", 1)), time_text(state.day.hour()), int(state.camp.get("coins", 0))]
 
 
-## Under the clock: the first few Today tasks with their live counts (data/tuning.json hud.today_max; the
-## clipboard has them all).
+## Under the clock: what the guests would love now (hud.guests_max), then the first few odd jobs with their live
+## counts (data/tuning.json hud.today_max; the clipboard has them all).
 func today_lines() -> String:
-	var out := "\n" + Tuning.text("hud.today")
+	var out := ""
+	var wants := guest_wants()
+	if not wants.is_empty():
+		out += "\n" + Tuning.text("hud.guests")
+		for line in wants.slice(0, int(Tuning.num("tuning", "hud.guests_max", 3))):
+			out += "\n" + line
+	out += "\n" + Tuning.text("hud.today")
 	var rows: Array = state.tasks.active()
 	for row: Dictionary in rows.slice(0, int(Tuning.num("tuning", "hud.today_max", 3))):
 		out += "\n" + CampTasks.line(row, true)
+	return out
+
+
+## One line for each guest with an open request: who and what they would love.
+func guest_wants() -> Array[String]:
+	var out: Array[String] = []
+	for id: String in state.camp["stays"]:
+		var want := state.guests.open_request(id)
+		if want != "":
+			out.append(Tuning.text("hud.guest_line") % [state.camp["stays"][id]["name"], Tuning.text("request.want." + want)])
 	return out
 
 
@@ -1277,6 +1343,8 @@ func _check_bed() -> void:
 func _show_night(summary: Dictionary) -> void:
 	_night_left = Tuning.num("day", "night.fade_s") * 2.0 + Tuning.num("day", "night.hold_s")
 	$Hud/Night.visible = true
+	for who: String in _inside.keys():
+		leave_tent(who, false)
 	for who: String in _busy.keys():
 		_end_busy(who)
 	report.show_report(morning_report(summary), Prompts.fill(Tuning.text("prompt.report_close"), _pad))
@@ -1328,7 +1396,13 @@ func morning_report(summary: Dictionary) -> String:
 
 ## The report's Today part: the task list, the bigger goals, and a word about tomorrow.
 func _today_report() -> Array[String]:
-	var lines: Array[String] = [Tuning.text("report.today")]
+	var lines: Array[String] = []
+	var wants := guest_wants()
+	if not wants.is_empty():
+		lines.append(Tuning.text("report.guests"))
+		lines.append_array(wants)
+		lines.append("")
+	lines.append(Tuning.text("report.today"))
 	for row: Dictionary in state.tasks.active():
 		lines.append(CampTasks.line(row))
 	var goals := state.guests.goals()
@@ -1687,7 +1761,7 @@ func clipboard_text(who: String, tab: String) -> String:
 	var lines: Array[String] = []
 	match tab:
 		"today":
-			lines = _today_report().slice(1)
+			lines = _today_report()
 		"bookings":
 			var any := false
 			for r: Dictionary in state.camp["reservations"]:
@@ -1731,7 +1805,43 @@ func clipboard_text(who: String, tab: String) -> String:
 				seen.append(Tuning.text("animal." + kind))
 			lines.append(Tuning.text("clipboard.animals") % [seen.size(), Wildlife.kinds().size(),
 					", ".join(seen) if not seen.is_empty() else Tuning.text("clipboard.none_yet")])
+		"guide":
+			lines = field_guide()
 	return "\n".join(lines)
+
+
+## The field guide: each animal kind, photographed (how many), seen, or still a mystery, with where and when to look.
+func field_guide() -> Array[String]:
+	var photos: Dictionary = state.camp["journal"].get("photos", {})
+	var seen: Array = state.camp["journal"]["wildlife"]
+	var kinds: Array[String] = []
+	for kind in Wildlife.kinds():
+		if not kinds.has(kind):
+			kinds.append(kind)
+	var lines: Array[String] = [Tuning.text("guide.head") % [photos.size(), kinds.size()], ""]
+	for kind in kinds:
+		var hint := Tuning.text("guide.hint." + kind)
+		if int(photos.get(kind, 0)) > 0:
+			lines.append(Tuning.text("guide.photo") % [Tuning.text("animal." + kind).capitalize(), int(photos[kind]), hint])
+		elif seen.has(kind):
+			lines.append(Tuning.text("guide.seen") % [Tuning.text("animal." + kind).capitalize(), hint])
+		else:
+			lines.append(Tuning.text("guide.unknown") % hint)
+	return lines
+
+
+## A quick white flash over the screen for a photo (data/tuning.json hud.flash_s).
+func _flash() -> void:
+	var flash: ColorRect = $Hud.get_node_or_null("Flash")
+	if flash == null:
+		flash = ColorRect.new()
+		flash.name = "Flash"
+		flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+		$Hud.add_child(flash)
+	flash.color = Color(1, 1, 1, Tuning.num("tuning", "hud.flash_alpha", 0.7))
+	var fade := create_tween()
+	fade.tween_property(flash, "color:a", 0.0, Tuning.num("tuning", "hud.flash_s", 0.35))
 
 
 # --- Round 3: the Pack bar, dropped bundles and the workbench ------------------------------------------------------
@@ -1930,3 +2040,124 @@ func _refresh_bench() -> void:
 		var panel: Clipboard = _bench[who]["panel"]
 		panel.show_text(bench_text(who, int(_bench[who]["pick"])), Prompts.fill(Tuning.text("bench.hint"),
 				_pad if who == profile["id"] else true))
+
+
+# --- Round 5: tents to sleep in, guests asleep in theirs, name bubbles -------------------------------------------
+
+## The camp's own tent (the first "tent" in data/clearing.json), where the players sleep.
+static func home_tent_index() -> int:
+	var rows: Array = Tuning.table("clearing").get("placements", [])
+	for i in rows.size():
+		if str(rows[i].get("model", "")) == "tent":
+			return i
+	return -1
+
+
+static func home_tent_pos() -> Vector2:
+	var i := home_tent_index()
+	if i < 0:
+		return Vector2(INF, INF)
+	var o := Clearing.placement_transform(Tuning.table("clearing")["placements"][i]).origin
+	return Vector2(o.x, o.z)
+
+
+## A felt camper lying in a tent's sleeping bag, feet at the bag's spot (data/guests.json tent.bags), head on the pillow.
+func _sleeper(tent: Node3D, look: String, bag: int) -> Node3D:
+	var spots: Array = Tuning.value("guests", "tent.bags", [[0, 0.45]])
+	var spot: Array = spots[bag % spots.size()]
+	var body := FeltBuilder.build(look)
+	body.position = Vector3(float(spot[0]), Tuning.num("guests", "tent.lie_y_m", 0.2), float(spot[1]))
+	body.rotation = Vector3(deg_to_rad(Tuning.num("guests", "tent.lie_deg", -80.0)), PI, 0.0)
+	body.scale = Vector3.ONE * Tuning.num("guests", "tent.lie_scale", 1.0)
+	tent.add_child(body)
+	return body
+
+
+## A player on this PC crawls into the camp's tent: they lie in a sleeping bag (the tent opens so you can see them)
+## and are ready for bed; interact or back gets them up again.
+func enter_tent(who: String) -> void:
+	if _inside.has(who) or not campers.has(who) or home_tent_index() < 0:
+		return
+	var tent: Node3D = clearing.placed[home_tent_index()]
+	_inside[who] = _sleeper(tent, str(campers[who].model_id), _inside.size())
+	campers[who].visible = false
+	campers[who].controlled = false
+	campers[who].velocity = Vector3.ZERO
+	if not state.day.votes.has(who):
+		ask("sleep", [true], who)
+
+
+func leave_tent(who: String, cancel_bed: bool = true) -> void:
+	if not _inside.has(who):
+		return
+	(_inside[who] as Node3D).queue_free()
+	_inside.erase(who)
+	if campers.has(who):
+		campers[who].visible = true
+		campers[who].controlled = _menu_for != who
+	if cancel_bed and state != null and state.day.votes.has(who):
+		ask("sleep", [false], who)
+
+
+func guests_asleep() -> bool:
+	return state != null and state.guests.asleep()
+
+
+## Each frame: guests go into their tents at bedtime (a sleeper in the bag, the camper hidden); a tent with someone in
+## it opens up (the roof lifts away, like a doll's house) while a player on this PC is close by, or always for the
+## camp's tent while a player is inside; each guest tent has a bubble with its guest's name.
+func _tick_tents() -> void:
+	if state == null:
+		return
+	var night := guests_asleep()
+	for id: String in _tents:
+		var tent: Node3D = _tents[id]
+		if not is_instance_valid(tent) or not state.camp["stays"].has(id):
+			continue
+		var c: Camper = visitors.get(id)
+		if night and not _asleep.has(id):
+			_asleep[id] = _sleeper(tent, str(state.camp["stays"][id]["look"]), 0)
+		elif not night and _asleep.has(id):
+			(_asleep[id] as Node3D).queue_free()
+			_asleep.erase(id)
+		if c:
+			c.visible = not night
+		_tent_look(tent, "tent_guest", night and _player_near(tent.position))
+		if not _bubbles.has(id):
+			var bubble := Label3D.new()
+			bubble.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+			bubble.font_size = int(Tuning.num("guests", "tent.bubble_px", 40))
+			bubble.outline_size = int(Tuning.num("guests", "tent.bubble_outline_px", 10))
+			bubble.position = Vector3(0, Tuning.num("guests", "tent.bubble_y_m", 2.1), 0)
+			tent.add_child(bubble)
+			_bubbles[id] = bubble
+		(_bubbles[id] as Label3D).text = Tuning.text("tent.asleep" if night else "tent.bubble") % state.camp["stays"][id]["name"]
+	for id: String in _asleep.keys():
+		if not _tents.has(id) or not state.camp["stays"].has(id):
+			(_asleep[id] as Node3D).queue_free()
+			_asleep.erase(id)
+	for id: String in _bubbles.keys():
+		if not _tents.has(id) or not is_instance_valid(_bubbles[id]):
+			_bubbles.erase(id)
+	if home_tent_index() >= 0:
+		_tent_look(clearing.placed[home_tent_index()], "tent", not _inside.is_empty())
+
+
+func _player_near(at: Vector3) -> bool:
+	for who in local_ids():
+		if campers.has(who) and (campers[who] as Node3D).position.distance_to(at) <= Tuning.num("guests", "tent.peek_m", 2.8):
+			return true
+	return false
+
+
+## Shows a tent closed, or open with its roof lifted away (the model's "_open" variant).
+func _tent_look(tent: Node3D, model: String, open: bool) -> void:
+	var mesh := tent.get_child(0) as MeshInstance3D
+	var want := FeltBuilder.mesh(model + "_open" if open else model)
+	if mesh and mesh.mesh != want:
+		mesh.mesh = want
+
+
+func is_open(tent: Node3D, model: String) -> bool:
+	return (tent.get_child(0) as MeshInstance3D).mesh == FeltBuilder.mesh(model + "_open")
+

@@ -1,6 +1,7 @@
 {
-  "_about": "This PC's settings (scripts/core/settings.gd), kept in user://settings.json and never sent to the other PC. pages lists the Options screen (scripts/ui/options_screen.gd) tab by tab: each row has a key, a kind (choice, slider or toggle) and a default; a choice lists its options (picture takes the presets in data/graphics.json), a slider its min, max and step. Labels are in data/text.json: options.row.<key>, options.choice.<key>.<option>, options.tab.<page>. The controls page also lists every action in data/input.json except fixed ones, to remap. pad_names names DualSense buttons by Godot's JoyButton number for remapped prompts. look is the shared menu look (scripts/ui/ui_look.gd).",
+  "_about": "This PC's settings (scripts/core/settings.gd), kept in user://settings.json and never sent to the other PC. pages lists the Options screen (scripts/ui/options_screen.gd) tab by tab: each row has a key, a kind (choice, slider or toggle) and a default; a choice lists its options (picture takes the presets in data/graphics.json), a slider its min, max and step. Labels are in data/text.json: options.row.<key>, options.choice.<key>.<option>, options.tab.<page>. The controls page also lists every action in data/input.json except fixed ones, to remap. pad_names names DualSense buttons by Godot's JoyButton number for remapped prompts. look is the shared menu look (scripts/ui/ui_look.gd). apply_on_button lists the rows whose change waits for the Apply button; leaving Options without it puts them back.",
   "version": 1,
+  "apply_on_button": ["picture", "window_mode", "window_size", "vsync", "fps_cap", "ui_scale"],
   "pages": [
     {"id": "picture", "rows": [
       {"key": "picture", "kind": "choice", "from": "graphics", "default": "normal"},

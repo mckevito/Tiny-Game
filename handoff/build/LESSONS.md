@@ -116,4 +116,11 @@ Build owns how the game loads them.
   clipboard set `hold_turn`; stops it: `_hold_camera` covers every panel). Window modes were already in Options from
   the title-screen round, so only a window size was added. Lesson: check what other threads already shipped before
   building what the owner asks for.
+- 25 Oct 2026: Stage B round 5 (owner: no stuck days, guests at the heart, gathering as easy money, tents to sleep
+  in, guests asleep in theirs, a camera, an Apply button). Bed opens all day; guests ask again; odd jobs never gate.
+  Faults found: the day could stall on day 1 (why: a daily task needed two guests and bed waited for 6 pm; stops it:
+  bed is open all day, the task is gone, a test sleeps at noon); sleeping bags stood on end in the first frames (why:
+  a capsule's long side is its Y size before rotation; stops it: sized as [w, length, thickness] with rot 90, looked
+  at in home_tent.png). Then the Build role split into Gameplay, Interface and Playtest (owner); each has its own
+  hand-off folder.
 

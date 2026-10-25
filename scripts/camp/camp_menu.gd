@@ -172,8 +172,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 ## The bed button: "Ready for bed", "Not ready for bed yet", or greyed out before the evening with `closed_text`.
-func set_sleep(open: bool, ready: bool, closed_text: String) -> void:
-	_sleep.disabled = not open and not ready
+## The bed button: open all day (owner: sleep the day away whenever you like); before the evening it reads
+## `early_text`.
+func set_sleep(evening: bool, ready: bool, early_text: String) -> void:
+	var open := evening
+	var closed_text := early_text
+	_sleep.disabled = false
 	_sleep.text = Tuning.text("menu.not_sleep") if ready else (Tuning.text("menu.sleep") if open else closed_text)
 
 

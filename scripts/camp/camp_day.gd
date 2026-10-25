@@ -83,8 +83,6 @@ func _next_morning() -> void:
 func vote(profile_id: String, ready: bool) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
-	if ready and not is_evening():
-		return "deny.too_early"
 	if ready and not votes.has(profile_id):
 		votes.append(profile_id)
 	elif not ready:

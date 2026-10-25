@@ -236,11 +236,25 @@ func test_options_from_the_camp_menu_rebinds_and_goes_back() -> String:
 		if Settings.bound("undo", "key") != "U" or options.waiting() or menu.page() != "options":
 			out = "the stop key should keep the old key and stay on Options"
 	if out == "":
+		var before := Quality.current
 		options.step_choice("picture", 1)
 		await _tree().process_frame
-		if Quality.current != str(Settings.value("picture")):
-			out = "the picture preset in Options should reach the camp's views: %s vs %s" % [Quality.current,
-					Settings.value("picture")]
+		if Quality.current != before or options.pending() != ["picture"] or options._apply.disabled:
+			out = "a picture change should wait for Apply: %s, waiting %s" % [Quality.current, options.pending()]
+		else:
+			options._apply.pressed.emit()
+			await _tree().process_frame
+			if Quality.current != str(Settings.value("picture")) or not options.pending().is_empty():
+				out = "Apply should take the picture preset to the camp's views: %s vs %s" % [Quality.current,
+						Settings.value("picture")]
+	if out == "":
+		# A change left without Apply goes back when Options closes.
+		var kept: Variant = Settings.value("window_size")
+		options.step_choice("window_size", 1)
+		options.close()
+		if Settings.value("window_size") != kept:
+			out = "leaving Options without Apply should put the window size back, got %s" % Settings.value("window_size")
+		menu.show_options("picture", "pause")
 	if out == "":
 		_tree().root.push_input(_key(KEY_ESCAPE))
 		await _tree().process_frame

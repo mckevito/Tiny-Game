@@ -2,7 +2,8 @@ class_name OptionsScreen
 extends VBoxContainer
 ## The one Options screen, opened from the title and from the in-camp menu: tabs for picture, sound, controls and
 ## accessibility, built from data/settings.json "pages". Every change is saved and applied at once, on this PC only
-## (Settings). The controls tab remaps each action on the keyboard and on the controller: choose the button, then press
+## (Settings), except the window and picture rows (apply_on_button): those wait for Apply, and leaving Options without
+## it puts them back. The controls tab remaps each action on the keyboard and on the controller: choose the button, then press
 ## the new key or button (a clash swaps the two). Works with the mouse, the keyboard and the D-pad; focus always shows.
 ## Text: data/text.json "options"; sizes: data/settings.json "look".
 
@@ -19,6 +20,9 @@ var _page := ""
 var _waiting: Dictionary = {}
 var _bind_buttons: Dictionary = {}
 var _tab_buttons: Dictionary = {}
+## Changes waiting for Apply: key -> the value in use before them.
+var _before: Dictionary = {}
+var _apply := Button.new()
 
 
 func _ready() -> void:
@@ -51,6 +55,10 @@ func _ready() -> void:
 	add_child(status)
 	var foot := HBoxContainer.new()
 	foot.alignment = BoxContainer.ALIGNMENT_CENTER
+	_apply.text = Tuning.text("options.apply")
+	_apply.disabled = true
+	_apply.pressed.connect(apply_changes)
+	foot.add_child(_apply)
 	var reset := Button.new()
 	reset.text = Tuning.text("options.reset")
 	reset.pressed.connect(_reset)
@@ -87,10 +95,46 @@ func waiting() -> bool:
 
 func close() -> void:
 	_waiting = {}
+	for key: String in _before:
+		Settings.set_value(key, _before[key], false)
+	_before = {}
+	_apply.disabled = true
 	closed.emit()
 
 
+## Saves a change: at once, or waiting for Apply for the window and picture rows.
+func change(key: String, v: Variant) -> void:
+	if not Settings.apply_on_button().has(key):
+		Settings.set_value(key, v)
+		return
+	if not _before.has(key):
+		_before[key] = Settings.value(key)
+	Settings.set_value(key, v, false)
+	if Settings.value(key) == _before[key]:
+		_before.erase(key)
+	_apply.disabled = _before.is_empty()
+	status.text = Tuning.text("options.not_applied") if not _before.is_empty() else ""
+
+
+## Applies the waiting changes.
+func apply_changes() -> void:
+	for key: String in _before:
+		Settings.apply(key)
+		if key == "picture":
+			picture_changed.emit(str(Settings.value(key)))
+	_before = {}
+	_apply.disabled = true
+	status.text = Tuning.text("options.applied")
+
+
+func pending() -> Array:
+	return _before.keys()
+
+
 func _reset() -> void:
+	# A reset applies everything at once (Settings.reset_page), so nothing waits for Apply after it.
+	_before = {}
+	_apply.disabled = true
 	Settings.reset_page(_page)
 	if _page == "picture":
 		picture_changed.emit(str(Settings.value("picture")))
@@ -153,11 +197,11 @@ func _add_row(row: Dictionary) -> void:
 			flip.custom_minimum_size.x = width
 			flip.text = _toggle_text(key)
 			flip.pressed.connect(func() -> void:
-				Settings.set_value(key, not bool(Settings.value(key)))
+				change(key, not bool(Settings.value(key)))
 				flip.text = _toggle_text(key))
 			flip.gui_input.connect(func(event: InputEvent) -> void:
 				if event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right"):
-					Settings.set_value(key, event.is_action_pressed("ui_right"))
+					change(key, event.is_action_pressed("ui_right"))
 					flip.text = _toggle_text(key)
 					flip.accept_event())
 			line.add_child(flip)
@@ -173,7 +217,7 @@ func _add_row(row: Dictionary) -> void:
 			var shown := Label.new()
 			shown.text = Tuning.text("options.percent") % roundi(slider.value)
 			slider.value_changed.connect(func(v: float) -> void:
-				Settings.set_value(key, v)
+				change(key, v)
 				shown.text = Tuning.text("options.percent") % roundi(v))
 			line.add_child(slider)
 			line.add_child(shown)
@@ -205,11 +249,9 @@ func _choice_text(key: String) -> String:
 func step_choice(key: String, by: int, shown: Button = null) -> void:
 	var all := Settings.choices(key)
 	var at := all.find(Settings.value(key))
-	Settings.set_value(key, all[posmod(at + by, all.size())])
+	change(key, all[posmod(at + by, all.size())])
 	if shown:
 		shown.text = _choice_text(key)
-	if key == "picture":
-		picture_changed.emit(str(Settings.value(key)))
 
 
 func _add_bindings() -> void:

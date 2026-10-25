@@ -24,7 +24,7 @@
     },
     "visitors": {},
     "rating": {"stars": 0, "ranger_visits": []},
-    "journal": {"fish": [], "recipes": [], "visitors": [], "decorations": [], "scrapbook": [], "wildlife": []},
+    "journal": {"fish": [], "recipes": [], "visitors": [], "decorations": [], "scrapbook": [], "wildlife": [], "photos": {}},
     "tasks": {"active": [], "done": [], "next_daily": 0},
     "trees": {},
     "forage": {},

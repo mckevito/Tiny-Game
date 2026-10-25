@@ -10,8 +10,10 @@ handoff/<role>/HANDOFF.md  what the role owns, state now, open work in order, ow
 handoff/<role>/LESSONS.md  "Start here" first; owner rules with reasons; who owns what; the steps of a round;
                            craft rules; a one-line round log
 ```
-Roles start small: `build` (game code and scenes) now; add `art` when model batches start. A new role copies the
-`build` files' shape.
+Roles (owner, 25 Oct 2026): `gameplay` (rules, netcode, data for play, the world), `interface` (HUD, Pack, cyclers,
+menus, settings, input) and `playtest` (tests, captures, CI, review sheets). `build` is the history and the shared
+architecture notes every role reads (`handoff/build/HANDOFF.md` sections 2 and 6). Add `art` when model batches start;
+a new role copies these files' shape.
 
 The live list of running threads is kept **outside the repo** in the project's shared folder
 (`/mnt/project-files/handoff/THREADS.md`), because thread and session ids don't belong in a public repo.
