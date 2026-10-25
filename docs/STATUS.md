@@ -382,6 +382,8 @@ the next PR.
 | A version 5 save gets an empty crate, sold list and projects (save version 6) | `test_projects.test_a_version_5_save_gets_the_crate_and_projects` | Passing |
 | A stool counts as a chair for guests; a flower planter near a pitch is a new atmosphere point | `data/guests.json` | Built, not tested on its own |
 | Playtest's finding on main: walking could leave the clearing into the empty field; players now stop at the edge | `test_camp_rules.test_a_player_cannot_walk_off_the_clearing` | Passing |
+| Playtest pass 2: the crate keeps back what the open camp project still needs (only spare sticks or berries sell, and a press with nothing spare says so); what was already brought to the board frees that many up | `test_projects.test_the_sell_crate_keeps_back_what_the_open_project_needs` | Passing (fails when the crate takes the whole stack) |
+| Playtest pass 2: woods ring the walking edge (data/clearing.json `border`: a row of bushes, then three rings of trees, the same every run) with the grass running on past them, so the edge shows and the sky band never does; no border tree is within chopping reach | `test_camp_rules.test_woods_ring_the_walking_edge_out_of_reach` | Passing (fails with no rings); frames from `capture.gd --edge` looked at |
 | Review frames: the crate prompt, stools and a planter by the fire, Supplies with the crate, the morning report's sale line | Cloud frames (`stage-b/gameplay2_crate_projects.jpg` in the project files) | Looked at |
 
 How to try round 2: carry sticks or a fish to the little crate south of the fire and press E; press E again with

@@ -109,3 +109,44 @@ func test_a_player_cannot_walk_off_the_clearing() -> String:
 	var out := Vector2(c.position.x, c.position.z).length()
 	c.free()
 	return "" if out <= edge + 0.01 else "a walking player should be held at the edge, got %.2f m out" % out
+
+
+## Playtest pass 2: the walking edge was invisible, so players walked out into bare grass with the sky band showing.
+## Woods ring it (data/clearing.json border), the trees past the reach of a player held at the edge, so none can be chopped.
+func test_woods_ring_the_walking_edge_out_of_reach() -> String:
+	var edge := Tuning.num("tuning", "movement.edge_m")
+	var reach := Tuning.num("gather", "trees.reach_m")
+	var rows := Clearing.border_rows()
+	var trees: Array = Tuning.value("gather", "trees.models", [])
+	var gaps := []
+	for row: Dictionary in rows:
+		var at := Vector2(float(row["pos"][0]), float(row["pos"][1]))
+		if at.length() <= edge:
+			return "%s at %.1f m stands inside the walking edge" % [row["model"], at.length()]
+		if trees.has(row["model"]):
+			if at.length() <= edge + reach:
+				return "a tree at %.1f m is within chopping reach of the edge (%.1f m)" % [at.length(), edge + reach]
+			gaps.append(atan2(at.y, at.x))
+	if Clearing.border_rows() != rows:
+		return "the woods should stand in the same place every run"
+	if gaps.size() < 12:
+		return "woods should ring the walking edge, found %d trees" % gaps.size()
+	gaps.sort()
+	var widest := TAU - (float(gaps[-1]) - float(gaps[0]))
+	for i in range(1, gaps.size()):
+		widest = maxf(widest, float(gaps[i]) - float(gaps[i - 1]))
+	if rad_to_deg(widest) > 20.0:
+		return "the woods should ring the camp with no wide gap, the widest is %.0f degrees" % rad_to_deg(widest)
+	var ground: Array = FeltBuilder.resolve("ground")["collide"]["box"]
+	for row: Dictionary in rows:
+		if Vector2(float(row["pos"][0]), float(row["pos"][1])).length() > float(ground[0]) * 0.5 - 6.0:
+			return "the grass should run well past the woods, so the play camera never sees past its end"
+	var clearing := Clearing.new()
+	clearing.include_objects = false
+	(Engine.get_main_loop() as SceneTree).root.add_child(clearing)
+	var n := clearing.get_child_count()
+	var placed := clearing.placed.size()
+	clearing.free()
+	if n != placed + rows.size():
+		return "the clearing should place every border tree as scenery (%d placed, want %d)" % [n, placed + rows.size()]
+	return ""

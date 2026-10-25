@@ -1,7 +1,7 @@
 class_name CampProjects
 extends RefCounted
 ## Where gathering goes: the sell crate and the camp projects. A player at the crate puts in one stack from their
-## Pack at a time; the crate pays at night, in the morning report, at flat prices, and anything in it can be taken
+## Pack at a time, keeping back what the open project still needs; the crate pays at night, in the morning report, at flat prices, and anything in it can be taken
 ## back until then. A camp project is a bundle of things both players bring to the project board, from their Packs
 ## and the camp box; finished, it gives its reward once (a new workbench recipe, or coins). One project is open at a
 ## time, in order, and the list is finite. The host's copy decides; every rule takes a profile ID and returns "" or a
@@ -56,15 +56,33 @@ func crate() -> Array:
 	return state.camp["crate"]
 
 
-## The first stack in a player's Pack the crate takes, or "".
+## How many of an item the open camp project still needs, counting every need the item fills (0 when none).
+func still_needed(item: String) -> int:
+	var r := current()
+	var n := 0
+	for need: String in r.get("needs", {}):
+		if fills(need).has(item):
+			n += maxi(int(r["needs"][need]) - int(given().get(need, 0)), 0)
+	return n
+
+
+## How many of an item a player could sell: what they carry beyond what the open project still needs, so the crate
+## never takes a project's sticks or berries (Playtest pass 2). Items without a price: 0.
+func spare(profile_id: String, item: String) -> int:
+	if price(item) <= 0:
+		return 0
+	return maxi(state.pack.count(profile_id, item) - still_needed(item), 0)
+
+
+## The first item in a player's Pack the crate takes, with some to spare, or "".
 func sellable(profile_id: String) -> String:
 	for s: Dictionary in state.pack.slots(profile_id):
-		if price(str(s["item"])) > 0:
+		if spare(profile_id, str(s["item"])) > 0:
 			return str(s["item"])
 	return ""
 
 
-## Puts a player's first sellable stack into the crate.
+## Puts a player's first sellable item into the crate, all but what the open project still needs.
 func ship(profile_id: String) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
@@ -72,8 +90,11 @@ func ship(profile_id: String) -> String:
 		return "deny.too_far"
 	var item := sellable(profile_id)
 	if item == "":
+		for s: Dictionary in state.pack.slots(profile_id):
+			if price(str(s["item"])) > 0:
+				return "deny.project_needs_it"
 		return "deny.nothing_to_sell"
-	var n := state.pack.count(profile_id, item)
+	var n := spare(profile_id, item)
 	state.pack.remove(profile_id, item, n)
 	crate().append({"item": item, "n": n})
 	last_item = item
