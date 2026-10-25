@@ -10,7 +10,9 @@
 3. **Open work, in order:**
    1. Milestone 1: signed off by the owner as "a very good first draft" (25 Oct 2026); art polish comes later, so
       don't block Milestone 2 on it. Merge of PR #2 is the owner's.
-   2. Milestone 2: GDScript netcode on Godot's multiplayer (host decides, profile IDs, stable object IDs).
+   2. Milestone 2: GDScript netcode on Godot's multiplayer (host decides, profile IDs, stable object IDs). Plan 2.0
+      (25 Oct 2026) makes v1 a full four-season year: give the camp save room for it from the start (see the
+      Milestone 2 row in `docs/PLAN.md`), and keep three save slots in mind.
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
    - `data/palette.json`: named swatches (the plan's five plus Proposed shades). Models use only these names.
