@@ -28,6 +28,8 @@ something these files should have answered, write the answer into them in the sa
 - One sandbox scene (`scenes/sandbox.tscn`) for trying things; no extra test scenes. Dev tools go on F1, never Pause.
 - Each milestone ships headless tests for its proof rows, and updates `docs/STATUS.md`.
 - One branch and one PR per change, based on `main`, never stacked. The owner merges.
+- **Sign-off needs no PR of its own** (owner, 25 Oct 2026): the owner's sign-off in chat plus the merged build PR is the
+  sign-off. Record it in the next build PR's docs (`docs/STATUS.md`, the `docs/PLAN.md` decision log).
 
 ## Saving tokens
 - Idle is free; turns cost. While waiting on CI, a merge or the owner, end the turn. No polling or sleep loops.

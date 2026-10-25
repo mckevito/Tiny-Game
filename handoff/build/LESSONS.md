@@ -15,6 +15,8 @@ owner something these files should answer, add the answer here.
 - **Performance floor: the weakest PC.** A Ryzen 7 5825U laptop with built-in graphics must hold 30 fps (aim 60),
   split screen included (owner, 25 Oct 2026). Anything that draws more gets a setting in `data/graphics.json`.
 - **Small PRs, never stacked; the owner merges.** Stacked PRs once merged into a branch instead of `main`.
+- **No sign-off PRs.** The owner's sign-off in chat plus the merged PR is the sign-off (owner, 25 Oct 2026); record it
+  in the next build PR's docs. Sign-off PRs cost a round for nothing.
 
 ## Who owns what
 Build owns everything in the repo for now. Outside art (for example a rigged .glb made with another tool) goes in
@@ -71,3 +73,10 @@ Build owns how the game loads them.
   before the PR).
 - 25 Oct 2026: Stage A signed off by the owner (PR #10 merged, defaults approved). The four Milestone 3 hands-on
   checks are still unconfirmed; carried to Stage B.
+- 25 Oct 2026: Stage B three-day fun test: guests' requests with tips, fishing and grilling, water point and lantern
+  post, a booking board with accept, a day later or decline, satisfaction lines, the morning report with three goals.
+  Faults found: tests passed through script errors (why: GDScript carries on after an error and the test still
+  returned ""; stops it: the runner fails a test that logged a script error, HANDOFF trap); the morning report showed
+  an empty panel (why: an autowrapped label with no width; stops it: the label gets a minimum width, HANDOFF trap,
+  checked in the `--stage-b` capture); the first capture showed no guests (why: a pitch spot was blocked by a bush, so
+  the booking rightly waited; stops it: the capture prints any refused build, and known good spots are in HANDOFF).

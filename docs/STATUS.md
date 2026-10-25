@@ -167,3 +167,44 @@ mentioned; they stay open under Milestone 3's "Still open".
 - Guests walk in a straight line and pass through things; real paths come with more guests (Stage B or C).
 - The calendar starts in spring (the plan); Stage C's autumn chapter will start its own days.
 - Frame rate on the weakest laptop is still unmeasured; Stage A adds a few models and one ghost, nothing heavy.
+
+## Stage B: Three-day fun test
+Signed off: not yet. Built 25 Oct 2026 from the owner's approved picks (decision log); waits on the owner's play.
+
+| Proof | Test | Result |
+|---|---|---|
+| Fishing at the pond always catches one of three fish by weight; grilling at the fire turns a raw fish into a meal; pockets hold a few items and a full pocket refuses more without losing anything | `test_guests.test_fishing_and_grilling_fill_the_pockets_and_never_fail` | Passing |
+| Each guest brings one small request (a fish, a grilled fish, a chair by their tent), shown over their head; handing the item over or setting a chair by the tent meets it and tips at once | `test_guests.test_a_request_is_met_by_a_gift_or_a_chair_and_tips_at_once` | Passing |
+| One improvement choice: a water point (comfort) or a lantern post (atmosphere), built from build mode with the next-kind button | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_guests.test_each_stay_is_scored_once_with_a_line_that_names_its_cause` | Passing |
+| Satisfaction: each stay is scored once when it ends (comfort, things to do, atmosphere); the guest tips by points and leaves a line naming what they loved and what they wished for | `test_guests.test_each_stay_is_scored_once_with_a_line_that_names_its_cause` | Passing |
+| A short advance booking: offered on the board with its needs and nice-to-haves listed first; accept, a day later or decline with no penalty; it waits patiently for room, walk-ins leave its pitches free, and its extras bonus pays once | `test_guests.test_a_booking_waits_on_the_board_and_comes_when_there_is_room` | Passing |
+| The morning report: last night's coins, each guest's line, extras bonuses, the bookings and the day's three goals (quick task, project, dream); interact starts the day | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_guests.test_the_day_offers_three_goals` | Passing |
+| Three days from the buttons: fish, grill, give, accept a booking, build, sleep; morning 4 shows the next booking | `test_stage_b.test_three_days_of_play_from_the_buttons` | Passing |
+| The guest PC fishes, gives and moves a booking through the host, and both PCs read the same morning report | `test_stage_b.test_the_guest_pc_fishes_gives_and_books_through_the_host` | Passing |
+| Bookings and pockets survive save and load; a Stage A save (version 2) upgrades | `test_guests.test_stage_b_survives_save_and_load` | Passing |
+| A test that hits a script error fails (it used to pass) | `tests/run_tests.gd` (engine log listener) | Checked by breaking a test on purpose |
+| Review frames: pitches with guests and their requests (day and dusk), fishing, the morning report | `tools/capture.gd --stage-b` | Looked at |
+| Both players want a fourth day and can explain the next booking | Owner's play | Waiting on the owner |
+
+### How to try it
+1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
+   9 am a guest comes; their request floats over their head.
+2. Tab (Options) opens the menu: the **Booking board** shows the Fern family for day 3 with what they need. Accept,
+   ask them to come a day later, or decline.
+3. Walk to the pond's edge and press E (Cross) to fish. Stand by the campfire with a fish and press E to grill it.
+   Walk up to a guest with what they asked for and press E to hand it over. A chair carried next to their tent
+   counts too.
+4. In build mode, C (D-pad right) switches between the tent pitch, the water point and the lantern post.
+5. From 6 pm choose **Ready for bed**. The morning report says what the night earned, how each guest felt and why,
+   the bookings, and three goals for the day. E (Cross) starts the day.
+
+### Still open
+- **Proposed** numbers (data/guests.json, data/fishing.json, data/build.json): tips 4 for a fish, 6 for a grilled fish,
+  3 for a chair, plus 2 coins per satisfaction point; things count as near within 6 m of a pitch (3.2 m for a chair,
+  8 m for the pond); a water point costs 30 and a lantern post 20; the Fern family (2 pitches) is offered on day 1
+  for day 3 with extras +10 (water point) and +8 (lantern post), the birdwatching club (3 pitches) on day 3 for day 5;
+  pockets hold 6; a cast takes 2.5 s and grilling 2 s; next kind is C or D-pad right.
+- The four Milestone 3 hands-on checks (two DualSense couch, a link code, a Tailscale join, fps on the weakest
+  laptop) are still unconfirmed; ask at this stage's sign-off.
+- Wood is not used yet (Stage C, with the shop and staff). Guests still walk in a straight line.
+- Frame rate on the weakest laptop is still unmeasured; Stage B adds two small models, a bobber and a 2D panel.

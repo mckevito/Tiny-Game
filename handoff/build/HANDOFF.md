@@ -1,11 +1,24 @@
-# Build hand-off, 25 Oct 2026 (after Stage A)
+# Build hand-off, 25 Oct 2026 (Stage B built, waiting on the owner's play)
 
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
    Never touches the reference repos. Until an `art` role starts, Build also owns the felt models (`data/models.json`).
 2. **State now:** Milestones 0 to 3 are signed off and merged (Milestone 3: PR #8, owner "works and looks good",
    25 Oct 2026). Four Milestone 3 checks were not confirmed by name (`docs/STATUS.md`, "Still open"). Stage A (core
-   proof) is merged (PR #10) and signed off by the owner, 25 Oct 2026.
+   proof) is merged (PR #10) and signed off by the owner, 25 Oct 2026. Stage B (three-day fun test) is built on
+   branch `claude/project-thread-s2hpsz` and waits on the owner's play and sign-off.
+   - Stage B: `scripts/camp/camp_guests.gd` (CampGuests: requests, `review` scoring, bookings, `goals`) and
+     `scripts/camp/camp_pockets.gd` (CampPockets: fish, cook, pockets) hang off `CampState` as `state.guests` and
+     `state.pockets` (weakref, like CampDay). Numbers in `data/guests.json` and `data/fishing.json`; the water point
+     and lantern post are build kinds in `data/build.json` (`improvement: true`). Bookings live in the save's
+     `reservations` (shared with the guest PC); pockets travel in `shared()["pockets"]`. `CampDay.arrivals()` runs a
+     due booking first, then a walk-in (`maybe_arrive` keeps its Stage A shape); walk-ins leave free the pitches a
+     booking due today needs. `settle_night` adds `reviews` and `bonuses` to the summary. The morning report is
+     `scripts/camp/camp_report.gd` (Hud/Report), built by `camp.morning_report(summary)` on each PC from the summary
+     plus its shared state, so both PCs read the same text. `action_for(who)` picks what interact does (place, give,
+     cook, pick up, fish); fishing and grilling wait in `_busy` before asking the host. New `_request` kinds: "fish",
+     "cook", "give", "booking". `_told` is a host-to-PC toast from a text key (`_say`, `_say_all`). Save version 3,
+     protocol 3.
    - Stage A: `scripts/camp/camp_day.gd` (CampDay: clock, calendar, sleep vote, `settle_night`, guests' stays) and
      `scripts/camp/camp_build.gd` (CampBuild: grid, build, pack, per-player undo) hang off `CampState` as `state.day`
      and `state.build` (held weakly, so no reference cycle). Numbers in `data/day.json` and `data/build.json`. A night
@@ -30,10 +43,11 @@
      main camera is player one's half, a SubViewport camera draws player two's half only while split.
    - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale.
 3. **Open work, in order:**
-   1. Stage B (three-day fun test), when the owner says go.
-   2. Still unconfirmed from Milestone 3 (not mentioned at Stage A's sign-off): two-DualSense couch, a link code, a
-      Tailscale join, and the fps on the weakest laptop (tune `data/graphics.json` from that). Ask at Stage B's
-      sign-off at the latest.
+   1. Stage B: the owner plays three days and signs off (or asks for changes); approve the Proposed numbers in
+      `docs/STATUS.md`. Record the sign-off in the next build PR (no sign-off PR).
+   2. Still unconfirmed from Milestone 3: two-DualSense couch, a link code, a Tailscale join, and the fps on the
+      weakest laptop (tune `data/graphics.json` from that). Ask at Stage B's sign-off.
+   3. Stage C (autumn chapter) when the owner says go.
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
    - `data/palette.json`: named swatches (the plan's five plus Proposed shades). Models use only these names.
@@ -74,6 +88,14 @@
      the same frame checks for it.
    - The capture's first log line must say "Vulkan ... Forward+". If `mesa-vulkan-drivers` is missing, Godot quietly
      uses OpenGL and the frames don't match the owner's renderer: install it (`apt-get install mesa-vulkan-drivers`).
+   - A script error (a call on null, a bad index) does not stop a GDScript function: a test that hit one used to
+     return "" and pass (a camp.gd parse error showed "64 passed"). `tests/run_tests.gd` now listens to the engine
+     log (`OS.add_logger`) and fails any test during which a script error was logged.
+   - An autowrapped Label in a container sizes to almost no width and the text vanishes off screen; give the Label
+     itself `custom_minimum_size.x` (the morning report).
+   - Godot `%` with a typed Dictionary lookup (`{...}[key]`) can't infer a type: give the variable a type.
+   - Pitch spots in tests and captures: check them against `data/build.json` blockers first (a bush blocked
+     (-1, 6)). Known good: (3, 5) near the fire, (-3.2, 7.9), (-4, 7), (-7.5, 5); water point at (4, 8) or (0, 8).
 7. **How to check things:**
    ```
    godot --headless --import
@@ -86,5 +108,7 @@
    `--write-movie OUT.png --quit-after 90` (with xvfb, no `--headless`) to save frames of a copy. The capture saves `play_<mood>.png` and `close_<mood>.png`
    from the play camera (and `clip_###.png` walking frames with `--clip`; make a GIF with ffmpeg). `--couch` instead
    plays a couch walk that splits and merges (`couch_###.png`, about 3 minutes on lavapipe). `--stage-a` saves
-   `day_11/18/21.png`: a pitch, its guest and tent, and a build ghost at three hours of the day. It uses Forward+
+   `day_11/18/21.png`: a pitch, its guest and tent, and a build ghost at three hours of the day. `--stage-b` saves
+   `camp_day.png`, `camp_dusk.png` (three pitches, guests with requests, water point, lantern), `fishing.png` and
+   `report.png`. It uses Forward+
    on software Vulkan (lavapipe, installed by the start-up script), so frames match the owner's renderer.

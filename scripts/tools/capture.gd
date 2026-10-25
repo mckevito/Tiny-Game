@@ -6,6 +6,9 @@ extends SceneTree
 ## merges), saving couch_###.png frames; it uses a throwaway save and profile.
 ## --stage-a plays the camp with a built pitch, its guest's tent and a build ghost, saving day_<hour>.png at a
 ## morning, an evening and a late-evening hour (the light follows the clock), also with a throwaway save.
+## --stage-b plays the camp with two pitches, a water point and a lantern post, guests with requests over their
+## heads and the player fishing at the pond, saving camp_day.png and camp_dusk.png, then report.png (the morning
+## report after a night).
 
 const SETTLE_FRAMES := 30
 
@@ -19,12 +22,14 @@ func _run() -> void:
 	var clip := false
 	var couch := false
 	var stage_a := false
+	var stage_b := false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
 		clip = clip or arg == "--clip"
 		couch = couch or arg == "--couch"
 		stage_a = stage_a or arg == "--stage-a"
+		stage_b = stage_b or arg == "--stage-b"
 	DirAccess.make_dir_recursive_absolute(out)
 	await process_frame
 	if couch:
@@ -33,6 +38,10 @@ func _run() -> void:
 		return
 	if stage_a:
 		await _stage_a(out)
+		quit(0)
+		return
+	if stage_b:
+		await _stage_b(out)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -164,5 +173,64 @@ func _stage_a(out: String) -> void:
 		camp.state.camp["calendar"]["minute"] = (hour - start) * 60.0
 		await _settle()
 		_save(out + "/day_%02d.png" % int(hour))
+	camp.stop("")
+	CampSave.dir = ""
+
+
+## Stage B: three pitches with the booked family and a walk-in guest (requests over their heads), a water point and
+## a lantern post, by day and at dusk; the player fishing at the pond; then the morning report.
+func _stage_b(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.start_solo(1)
+	var s: CampState = camp.state
+	s.camp["coins"] = 200
+	for row in [["pitch", Vector2(3, 5)], ["pitch", Vector2(-4, 7)], ["pitch", Vector2(-7.5, 5)],
+			["water_point", Vector2(0, 8)], ["lantern_post", Vector2(1, 3)]]:
+		var why: String = s.build.build("p_capture_one", row[0], row[1], 0.0)
+		if why != "":
+			print("could not build ", row, ": ", why)
+		camp._show_object(s.build.last_id)
+	s.guests.refresh_offers()
+	s.guests.decide("p_capture_one", "ferns", "accept")
+	s.camp["calendar"]["day"] = 3
+	var start := Tuning.num("day", "clock.start_hour")
+	s.camp["calendar"]["minute"] = (Tuning.num("day", "stays.arrive_hour") - start) * 60.0
+	await process_frame
+	for c: Camper in camp.visitors.values():
+		c.walk_speed = 100.0
+	var me: Camper = camp.campers["p_capture_one"]
+	me.position = Vector3(-1.5, 0, 10.0)
+	me.rotation.y = 0.0
+	s.camp["profiles"]["p_capture_one"]["pockets"] = ["perch", "grilled_trout"]
+	camp.camera._want_distance = Tuning.num("tuning", "camera.max_distance_m")
+	for hour in [11.0, 19.0]:
+		s.camp["calendar"]["minute"] = (hour - start) * 60.0
+		await _settle()
+		_save(out + "/camp_%s.png" % ("day" if hour < 12.0 else "dusk"))
+	s.camp["calendar"]["minute"] = (11.0 - start) * 60.0
+	me.position = Vector3(2.4, 0, -3.6)
+	me.rotation.y = deg_to_rad(-90.0)
+	s.set_player_pos("p_capture_one", Vector2(2.4, -3.6), -90.0)
+	camp.interact("p_capture_one")
+	camp.camera.yaw = PI
+	camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m")
+	if camp._busy.has("p_capture_one"):
+		camp._busy["p_capture_one"]["left"] = 100.0
+	await _settle()
+	await _settle()
+	_save(out + "/fishing.png")
+	s.camp["calendar"]["minute"] = (Tuning.num("day", "clock.evening_hour") - start) * 60.0
+	s.day.vote("p_capture_one", true)
+	camp._check_bed()
+	for f in 90:
+		await process_frame
+	_save(out + "/report.png")
 	camp.stop("")
 	CampSave.dir = ""

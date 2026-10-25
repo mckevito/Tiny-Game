@@ -53,7 +53,17 @@
     "clock_scale": 30
   },
   "hud": {
-    "toast_s": 3.0,
+    "toast_s": 3.5,
+    "toast_lines": 3,
+    "report_font_px": 26,
+    "report_width_px": 980,
+    "report_margin_px": 28,
+    "report_corner_px": 18,
+    "report_edge_px": 6,
+    "report_alpha": 0.95,
+    "report_swatch": "warm_cream",
+    "report_edge_swatch": "honey_thread",
+    "report_ink_swatch": "ink_brown",
     "title_font_px": 40,
     "menu_width_px": 560,
     "menu_font_px": 28
