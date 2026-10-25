@@ -1,7 +1,7 @@
 class_name CampMenu
 extends PanelContainer
-## The start menu (play alone, host, join, with an optional link code) and the in-camp menu (back to camp, leave, or
-## hop off the couch for a couch player). Works with the keyboard and
+## The start menu (play alone, host, join, with an optional link code) and the in-camp menu (back to camp, ready for
+## bed, leave, or hop off the couch for a couch player). Works with the keyboard and
 ## mouse or a pad: buttons take focus, so the D-pad or left stick moves between them and Cross presses.
 ## Typing a name or an address needs a keyboard; both are remembered for next time. Text: data/text.json "menu"; sizes: data/tuning.json "hud".
 
@@ -19,6 +19,7 @@ var _first_pause: Button
 var _leave: Button
 var _leave_couch: Button
 var _quality: Button
+var _sleep: Button
 
 
 func _ready() -> void:
@@ -47,6 +48,7 @@ func _ready() -> void:
 	_start.add_child(link_edit)
 	_button(_start, "join")
 	_first_pause = _button(_pause, "resume")
+	_sleep = _button(_pause, "sleep")
 	_leave = _button(_pause, "leave")
 	_leave_couch = _button(_pause, "leave_couch")
 	_quality = _button(_pause, "quality")
@@ -95,6 +97,12 @@ func show_pause(couch_player: bool = false, info: String = "") -> void:
 	visible = true
 	_fit.call_deferred()
 	_first_pause.grab_focus.call_deferred()
+
+
+## The bed button: "Ready for bed", "Not ready for bed yet", or greyed out before the evening with `closed_text`.
+func set_sleep(open: bool, ready: bool, closed_text: String) -> void:
+	_sleep.disabled = not open and not ready
+	_sleep.text = Tuning.text("menu.not_sleep") if ready else (Tuning.text("menu.sleep") if open else closed_text)
 
 
 ## Shrinks the panel to what it shows now and centres it.

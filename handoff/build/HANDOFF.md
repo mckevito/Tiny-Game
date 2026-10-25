@@ -1,10 +1,18 @@
-# Build hand-off, 25 Oct 2026 (after Milestone 3)
+# Build hand-off, 25 Oct 2026 (Stage A built, waiting on the owner)
 
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
    Never touches the reference repos. Until an `art` role starts, Build also owns the felt models (`data/models.json`).
 2. **State now:** Milestones 0 to 3 are signed off and merged (Milestone 3: PR #8, owner "works and looks good",
-   25 Oct 2026). Four Milestone 3 checks were not confirmed by name (`docs/STATUS.md`, "Still open").
+   25 Oct 2026). Four Milestone 3 checks were not confirmed by name (`docs/STATUS.md`, "Still open"). Stage A (core
+   proof) is built on its own branch and PR, waiting on the owner's try and merge.
+   - Stage A: `scripts/camp/camp_day.gd` (CampDay: clock, calendar, sleep vote, `settle_night`, guests' stays) and
+     `scripts/camp/camp_build.gd` (CampBuild: grid, build, pack, per-player undo) hang off `CampState` as `state.day`
+     and `state.build` (held weakly, so no reference cycle). Numbers in `data/day.json` and `data/build.json`. A night
+     pays only if `camp.last_settled` is below today's day number, and the settle, the payout and the next morning
+     are saved in one write. Camp RPCs added: `_shared` (coins, calendar, stays, votes, ledger), `_clock` (1/s,
+     unreliable), `_night` (summary), `_object_removed`; `_request` takes "build", "pack", "undo" and "sleep".
+     Guests are `Camper` nodes in `visitors` that walk with `walk_target`; their tents are in `_tents`. Save version 2.
    - `scenes/camp.tscn` + `scripts/camp/camp.gd` is the main scene: start menu (play alone, host, join with an
      optional link code), the camp, the couch, and all the netcode (ENet, RPCs on the Camp node). `camp_state.gd`
      holds the rules (host decides) and link codes, `camp_save.gd` the save (slots, backup, upgrades),
@@ -22,9 +30,10 @@
      main camera is player one's half, a SubViewport camera draws player two's half only while split.
    - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale.
 3. **Open work, in order:**
-   1. Stage A: day clock, sleep vote and nightly payout write into the save fields that already exist. At its
-      sign-off, also ask for the four unconfirmed Milestone 3 checks: two-DualSense couch, a link code, a Tailscale
-      join, and the fps on the weakest laptop (tune `data/graphics.json` from that).
+   1. Stage A sign-off: the owner tries it, says yes or no to the Proposed defaults (STATUS "Still open"), and
+      confirms the four Milestone 3 checks: two-DualSense couch, a link code, a Tailscale join, and the fps on the
+      weakest laptop (tune `data/graphics.json` from that).
+   2. Stage B (three-day fun test), after Stage A is merged and signed off.
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
    - `data/palette.json`: named swatches (the plan's five plus Proposed shades). Models use only these names.
@@ -59,6 +68,10 @@
      checks each player is on screen. Check both side and bounds for anything on screen.
    - A camp in a test must not call `LocalProfile.save` with no profile file named, or it overwrites the real
      user://profile.json; `apply_quality(..., false)` at start-up exists for that.
+   - A sub-object that points back at its owner (CampDay -> CampState) leaks both RefCounteds; hold the owner with
+     `weakref` (the test runner's "ObjectDB instances were leaked" warning is the tell).
+   - A ghost or node removed with only `queue_free` is still a child until the frame ends; `remove_child` first when
+     the same frame checks for it.
    - The capture's first log line must say "Vulkan ... Forward+". If `mesa-vulkan-drivers` is missing, Godot quietly
      uses OpenGL and the frames don't match the owner's renderer: install it (`apt-get install mesa-vulkan-drivers`).
 7. **How to check things:**
@@ -72,5 +85,6 @@
    `godot --headless -- --host --slot=2` and `godot --headless -- --join=127.0.0.1 --profile=b`. Add
    `--write-movie OUT.png --quit-after 90` (with xvfb, no `--headless`) to save frames of a copy. The capture saves `play_<mood>.png` and `close_<mood>.png`
    from the play camera (and `clip_###.png` walking frames with `--clip`; make a GIF with ffmpeg). `--couch` instead
-   plays a couch walk that splits and merges (`couch_###.png`, about 3 minutes on lavapipe). It uses Forward+
+   plays a couch walk that splits and merges (`couch_###.png`, about 3 minutes on lavapipe). `--stage-a` saves
+   `day_11/18/21.png`: a pitch, its guest and tent, and a build ghost at three hours of the day. It uses Forward+
    on software Vulkan (lavapipe, installed by the start-up script), so frames match the owner's renderer.

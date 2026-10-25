@@ -15,6 +15,12 @@ var remote_target: Variant = null
 var remote_yaw := 0.0
 ## The devices this camper listens to on a shared PC (couch play); null reads every device.
 var input: PlayerInput
+## A visiting guest walks here at `walk_speed` (data/day.json stays.walk_speed_mps), in its parent's space, then
+## emits `arrived`; null when it is not walking anywhere.
+var walk_target: Variant = null
+var walk_speed := 1.5
+
+signal arrived
 
 var _body: Node3D
 var _walk_phase := 0.0
@@ -52,6 +58,9 @@ func _physics_process(delta: float) -> void:
 	if not controlled and remote_target is Vector3:
 		_glide(delta)
 		return
+	if walk_target is Vector3:
+		_walk(delta)
+		return
 	var stick := Vector2.ZERO
 	if controlled:
 		stick = input.move() if input else Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -78,6 +87,23 @@ func _glide(delta: float) -> void:
 	rotation.y = lerp_angle(rotation.y, remote_yaw, 1.0 - exp(-Tuning.num("net", "remote_smoothing", 14.0) * delta))
 	velocity = (position - before) / maxf(delta, 0.0001)
 	_waddle(delta)
+
+
+## A guest's stroll: straight to its target at walking pace, facing the way it goes.
+func _walk(delta: float) -> void:
+	var target: Vector3 = walk_target
+	target.y = position.y
+	var before := position
+	position = position.move_toward(target, walk_speed * delta)
+	var step := position - before
+	if step.length() > 0.0001:
+		rotation.y = lerp_angle(rotation.y, atan2(-step.x, -step.z), Tuning.num("tuning", "movement.turn_speed_rad_s") * delta)
+	velocity = step / maxf(delta, 0.0001)
+	_waddle(delta)
+	if position.distance_to(target) < 0.01:
+		walk_target = null
+		velocity = Vector3.ZERO
+		arrived.emit()
 
 
 func _waddle(delta: float) -> void:

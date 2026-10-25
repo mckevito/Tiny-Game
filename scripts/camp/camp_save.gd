@@ -83,11 +83,17 @@ static func upgrade(camp: Dictionary) -> Dictionary:
 		match from:
 			0:
 				pass  # Version 0 is a save written before versions existed: filling the defaults is enough.
+			1:
+				# Stage A gives a new camp its starting coins; a camp that never earned or spent gets them too.
+				if int(camp.get("coins", 0)) == 0 and (camp.get("ledger", []) as Array).is_empty():
+					camp["coins"] = int(Tuning.value("save", "new_camp.coins", 0))
 		from += 1
 	_fill(camp, Tuning.value("save", "new_camp", {}))
 	for id: String in camp["profiles"]:
 		_fill(camp["profiles"][id], Tuning.value("save", "new_profile", {}))
 	camp["next_object_id"] = int(camp["next_object_id"])
+	camp["coins"] = int(camp["coins"])
+	camp["last_settled"] = int(camp["last_settled"])
 	camp["version"] = version()
 	return camp
 

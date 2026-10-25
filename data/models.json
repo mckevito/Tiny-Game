@@ -26,18 +26,21 @@
     ]
   },
   "camper_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "teal_felt", "hat": "teal_felt", "trim": "warm_cream", "mitten": "warm_cream"}},
+  "guest_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "rust_canvas", "pants": "moss_felt", "hat": "pond_blue", "trim": "honey_thread", "mitten": "warm_cream"}},
+  "guest_b": {"base": "camper", "show": ["bun"], "slots": {"shirt": "pond_blue", "pants": "bark_brown", "hair": "ink_brown", "mitten": "honey_thread"}},
   "camper_b": {"base": "camper", "show": ["bun"], "slots": {"shirt": "honey_thread", "hair": "bark_brown", "mitten": "rust_canvas"}},
 
   "tent": {
+    "slots": {"canvas": "rust_canvas", "door": "teal_felt", "mat": "moss_felt"},
     "collide": {"box": [2.0, 1.5, 2.2], "offset": [0, 0.75, 0]},
     "parts": [
-      {"shape": "box", "size": [2.3, 0.04, 2.5], "pos": [0, 0.02, -0.05], "round": 0.02, "color": "moss_felt"},
-      {"shape": "box", "size": [1.8, 0.08, 2.2], "pos": [-0.5, 0.75, 0], "rot": [0, 0, 56.3], "round": 0.04, "color": "rust_canvas"},
-      {"shape": "box", "size": [1.8, 0.08, 2.2], "pos": [0.5, 0.75, 0], "rot": [0, 0, -56.3], "round": 0.04, "color": "rust_canvas"},
-      {"shape": "prism", "size": [1.96, 1.46, 0.06], "pos": [0, 0.73, 1.06], "color": "rust_canvas"},
-      {"shape": "prism", "size": [1.7, 1.3, 0.04], "pos": [0, 0.65, -0.95], "color": "teal_felt"},
-      {"shape": "prism", "size": [0.62, 1.05, 0.05], "pos": [-0.62, 0.525, -1.07], "tip": 1.0, "color": "rust_canvas"},
-      {"shape": "prism", "size": [0.62, 1.05, 0.05], "pos": [0.62, 0.525, -1.07], "tip": 0.0, "color": "rust_canvas"},
+      {"shape": "box", "size": [2.3, 0.04, 2.5], "pos": [0, 0.02, -0.05], "round": 0.02, "color": "$mat"},
+      {"shape": "box", "size": [1.8, 0.08, 2.2], "pos": [-0.5, 0.75, 0], "rot": [0, 0, 56.3], "round": 0.04, "color": "$canvas"},
+      {"shape": "box", "size": [1.8, 0.08, 2.2], "pos": [0.5, 0.75, 0], "rot": [0, 0, -56.3], "round": 0.04, "color": "$canvas"},
+      {"shape": "prism", "size": [1.96, 1.46, 0.06], "pos": [0, 0.73, 1.06], "color": "$canvas"},
+      {"shape": "prism", "size": [1.7, 1.3, 0.04], "pos": [0, 0.65, -0.95], "color": "$door"},
+      {"shape": "prism", "size": [0.62, 1.05, 0.05], "pos": [-0.62, 0.525, -1.07], "tip": 1.0, "color": "$canvas"},
+      {"shape": "prism", "size": [0.62, 1.05, 0.05], "pos": [0.62, 0.525, -1.07], "tip": 0.0, "color": "$canvas"},
       {"shape": "cylinder", "size": [0.06, 0.3, 0.06], "pos": [0, 1.5, -1.2], "rot": [90, 0, 0], "color": "wood_felt"},
       {"shape": "stitch", "from": [0, 1.545, -1.08], "to": [0, 1.545, 1.08], "color": "honey_thread"},
       {"shape": "stitch", "from": [-0.96, 0.08, -1.13], "to": [-0.06, 1.42, -1.13], "color": "honey_thread"},
@@ -46,6 +49,7 @@
       {"shape": "stitch", "from": [0.33, 0.06, -1.1], "to": [0.33, 0.98, -1.1], "color": "honey_thread"}
     ]
   },
+  "tent_guest": {"base": "tent", "slots": {"canvas": "pond_blue", "door": "honey_thread", "mat": "moss_felt"}},
 
   "tree_pine": {
     "sway": true,
@@ -127,6 +131,19 @@
   },
   "chair_teal": {"base": "chair", "slots": {"fabric": "teal_felt", "thread": "warm_cream"}},
   "chair_honey": {"base": "chair", "slots": {"fabric": "honey_thread", "thread": "rust_canvas"}},
+
+  "pitch": {
+    "parts": [
+      {"shape": "box", "size": [3.0, 0.03, 3.0], "pos": [0, 0.03, 0], "round": 0.012, "color": "sand_felt"},
+      {"shape": "stitch", "from": [-1.4, 0.05, -1.4], "to": [1.4, 0.05, -1.4], "color": "warm_cream"},
+      {"shape": "stitch", "from": [1.4, 0.05, -1.4], "to": [1.4, 0.05, 1.4], "color": "warm_cream"},
+      {"shape": "stitch", "from": [1.4, 0.05, 1.4], "to": [-1.4, 0.05, 1.4], "color": "warm_cream"},
+      {"shape": "stitch", "from": [-1.4, 0.05, 1.4], "to": [-1.4, 0.05, -1.4], "color": "warm_cream"},
+      {"shape": "cylinder", "size": [0.08, 0.7, 0.08], "pos": [1.35, 0.35, 1.35], "color": "wood_felt"},
+      {"shape": "box", "size": [0.38, 0.24, 0.05], "pos": [1.35, 0.62, 1.32], "round": 0.02, "color": "honey_thread"},
+      {"shape": "stitch", "from": [-0.12, 0, -0.03], "to": [0.12, 0, -0.03], "pos": [1.35, 0.62, 1.32], "color": "ink_brown"}
+    ]
+  },
 
   "fire_pit": {
     "collide": {"radius": 0.6, "height": 0.4},

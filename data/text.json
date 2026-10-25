@@ -14,9 +14,14 @@
   "prompt": {
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
-    "controls": "{move} to walk · {camera} turn the camera · {interact} pick up or put down · {menu} for the menu",
+    "controls": "{move} to walk · {camera} turn the camera · {interact} pick up or put down · {build} build · {menu} for the menu",
     "drop_in": "A friend can drop in: {menu} on a second controller",
-    "for_player": "%s: %s"
+    "for_player": "%s: %s",
+    "build_here": "{interact} Make a %s here (%d coins) · {rotate} turn · {undo} undo · {build} done",
+    "build_blocked": "%s · {rotate} turn · {undo} undo · {build} done",
+    "pack_here": "{interact} Pack away this %s (+%d coins) · {undo} undo · {build} done",
+    "sleep_wait": "Ready for bed: %s (%d of %d). {menu} for the menu to join in.",
+    "bed_open": "The evening is here. When you are ready, {menu} and choose Ready for bed."
   },
   "menu": {
     "title": "Our Little Campground",
@@ -33,7 +38,10 @@
     "quality": "Picture: %s",
     "link_code": "Link code (only to bring a couch camper to this PC)",
     "link_info": "To play %s on their own PC, join this camp there with the link code %s.",
-    "hosting": "Hosting camp %d. Your friend can join now."
+    "hosting": "Hosting camp %d. Your friend can join now.",
+    "sleep": "Ready for bed",
+    "not_sleep": "Not ready for bed yet",
+    "sleep_closed": "Bed opens in the evening (from %s)"
   },
   "join": {
     "full": "That camp already has two campers.",
@@ -50,7 +58,7 @@
     "low": "Light, for laptops"
   },
   "dev": {
-    "stats": "%d fps · picture %s · %s at %d%%"
+    "stats": "%d fps · picture %s · %s at %d%% · clock ×%d"
   },
   "save": {
     "too_new": "That camp was saved by a newer version of the game.",
@@ -63,7 +71,14 @@
     "out_of_bounds": "That would be outside the camp.",
     "too_close": "There is not quite enough room there.",
     "nothing_carried": "You are not carrying anything.",
-    "not_movable": "That stays where it is."
+    "not_movable": "That stays where it is.",
+    "coins": "Not quite enough coins for that yet.",
+    "pitch_in_use": "A guest is staying there; it can be packed away after they leave.",
+    "nothing_to_undo": "Nothing to undo.",
+    "too_early": "It is a little early for bed. Bed opens in the evening.",
+    "not_here": "You are not in the camp.",
+    "building": "Put the build tools away first.",
+    "not_buildable": "That can't be built here."
   },
   "toast": {
     "joined": "%s joined the camp.",
@@ -72,6 +87,40 @@
     "dropped_out": "%s hopped off the couch. Their camper is safe in this camp's save.",
     "pad_asleep": "%s's controller went quiet. Their camper waits.",
     "pad_back": "%s's controller is back.",
-    "linked": "You are playing %s from this PC now. It stays yours here."
+    "linked": "You are playing %s from this PC now. It stays yours here.",
+    "undone": "Undone."
+  },
+  "build": {
+    "pitch": "tent pitch"
+  },
+  "clock": {
+    "line": "%s, day %d · %s · %d coins",
+    "time": "%d:%02d %s",
+    "am": "am",
+    "pm": "pm",
+    "season": {
+      "spring": "Spring",
+      "summer": "Summer",
+      "autumn": "Autumn",
+      "winter": "Winter"
+    }
+  },
+  "night": {
+    "title": "Good night",
+    "paid": "Night %d: %s paid %d coins for the %s.",
+    "quiet": "Night %d: a quiet night, nobody stayed.",
+    "morning": "Good morning! %s, day %d."
+  },
+  "guest": {
+    "names": [
+      "Pip",
+      "Wren",
+      "Bram",
+      "Juniper",
+      "Moss",
+      "Clover"
+    ],
+    "arrived": "%s has come to stay at your %s.",
+    "left": "%s headed home with a wave."
   }
 }

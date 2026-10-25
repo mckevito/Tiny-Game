@@ -4,6 +4,8 @@ extends SceneTree
 ##   godot --script res://scripts/tools/capture.gd --resolution 1280x720 -- --out=DIR [--clip] [--couch]
 ## --couch instead plays the camp with a couch player who walks away (the screen splits), around and back (it
 ## merges), saving couch_###.png frames; it uses a throwaway save and profile.
+## --stage-a plays the camp with a built pitch, its guest's tent and a build ghost, saving day_<hour>.png at a
+## morning, an evening and a late-evening hour (the light follows the clock), also with a throwaway save.
 
 const SETTLE_FRAMES := 30
 
@@ -16,15 +18,21 @@ func _run() -> void:
 	var out := "user://captures"
 	var clip := false
 	var couch := false
+	var stage_a := false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
 		clip = clip or arg == "--clip"
 		couch = couch or arg == "--couch"
+		stage_a = stage_a or arg == "--stage-a"
 	DirAccess.make_dir_recursive_absolute(out)
 	await process_frame
 	if couch:
 		await _couch(out)
+		quit(0)
+		return
+	if stage_a:
+		await _stage_a(out)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -125,5 +133,36 @@ func _couch(out: String) -> void:
 		if f % 2 == 0:
 			root.get_viewport().get_texture().get_image().save_png(out + "/couch_%03d.png" % frame)
 			frame += 1
+	camp.stop("")
+	CampSave.dir = ""
+
+
+## Stage A: a pitch with its guest and tent, the player in build mode beside it, at three hours of the day.
+func _stage_a(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.start_solo(1)
+	camp.state.build.build("p_capture_one", "pitch", Vector2(-3, 8), 0.0)
+	camp._show_object(camp.state.build.last_id)
+	camp.state.camp["coins"] = 60
+	var start := Tuning.num("day", "clock.start_hour")
+	camp.state.camp["calendar"]["minute"] = (Tuning.num("day", "stays.arrive_hour") - start) * 60.0
+	await process_frame
+	for c: Camper in camp.visitors.values():
+		c.walk_speed = 100.0
+	var me: Camper = camp.campers["p_capture_one"]
+	me.position = Vector3(-6.0, 0, 7.6)
+	me.rotation.y = 0.0
+	camp.toggle_build("p_capture_one")
+	for hour in [11.0, 18.5, 21.0]:
+		camp.state.camp["calendar"]["minute"] = (hour - start) * 60.0
+		await _settle()
+		_save(out + "/day_%02d.png" % int(hour))
 	camp.stop("")
 	CampSave.dir = ""

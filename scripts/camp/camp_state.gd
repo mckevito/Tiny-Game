@@ -6,10 +6,15 @@ extends RefCounted
 
 ## The camp save (see CampSave), or on a guest the part of it the host shared.
 var camp: Dictionary
+## The parts of the camp a guest PC mirrors besides objects and profiles: the day, the coins and the guests.
+const SHARED: Array[String] = ["calendar", "coins", "wood", "stays", "last_settled", "ledger"]
 ## Object id -> profile id of whoever carries it. Not saved: a carried thing stays at its last spot in the save.
 var carriers := {}
 ## Profile ids of the players in the camp right now.
 var online: Array[String] = []
+## Stage A: the day, sleep and night (CampDay), and grid placement (CampBuild).
+var day: CampDay
+var build: CampBuild
 
 
 func _init(data: Dictionary) -> void:
@@ -18,6 +23,12 @@ func _init(data: Dictionary) -> void:
 		camp["objects"] = {}
 	if not camp.has("profiles"):
 		camp["profiles"] = {}
+	for key: String in SHARED:
+		if not camp.has(key):
+			var v: Variant = Tuning.value("save", "new_camp." + key)
+			camp[key] = v.duplicate(true) if v is Dictionary or v is Array else v
+	day = CampDay.new(self)
+	build = CampBuild.new(self)
 
 
 static func _num(key: String) -> float:
@@ -47,6 +58,8 @@ func leave(profile_id: String) -> Array[String]:
 			carriers.erase(id)
 			dropped.append(id)
 	online.erase(profile_id)
+	if day:
+		day.votes.erase(profile_id)
 	return dropped
 
 
@@ -185,17 +198,37 @@ func place(profile_id: String, pos: Vector2, yaw_deg: float) -> String:
 	return ""
 
 
-## What a joining guest needs: the objects, who carries what, and the characters in the camp now.
+## What a joining guest needs: the objects, who carries what, the characters in the camp now, and the shared day.
 func snapshot() -> Dictionary:
 	var profiles := {}
 	for id in online:
 		profiles[id] = camp["profiles"][id]
-	return {"objects": camp["objects"], "carriers": carriers, "profiles": profiles}
+	var snap := shared()
+	snap.merge({"objects": camp["objects"], "carriers": carriers, "profiles": profiles})
+	return snap
+
+
+## The shared day as a guest PC mirrors it: SHARED plus who is ready for bed.
+func shared() -> Dictionary:
+	var out := {"votes": day.votes.duplicate()}
+	for key in SHARED:
+		out[key] = camp[key]
+	return out
+
+
+## A guest PC takes in the host's shared day.
+func apply_shared(data: Dictionary) -> void:
+	for key in SHARED:
+		if data.has(key):
+			camp[key] = data[key]
+	if data.has("votes"):
+		day.votes.assign(data["votes"])
 
 
 ## A guest's mirror of the camp, built from the host's snapshot.
 static func from_snapshot(snap: Dictionary) -> CampState:
 	var state := CampState.new({"objects": snap.get("objects", {}), "profiles": snap.get("profiles", {})})
+	state.apply_shared(snap)
 	state.carriers = snap.get("carriers", {})
 	for id: String in state.camp["profiles"]:
 		state.online.append(id)
