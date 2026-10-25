@@ -495,6 +495,12 @@ func _hud(out: String) -> void:
 	await _settle()
 	_save(out + "/hud_pack.png")
 	camp.close_pack("p_capture_one")
+	# Player one's own controller moves first, so the second one drops in (as in test_hud).
+	var stick := InputEventJoypadMotion.new()
+	stick.device = 0
+	stick.axis = JOY_AXIS_LEFT_X
+	stick.axis_value = 1.0
+	camp._input(stick)
 	var pad := InputEventJoypadButton.new()
 	pad.device = 1
 	pad.button_index = 6

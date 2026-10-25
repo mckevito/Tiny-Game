@@ -30,3 +30,8 @@ See `handoff/gameplay/LESSONS.md` "Who owns what". `camp.gd` and `data/text.json
   F1 over the clock, the hint split "Tab for the / menu", toasts under the report. Why: tests called
   `_unhandled_input` directly (skipping GUI focus) and checked only HUD pieces, not the campers. What stops it: a test
   with real key presses through `Input.parse_input_event`, and `_campers_clear` in the layout test.
+- 25 Oct 2026, round 2: button icons. Prompts are RichTextLabels now: `Prompts.rich` for anything shown, `Prompts.fill`
+  for words (Options, text tests). Tests that compare HUD text must build the expected line with `Prompts.rich`. Keep
+  bbcode tags free of spaces (the hint swaps spaces for no-break spaces). Edit `data/*.json` by hand: a json
+  round-trip drops the duplicate `pack_full` key in `text.json`. The capture needs a device-0 stick event before pad 1
+  drops in.

@@ -570,5 +570,9 @@
     "glyph_pair": "%s and %s",
     "on": "On",
     "off": "Off"
+  },
+  "glyphs": {
+    "join": " ",
+    "key_pad": " "
   }
 }
