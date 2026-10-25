@@ -1,0 +1,26 @@
+{
+  "_about": "Player two has no sheet of its own yet. This borrows player one's \"Beanie Camper\" turnaround (25 Oct 2026) for LAYOUT ONLY, so compare.py sheets and siblings place player two's views where player one's stand (art/RECIPE.md, \"A sibling or variant\"). outline measures against player one's figure, so trust it only below the head; the colour bands keep only the shared skin, since the sheet's hat, sweater and trousers are player one's colours. When the owner gives a player two sheet, replace this file with its own layout and bands.",
+  "sheet": "/mnt/project-files/tiny-game/reference/beanie-camper-turnaround.png",
+  "title": "PLAYER TWO ON PLAYER ONE'S SHEET (LAYOUT ONLY)",
+  "px_per_m": 272.8,
+  "background_at": [10, 200],
+  "views": {
+    "front": [209, 476],
+    "front_right": [598, 476],
+    "right": [945, 476],
+    "back_right": [1323, 476],
+    "back": [209, 929],
+    "back_left": [590, 929],
+    "left": [945, 929],
+    "front_left": [1323, 929]
+  },
+  "pairs": {
+    "front": [20, 55, 400, 490],
+    "right": [800, 55, 1100, 490],
+    "back": [20, 510, 400, 945],
+    "left": [800, 510, 1100, 945]
+  },
+  "bands": {
+    "skin": [0.86, 0.98, 0.12, "skin", "peach_felt"]
+  }
+}

@@ -166,14 +166,19 @@ func arrivals() -> Array[String]:
 
 
 ## From the arrival hour a walk-in guest comes to a free pitch, if there is one past those a booking due today still
-## waits for and the camp has room for another walk-in. They bring a request (Stage B). Returns the new stay's id,
+## waits for, the camp has room for another walk-in and the last walk-in today came at least gap_min minutes ago. They bring a request (Stage B). Returns the new stay's id,
 ## or "".
 func maybe_arrive() -> String:
 	if hour() < _n("stays.arrive_hour", 9.0):
 		return ""
 	var walk_ins := 0
+	var minute := float(state.camp["calendar"].get("minute", 0))
 	for stay: Dictionary in state.camp["stays"].values():
-		walk_ins += 0 if stay.has("booking") else 1
+		if stay.has("booking"):
+			continue
+		walk_ins += 1
+		if int(stay.get("arrived", 0)) == today() and minute - float(stay.get("arrived_min", -INF)) < _n("stays.gap_min", 0.0):
+			return ""
 	if walk_ins >= int(_n("stays.max_stays", 1)):
 		return ""
 	var free := state.guests.free_pitches()
@@ -185,7 +190,7 @@ func maybe_arrive() -> String:
 	var names: Array = Tuning.value("text", "guest.names", ["Guest"])
 	var id := "stay_%d" % n
 	state.camp["stays"][id] = {"pitch": free[0], "name": str(names[n % names.size()]),
-			"look": str(looks[n % looks.size()]), "nights_left": int(_n("stays.nights", 1)), "arrived": today(),
+			"look": str(looks[n % looks.size()]), "nights_left": int(_n("stays.nights", 1)), "arrived": today(), "arrived_min": minute,
 			"request": CampGuests.new_request(n, today())}
 	return id
 

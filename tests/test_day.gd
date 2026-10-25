@@ -149,10 +149,14 @@ func test_a_guest_comes_to_a_free_pitch_stays_and_heads_home() -> String:
 	var stand := state.day.stand_point(first)
 	if stand.distance_to(state.object_pos(pitch)) > 3.0:
 		return "the guest should stand by their pitch, got %s" % stand
-	_at_hour(state, Tuning.num("day", "clock.end_hour"))
-	var summary := state.day.settle_night()
+	var summary := {}
+	for night in int(Tuning.num("day", "stays.nights")):
+		if not state.camp["stays"].has(first):
+			return "the guest should stay %d nights, but left after %d" % [Tuning.num("day", "stays.nights"), night]
+		_at_hour(state, Tuning.num("day", "clock.end_hour"))
+		summary = state.day.settle_night()
 	if not (summary["left"] as Array).has(first) or state.camp["stays"].has(first):
-		return "after their night the guest should head home"
+		return "after their nights the guest should head home"
 	_at_hour(state, Tuning.num("day", "stays.arrive_hour"))
 	var second := state.day.maybe_arrive()
 	if second == "" or state.camp["stays"][second]["name"] == state.camp["ledger"][0]["lines"][0]["name"]:
@@ -216,6 +220,9 @@ func test_undo_and_pack_away_refund_in_full() -> String:
 	state.day.settle_night()
 	if state.build.undo_last("p_guest") != "deny.nothing_to_undo":
 		return "the undo list should clear each night"
+	for night in int(Tuning.num("day", "stays.nights")) - 1:
+		_at_hour(state, Tuning.num("day", "clock.end_hour"))
+		state.day.settle_night()
 	if state.build.pack("p_guest", id) != "":
 		return "after the guest left, the pitch should pack away"
 	return ""
@@ -232,3 +239,39 @@ func test_an_older_save_gets_the_starting_coins() -> String:
 			or not camp["stays"] is Dictionary or int(camp["version"]) != CampSave.version():
 		return "a version 1 camp should get the starting coins and the new fields, got %s" % camp
 	return ""
+
+
+## First minutes (owner's pick): up to max_stays walk-ins at once, arriving one by one gap_min apart, each staying
+## nights nights; a pitch past the cap stays free.
+func test_up_to_three_guests_come_one_by_one_and_stay_two_nights() -> String:
+	var state := _camp()
+	state.camp["coins"] = 500
+	var spots := [Vector2(3, 5), Vector2(-4, 7), Vector2(-7.5, 5), Vector2(4, 9)]
+	for p: Vector2 in spots:
+		var why := state.build.build("p_host", "pitch", p, 0.0)
+		if why != "":
+			return "could not build a pitch at %s: %s" % [p, why]
+	var cap := int(Tuning.num("day", "stays.max_stays"))
+	var gap := Tuning.num("day", "stays.gap_min")
+	_at_hour(state, Tuning.num("day", "stays.arrive_hour"))
+	var came: Array[String] = []
+	for i in cap + 1:
+		var id := state.day.maybe_arrive()
+		if id != "":
+			came.append(id)
+		if state.day.maybe_arrive() != "":
+			return "guests should come one by one, gap_min apart"
+		state.camp["calendar"]["minute"] = float(state.camp["calendar"]["minute"]) + gap
+	if came.size() != cap or state.guests.free_pitches().size() != spots.size() - cap:
+		return "%d guests should stay at once, leaving a pitch free, got %d" % [cap, came.size()]
+	_at_hour(state, Tuning.num("day", "clock.end_hour"))
+	state.day.settle_night()
+	if state.camp["stays"].size() != cap and int(Tuning.num("day", "stays.nights")) > 1:
+		return "after one night every guest should still be here"
+	for night in int(Tuning.num("day", "stays.nights")) - 1:
+		_at_hour(state, Tuning.num("day", "clock.end_hour"))
+		state.day.settle_night()
+	if came.any(func(id: String) -> bool: return state.camp["stays"].has(id)):
+		return "after their nights every guest should head home"
+	return ""
+

@@ -43,9 +43,9 @@
     "name_font_px": 48,
     "name_outline_px": 12,
     "hand_pos": [
-      0.41,
-      0.3,
-      -0.04
+      0.386,
+      0.359,
+      -0.025
     ],
     "tool_scale": 1.3
   },
