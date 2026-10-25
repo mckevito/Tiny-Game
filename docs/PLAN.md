@@ -253,3 +253,6 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   **Proposed**: the board starts in the kit; the fire is upgraded at the fire itself, not crafted at the bench.
 - 25 Oct 2026, owner (Interface thread): button icons, a knitted clipboard and tidier UI; the Interface thread takes
   the icon and clipboard rounds from the first-minutes plan.
+- 25 Oct 2026, owner merged first-minutes round 2 (PR #33, the growing fire and the camp board). Round 3 builds the
+  owner's pick: up to 3 guests at once, 2 nights each. **Proposed**: guests arrive one by one, 40 game minutes apart;
+  bookings stay 2 nights too; the camper holds the clipboard up while a player reads it, seen on both PCs.

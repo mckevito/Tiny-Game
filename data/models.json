@@ -282,6 +282,14 @@
     {"shape": "box", "size": [0.17, 0.2, 0.035], "pos": [0, -0.22, 0], "round": 0.04, "color": "stone_grey"},
     {"shape": "stitch", "from": [-0.07, -0.14, 0.02], "to": [0.07, -0.14, 0.02], "thick": 0.8, "color": "warm_cream"}
   ]},
+  "clipboard_prop": {"parts": [
+    {"shape": "box", "size": [0.26, 0.34, 0.025], "pos": [0, 0.17, 0], "round": 0.02, "color": "wood_felt"},
+    {"shape": "box", "size": [0.22, 0.27, 0.01], "pos": [0, 0.155, -0.016], "round": 0.01, "color": "warm_cream"},
+    {"shape": "box", "size": [0.12, 0.04, 0.03], "pos": [0, 0.33, -0.02], "round": 0.01, "color": "stone_grey"},
+    {"shape": "stitch", "from": [-0.08, 0.22, -0.023], "to": [0.08, 0.22, -0.023], "thick": 0.7, "color": "ink_brown"},
+    {"shape": "stitch", "from": [-0.08, 0.16, -0.023], "to": [0.06, 0.16, -0.023], "thick": 0.7, "color": "ink_brown"},
+    {"shape": "stitch", "from": [-0.08, 0.1, -0.023], "to": [0.07, 0.1, -0.023], "thick": 0.7, "color": "ink_brown"}
+  ]},
   "tool_rod": {"parts": [
     {"shape": "cylinder", "size": [0.03, 1.15, 0.03], "pos": [0, 0.45, 0], "taper": 0.5, "color": "wood_felt"},
     {"shape": "cylinder", "size": [0.055, 0.2, 0.055], "pos": [0, -0.02, 0], "color": "warm_cream"},

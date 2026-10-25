@@ -41,7 +41,7 @@
      bed adds a second online player with `state.join` first.
    - A guest who walks in only pitches their tent on arrival (`Camper.arrived`); tests call `_pitch_tent(stay)`.
    - Request kinds with `near` are met by the camp itself; `refresh_requests` skips ones that stay already had.
-   - `_moved` carries the tool and "in the tent" as well as the position (protocol 6). Remote tent visits use
+   - `_moved` carries the held thing (`held_by`: the tool, or "clipboard" while it is open) and "in the tent" as well as the position (protocol 6). Remote tent visits use
      `_lie_down`/`_get_up` (looks only); `enter_tent`/`leave_tent` are for players on this PC and send the bed vote.
      Two players both in the tent vote for bed and start the night: a test that only wants the look calls `_lie_down`.
    - `action_for` order matters near shared spots: pick-up beats everything (a chair by the crate stole its press),
