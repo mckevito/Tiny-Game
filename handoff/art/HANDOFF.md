@@ -33,7 +33,10 @@
      bumps are pushed into the beanie and sweater, and every vertex carries (weave, slot) in its UV. A model with
      `file` and `file_slots` in data/models.json loads it, and the builder paints it from the palette (glTF flips V,
      so the slot is 1 - UV.y). It is only the `knit_camper` model so far; the capture's `--player=ID --friend=ID` puts
-     it beside the code camper. It has about 30k vertices; the next step is to cut that before it replaces campers.
+     it beside the code camper. Its proportions follow the owner's "Beanie Camper" turnaround (big head, beanie wider
+     than the head with a folded cuff, separate sleeves, short trousers, boots); `--turn=knit_camper` renders front,
+     right, back and left on a cream backdrop to compare with it. About 14k vertices (28k triangles) after the
+     per-part `decimate` ratios were lowered; the ribs survive that, check a turnaround before lowering further.
    - Trap: the fire's light sits above the flame tongues (`light.pos` y 1.1), or each tongue casts a long shadow and
      the fire circle shows a star.
    - Builder additions: the `lathe` shape (a profile of [radius, height] points turned round Y, with an optional

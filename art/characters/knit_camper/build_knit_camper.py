@@ -9,7 +9,7 @@ from mathutils import Matrix, Vector
 
 OUT = sys.argv[sys.argv.index("--") + 1]
 FELT, KNIT = 0, 1
-SKIN, SHIRT, PANTS, HAT, HAIR, MITTEN, BOOTS, INK, BLUSH, SHINE = range(10)
+SKIN, SHIRT, PANTS, HAT, HAIR, MITTEN, BOOTS, INK, BLUSH, SHINE, THREAD = range(11)
 VOXEL = 0.011
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -97,7 +97,8 @@ def ribs(centre_z, count, depth, z_from, z_to):
         if not (z_from <= co.z <= z_to):
             return co
         a = math.atan2(co.x, co.y)
-        k = 1.0 - depth * 0.5 * (1.0 - math.cos(count * a))
+        # Narrow grooves between wide round ribs, so each rib reads as a chunky cord of yarn.
+        k = 1.0 - depth * (0.5 * (1.0 - math.cos(count * a))) ** 3
         return Vector((co.x * k, co.y * k, co.z))
     return shape
 
@@ -115,97 +116,107 @@ def stitch(co):
     return max(0.0, min(1.0, (0.62 - d) / 0.44))
 
 
+# Proportions follow the owner's "Beanie Camper" turnaround (25 Oct 2026): about 1.45 m tall, half of it head
+# and hat; a tall ribbed beanie wider than the head with a thick folded cuff low on the brow; curls peeking out
+# round the sides and back; a boxy knit sweater with ribbed hem, cuffs and turtleneck; felt hands; straight brown
+# felt trousers with stitched side seams; rounded boots with a stitched welt.
 HEAD_Z = 0.98
+CUFF = 0.94   # bottom of the hat's cuff
 parts = []  # (mesh, weave, slot)
 
-# Body: a soft sweater with arms fused in, a rib at the hem and at the neck.
 def sweater(bm):
-    ellipsoid(bm, (0.58, 0.48, 0.56), (0, 0, 0.47))
-    limb(bm, (-0.24, 0.0, 0.66), (-0.4, 0.04, 0.36), 0.085)
-    limb(bm, (0.24, 0.0, 0.66), (0.4, 0.04, 0.36), 0.085)
-    bmesh.ops.create_cone(bm, cap_ends=True, segments=48, radius1=0.215, radius2=0.205, depth=0.08,
-            matrix=Matrix.Translation((0, 0, 0.27)) @ Matrix.Scale(1.0, 4) @ Matrix.Diagonal((1, 0.85, 1, 1)))
-    bmesh.ops.create_cone(bm, cap_ends=True, segments=48, radius1=0.17, radius2=0.15, depth=0.1,
-            matrix=Matrix.Translation((0, -0.01, 0.74)) @ Matrix.Diagonal((1, 0.9, 1, 1)))
-    for sx in (-1, 1):
-        bmesh.ops.create_cone(bm, cap_ends=True, segments=32, radius1=0.09, radius2=0.09, depth=0.06,
-                matrix=Matrix.Translation((sx * 0.39, 0.035, 0.375)) @ Matrix.Rotation(math.radians(sx * -28), 4, "Y"))
-def sweater_ribs(co):
-    co = ribs(0, 30, 0.06, 0.225, 0.31)(co)
-    return ribs(0, 22, 0.12, 0.69, 0.8)(co)
-parts.append((fused("sweater", sweater, after=sweater_ribs, knit=0.006, decimate=0.45), KNIT, SHIRT))
+    ellipsoid(bm, (0.46, 0.38, 0.46), (0, 0, 0.57))
+    ellipsoid(bm, (0.47, 0.37, 0.22), (0, 0, 0.45))
+    # ribbed hem band and a short turtleneck
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=48, radius1=0.235, radius2=0.235, depth=0.07,
+            matrix=Matrix.Translation((0, 0, 0.385)) @ Matrix.Diagonal((1, 0.78, 1, 1)))
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=48, radius1=0.15, radius2=0.14, depth=0.08,
+            matrix=Matrix.Translation((0, -0.01, 0.76)) @ Matrix.Diagonal((1, 0.9, 1, 1)))
+def sweater_shape(co):
+    co = ribs(0, 36, 0.08, 0.345, 0.42)(co)
+    return ribs(0, 24, 0.12, 0.72, 0.81)(co)
+parts.append((fused("sweater", sweater, after=sweater_shape, knit=0.006, decimate=0.2), KNIT, SHIRT))
 
-def pants(bm):
-    ellipsoid(bm, (0.46, 0.4, 0.3), (0, 0, 0.22))
-    limb(bm, (-0.11, 0.0, 0.2), (-0.12, 0.0, 0.1), 0.1)
-    limb(bm, (0.11, 0.0, 0.2), (0.12, 0.0, 0.1), 0.1)
-parts.append((fused("pants", pants), FELT, PANTS))
+# Sleeves on their own, so they don't web into the body: shoulder to a ribbed cuff above the hand.
+def sleeves(bm):
+    for sx in (-1, 1):
+        ellipsoid(bm, (0.16, 0.16, 0.16), (sx * 0.24, 0.0, 0.67))
+        limb(bm, (sx * 0.27, 0.0, 0.64), (sx * 0.37, 0.03, 0.42), 0.072)
+        bmesh.ops.create_cone(bm, cap_ends=True, segments=32, radius1=0.078, radius2=0.08, depth=0.06,
+                matrix=Matrix.Translation((sx * 0.385, 0.035, 0.395)) @ Matrix.Rotation(math.radians(sx * -24), 4, "Y"))
+def sleeve_shape(co):
+    return co
+parts.append((fused("sleeves", sleeves, after=sleeve_shape, knit=0.005, decimate=0.2), KNIT, SHIRT))
+
+def trousers(bm):
+    ellipsoid(bm, (0.42, 0.32, 0.16), (0, 0, 0.38))
+    for sx in (-1, 1):
+        limb(bm, (sx * 0.1, 0.0, 0.37), (sx * 0.1, 0.0, 0.13), 0.088)
+parts.append((fused("trousers", trousers, decimate=0.15), FELT, PANTS))
 
 def boots(bm):
     for sx in (-1, 1):
-        ellipsoid(bm, (0.2, 0.28, 0.15), (sx * 0.12, 0.04, 0.075))
-        ellipsoid(bm, (0.18, 0.16, 0.14), (sx * 0.12, -0.02, 0.11))
-parts.append((fused("boots", boots), FELT, BOOTS))
+        ellipsoid(bm, (0.19, 0.29, 0.13), (sx * 0.1, 0.035, 0.065))
+        bmesh.ops.create_cone(bm, cap_ends=True, segments=32, radius1=0.095, radius2=0.1, depth=0.12,
+                matrix=Matrix.Translation((sx * 0.1, -0.01, 0.12)))
+parts.append((fused("boots", boots, decimate=0.15), FELT, BOOTS))
 
-def mittens(bm):
+def hands(bm):
     for sx in (-1, 1):
-        ellipsoid(bm, (0.15, 0.13, 0.16), (sx * 0.41, 0.04, 0.3))
-        ellipsoid(bm, (0.06, 0.07, 0.08), (sx * 0.38, 0.1, 0.33), (0, 0, sx * 30))
-parts.append((fused("mittens", mittens), KNIT, MITTEN))
+        ellipsoid(bm, (0.13, 0.12, 0.14), (sx * 0.41, 0.04, 0.31))
+parts.append((fused("hands", hands, decimate=0.2), FELT, MITTEN))
 
-# Head: round and soft, with a little nose and full cheeks fused in.
 def head(bm):
-    ellipsoid(bm, (0.62, 0.58, 0.58), (0, 0, HEAD_Z), segs=48)
-    ellipsoid(bm, (0.06, 0.05, 0.045), (0, 0.28, HEAD_Z - 0.04))
+    ellipsoid(bm, (0.56, 0.52, 0.54), (0, 0, HEAD_Z), segs=48)
     for sx in (-1, 1):
-        ellipsoid(bm, (0.16, 0.12, 0.13), (sx * 0.17, 0.2, HEAD_Z - 0.08))
-parts.append((fused("head", head, smooth=0.8, repeat=10), FELT, SKIN))
+        ellipsoid(bm, (0.15, 0.1, 0.12), (sx * 0.15, 0.19, HEAD_Z - 0.12))
+parts.append((fused("head", head, smooth=0.8, repeat=10, decimate=0.15), FELT, SKIN))
 
-# Hair: locks round the back and sides, a fringe of locks under the hat's cuff.
-def hair(bm):
-    ellipsoid(bm, (0.64, 0.58, 0.5), (0, -0.04, HEAD_Z + 0.06), segs=40)
-    for i in range(11):
-        a = math.radians(-115 + i * 23)
-        x, y = math.sin(a) * 0.3, math.cos(a) * 0.29
-        if y > 0.16:
-            continue
-        ellipsoid(bm, (0.12, 0.1, 0.24), (x, y - 0.02, HEAD_Z - 0.1), (math.degrees(-a) * 0.0, 0, math.degrees(a)))
+# Curls: little balls of brown felt under the cuff, round the sides and the back, none over the face.
+def curls(bm):
+    import random
+    rnd = random.Random(5)
+    for row, (z, r) in enumerate([(CUFF - 0.015, 0.29), (CUFF - 0.07, 0.285), (CUFF - 0.125, 0.26)]):
+        n = 22
+        for i in range(n):
+            a = math.radians(-180 + 360 * (i + 0.5 * (row % 2)) / n)
+            if abs(a) < math.radians(62 if row == 0 else 78):
+                continue
+            k = rnd.uniform(0.85, 1.15)
+            ellipsoid(bm, (0.085 * k, 0.07 * k, 0.085 * k), (math.sin(a) * r, math.cos(a) * r * 0.95, z), segs=16)
     for sx in (-1, 1):
-        ellipsoid(bm, (0.13, 0.08, 0.2), (sx * 0.26, 0.15, HEAD_Z - 0.02), (0, sx * -15, sx * 25))
-    for i in range(6):
-        x = -0.2 + i * 0.08
-        ellipsoid(bm, (0.1, 0.07, 0.13), (x, 0.235, HEAD_Z + 0.11), (20, 0, x * 60))
-parts.append((fused("hair", hair, smooth=0.5, repeat=4), FELT, HAIR))
+        ellipsoid(bm, (0.07, 0.06, 0.13), (sx * 0.255, 0.12, CUFF - 0.06), (0, 0, sx * 20), segs=16)
+parts.append((fused("curls", curls, smooth=0.3, repeat=3, decimate=0.2), FELT, HAIR))
 
-# Beanie: a ribbed dome and a thick folded cuff.
-CUFF = HEAD_Z + 0.13
+# Beanie: a tall ribbed dome, wider than the head, and a thick folded cuff.
 def beanie(bm):
-    ellipsoid(bm, (0.66, 0.64, 0.6), (0, -0.02, CUFF + 0.12), segs=48)
-    bmesh.ops.create_cone(bm, cap_ends=True, segments=64, radius1=0.37, radius2=0.36, depth=0.13,
-            matrix=Matrix.Translation((0, -0.01, CUFF + 0.03)))
+    ellipsoid(bm, (0.72, 0.68, 0.68), (0, -0.01, CUFF + 0.22), segs=48)
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=64, radius1=0.355, radius2=0.365, depth=0.15,
+            matrix=Matrix.Translation((0, -0.005, CUFF + 0.075)) @ Matrix.Diagonal((1, 0.95, 1, 1)))
 def beanie_shape(co):
-    if co.z < CUFF - 0.035:  # cut away the dome below the cuff
-        co.z = CUFF - 0.035 + (co.z - CUFF + 0.035) * 0.05
-    co = ribs(0, 16, 0.1, CUFF + 0.1, 2.0)(co)
-    return ribs(0, 30, 0.1, CUFF - 0.04, CUFF + 0.095)(co)
-parts.append((fused("beanie", beanie, smooth=0.5, repeat=4, after=beanie_shape, knit=0.005, decimate=0.5), KNIT, HAT))
+    if co.z < CUFF:  # flatten the dome's underside into the cuff
+        co.z = CUFF + (co.z - CUFF) * 0.05
+    co = ribs(0, 20, 0.2, CUFF + 0.15, 2.0)(co)
+    co = ribs(0, 32, 0.16, CUFF - 0.01, CUFF + 0.145)(co)
+    # The fold: a groove where the cuff turns back under the dome.
+    fold = math.exp(-((co.z - CUFF - 0.15) / 0.012) ** 2) * 0.03
+    return Vector((co.x * (1.0 - fold), co.y * (1.0 - fold), co.z))
+parts.append((fused("beanie", beanie, smooth=0.5, repeat=4, after=beanie_shape, knit=0.005, decimate=0.25), KNIT, HAT))
 
-# Embroidered face: bead eyes, a stitched smile, felt blush.
+# Face: two black oval eyes and a small stitched smile, as in the turnaround.
 def eyes(bm):
     for sx in (-1, 1):
-        ellipsoid(bm, (0.055, 0.03, 0.068), (sx * 0.1, 0.275, HEAD_Z + 0.01), segs=16)
+        ellipsoid(bm, (0.052, 0.03, 0.068), (sx * 0.105, 0.248, HEAD_Z - 0.105), segs=16)
 parts.append((plain("eyes", eyes), FELT, INK))
-def shine(bm):
-    for sx in (-1, 1):
-        ellipsoid(bm, (0.016, 0.01, 0.016), (sx * 0.1 + 0.012, 0.29, HEAD_Z + 0.025), segs=8)
-parts.append((plain("shine", shine), FELT, SHINE))
-smile = [(math.sin(t) * 0.09, 0.0, 0.025 * math.cos(t * 1.6)) for t in [(-0.9 + 0.15 * i) for i in range(13)]]
-smile = [(x, 0.27 - abs(x) * 0.3, HEAD_Z - 0.11 - z) for (x, _, z) in smile]
-parts.append((thread("smile", smile, 0.0075), FELT, INK))
-def blush(bm):
-    for sx in (-1, 1):
-        ellipsoid(bm, (0.1, 0.03, 0.055), (sx * 0.17, 0.258, HEAD_Z - 0.07), (0, 0, sx * -28), segs=16)
-parts.append((plain("blush", blush), FELT, BLUSH))
+smile = [(math.sin(t) * 0.055, 0.0, 0.018 * math.cos(t * 1.5)) for t in [(-1.0 + 0.2 * i) for i in range(11)]]
+smile = [(x, 0.236 - abs(x) * 0.25, HEAD_Z - 0.165 - z) for (x, _, z) in smile]
+parts.append((thread("smile", smile, 0.007), FELT, INK))
+
+# Stitches: a seam down the outside of each trouser leg and a welt round each boot.
+for sx in (-1, 1):
+    parts.append((thread("seam", [(sx * 0.186, 0.0, 0.34 - 0.02 * i) for i in range(11)], 0.005), FELT, THREAD))
+    ring = [(sx * 0.1 + math.sin(t) * 0.1, 0.035 + math.cos(t) * 0.15, 0.035) for t in [math.tau * i / 40 for i in range(41)]]
+    parts.append((thread("welt", ring, 0.005), FELT, THREAD))
 
 # One mesh: every part's vertices carry (weave, slot) in UV.x, UV.y.
 bm = bmesh.new()

@@ -20,6 +20,8 @@ extends SceneTree
 ## with a throwaway save and settings file.
 ## --hero is the art review shot: the sandbox from a lower, closer camera framed like the owner's felt reference
 ## picture (hero_<mood>.png, no hint text), plus face_<mood>.png, a close look at the two campers.
+## --turn=ID saves a turnaround of one model on a plain cream backdrop (turn_front/right/back/left.png), to set
+## beside an owner's turnaround sheet.
 ## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
 
 const SETTLE_FRAMES := 30
@@ -39,6 +41,7 @@ func _run() -> void:
 	var hud := false
 	var hero := false
 	var swap := {}
+	var turn := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -49,6 +52,8 @@ func _run() -> void:
 		menus = menus or arg == "--menus"
 		hud = hud or arg == "--hud"
 		hero = hero or arg == "--hero"
+		if arg.begins_with("--turn="):
+			turn = arg.trim_prefix("--turn=")
 		for who in ["player", "friend"]:
 			if arg.begins_with("--%s=" % who):
 				swap[who] = arg.trim_prefix("--%s=" % who)
@@ -72,6 +77,10 @@ func _run() -> void:
 		return
 	if hud:
 		await _hud(out)
+		quit(0)
+		return
+	if turn != "":
+		await _turn(out, turn)
 		quit(0)
 		return
 	if hero:
@@ -490,3 +499,32 @@ func _hero(out: String, swap: Dictionary) -> void:
 		Miniature.focus(cam, cam.position.distance_to(mid))
 		await _settle()
 		_save(out + "/face_%s.png" % mood)
+
+
+## A turnaround: the model alone on a cream backdrop, in the day light, from the front, right, back and left.
+func _turn(out: String, id: String) -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+	var env := Environment.new()
+	var we := WorldEnvironment.new()
+	we.environment = env
+	world.add_child(we)
+	var sun := DirectionalLight3D.new()
+	sun.shadow_enabled = true
+	world.add_child(sun)
+	LightMoods.apply("day", sun, env, [])
+	env.background_color = FeltBuilder.swatch("warm_cream").linear_to_srgb()
+	var model := FeltBuilder.build(id)
+	world.add_child(model)
+	var cam := Camera3D.new()
+	cam.fov = 30.0
+	world.add_child(cam)
+	cam.current = true
+	var top := model.get_aabb().end.y
+	for view: Array in [["front", 0.0], ["right", 90.0], ["back", 180.0], ["left", 270.0]]:
+		var a := deg_to_rad(float(view[1]))
+		# The front is -Z, so the front view looks from -Z toward the model.
+		var eye := Vector3(sin(a) * -3.6, top * 0.62, cos(a) * -3.6)
+		cam.look_at_from_position(eye, Vector3(0, top * 0.5, 0))
+		await _settle()
+		_save(out + "/turn_%s.png" % view[0])
