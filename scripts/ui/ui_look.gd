@@ -22,6 +22,22 @@ static func _box(colour_key: String, edge_key: String, edge_px: float) -> StyleB
 	return box
 
 
+## A line of text that can show button glyphs (Prompts.rich): wraps at its own width, grows to fit, ignores the
+## mouse. `centre` centres it; `font_px` 0 keeps the theme's size.
+static func rich_label(centre: bool, font_px: int = 0) -> RichTextLabel:
+	var label := RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.scroll_active = false
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if centre:
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if font_px > 0:
+		label.add_theme_font_size_override("normal_font_size", font_px)
+	return label
+
+
 ## The felt panel behind a menu.
 static func panel() -> StyleBoxFlat:
 	var box := _box("panel_swatch", "edge_swatch", num("edge_px", 6))

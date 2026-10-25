@@ -6,27 +6,26 @@ extends VBoxContainer
 ## bottom right (bottom left while someone is on the couch); the couch player's bottom right. Sizes and colours:
 ## data/tuning.json "dock".
 
-var _tool_caption := Label.new()
+var _tool_caption := UiLook.rich_label(true)
 var _tool := Label.new()
 var _tool_prev := Label.new()
 var _tool_next := Label.new()
 var _tool_dots := Label.new()
-var _build_caption := Label.new()
+var _build_caption := UiLook.rich_label(true)
 var _build := Label.new()
 var _build_prev := Label.new()
 var _build_next := Label.new()
 var _build_dots := Label.new()
-var _pack := Label.new()
+var _pack := UiLook.rich_label(true)
 
 
 static func _n(key: String, fallback: float = 0.0) -> float:
 	return Tuning.num("tuning", "dock." + key, fallback)
 
 
-func _caption(label: Label) -> void:
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", int(_n("caption_px", 19)))
-	label.add_theme_color_override("font_color", Color.WHITE)
+func _caption(label: RichTextLabel) -> void:
+	label.add_theme_font_size_override("normal_font_size", int(_n("caption_px", 19)))
+	label.add_theme_color_override("default_color", Color.WHITE)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	label.add_theme_constant_override("outline_size", int(_n("outline_px", 6)))
 	add_child(label)

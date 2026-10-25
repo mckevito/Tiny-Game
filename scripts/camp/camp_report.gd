@@ -5,7 +5,7 @@ extends PanelContainer
 ## handles the buttons). Sizes and felt colours: data/tuning.json "hud" report_*.
 
 var _body := Label.new()
-var _hint := Label.new()
+var _hint := UiLook.rich_label(true)
 
 
 func _ready() -> void:
@@ -22,12 +22,13 @@ func _ready() -> void:
 	felt.set_content_margin_all(Tuning.num("tuning", "hud.report_margin_px", 28))
 	add_theme_stylebox_override("panel", felt)
 	theme.set_color("font_color", "Label", FeltBuilder.swatch(str(Tuning.value("tuning", "hud.report_ink_swatch", "ink_brown"))))
+	theme.set_color("default_color", "RichTextLabel", theme.get_color("font_color", "Label"))
 	var box := VBoxContainer.new()
 	add_child(box)
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_body.custom_minimum_size.x = Tuning.num("tuning", "hud.report_width_px", 980)
 	box.add_child(_body)
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint.custom_minimum_size.x = _body.custom_minimum_size.x
 	box.add_child(_hint)
 
 

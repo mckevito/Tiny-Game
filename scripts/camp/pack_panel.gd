@@ -9,7 +9,7 @@ extends PanelContainer
 var _title := Label.new()
 var _grid := GridContainer.new()
 var _tag := Label.new()
-var _hint := Label.new()
+var _hint := UiLook.rich_label(true)
 var _slots: Array[PanelContainer] = []
 var _ok_box: StyleBoxFlat
 var _picked_box: StyleBoxFlat
@@ -44,6 +44,7 @@ func _ready() -> void:
 	theme = Theme.new()
 	theme.default_font_size = int(_n("font_px", 20))
 	theme.set_color("font_color", "Label", FeltBuilder.swatch(str(Tuning.value("tuning", "hud.report_ink_swatch", "ink_brown"))))
+	theme.set_color("default_color", "RichTextLabel", theme.get_color("font_color", "Label"))
 	var cream := str(Tuning.value("tuning", "pack_panel.swatch", "warm_cream"))
 	var edge := str(Tuning.value("tuning", "pack_panel.edge_swatch", "honey_thread"))
 	var alpha := Tuning.num("tuning", "hud.report_alpha", 0.95)
@@ -95,9 +96,9 @@ func _ready() -> void:
 		_grid.add_child(slot)
 		_slots.append(slot)
 	var wide := (_n("slot_px", 128) + _n("gap_px", 8)) * _grid.columns - _n("gap_px", 8)
-	for label: Label in [_tag, _hint]:
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tag.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	for label: Control in [_tag, _hint]:
 		label.custom_minimum_size.x = wide
 		box.add_child(label)
 	_tag.add_theme_font_size_override("font_size", int(_n("tag_px", 21)))

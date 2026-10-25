@@ -36,6 +36,8 @@
     "chop": "{interact} Chop wood (%d left in this tree)",
     "chopping": "Chopping…",
     "dig": "{interact} Dig up the stump",
+    "upgrade_fire": "{interact} Make the fire a %s: %s",
+    "read_board": "{interact} Read the camp board",
     "digging": "Digging…",
     "forage": "{interact} Pick up the %s",
     "take_sapling": "{interact} Pick up the sapling",
@@ -70,7 +72,22 @@
     "booking_accept": "Accept booking",
     "booking_later": "Ask them to come a day later",
     "booking_decline": "Decline booking",
-    "board_empty": "No bookings on the board right now."
+    "board_empty": "No bookings on the board right now.",
+    "players": "Players",
+    "players_p1": "Player one: choose a device",
+    "players_p2": "Player two: choose a device",
+    "players_swap": "Swap devices",
+    "players_nobody": "Player two: nobody",
+    "players_line": "%s: %s",
+    "players_press": "%s: now press something on the keyboard, the mouse or the controller to use.",
+    "players_taken": "That is player one's device. Choose player one's device first, or use another one.",
+    "players_none": "That press did not come from a keyboard, a mouse or a controller.",
+    "player_one": "Player one",
+    "player_two": "Player two",
+    "device_keys": "Keyboard and mouse",
+    "device_pad": "Controller %d",
+    "device_any": "Any device",
+    "device_nobody": "Nobody"
   },
   "join": {
     "full": "That camp already has two campers.",
@@ -124,6 +141,7 @@
     "no_tree": "This tree is down. Plant a sapling at its stump and it will grow back.",
     "no_stump": "Saplings go in a bare stump or a dug hole.",
     "no_dig": "There is no stump here to dig up.",
+    "fire_done": "The fire is as big and bright as it gets.",
     "no_sapling": "You need a sapling for that. A fallen tree drops one.",
     "pack_full": "Your Pack is full. Open it ({pack}) to drop something, or put materials in the camp box.",
     "not_in_kit": "None in the kit yet. Craft one at the workbench.",
@@ -159,6 +177,7 @@
     "spotted_new": "You spotted a %s! It is in the journal now.",
     "task_done": "Done: %s! +%d coins.",
     "felled": "Timber! The tree fell and dropped a sapling by its stump.",
+    "fire_up": "%s made the fire a %s! Guests will love gathering round it.",
     "dug": "Out comes the stump! Plant a sapling in the hole, or leave it to grass over by morning.",
     "got_tag": "+%d",
     "planted": "Planted! It will be a tree again in a couple of mornings.",
@@ -174,6 +193,7 @@
     "log_bench": "log bench",
     "stool": "stool",
     "planter": "flower planter",
+    "project_board": "camp board",
     "coins": "%d coins",
     "in_kit": "%d in the kit",
     "to_kit": "into the kit"
@@ -329,6 +349,7 @@
   "task": {
     "line": "%s (%d/%d) · %s",
     "hud_line": "%s  %d/%d",
+    "first_board": "Put up the camp board (build mode)",
     "first_sticks": "Pick up fallen sticks",
     "first_chop": "Chop a tree for wood",
     "first_bench": "Craft a log bench at the workbench and place it",
@@ -350,7 +371,8 @@
       "pond": "at the pond",
       "pitches": "at the pitches",
       "stumps": "at a stump",
-      "woods": "from the edge of the woods"
+      "woods": "from the edge of the woods",
+      "board": "anywhere you like"
     },
     "first_plant": "Plant a sapling at a stump",
     "plant_trees": "Plant saplings",
@@ -376,7 +398,8 @@
       "pieces": "a few more lanterns, benches or planters would make the camp homier.",
       "happy": "guests love it when their requests are met and something nice is near their tent.",
       "photos": "the field guide could use more animal photos.",
-      "projects": "the project board has another camp project waiting."
+      "projects": "the project board has another camp project waiting.",
+      "fire": "a bigger campfire would draw everyone round it in the evening."
     }
   },
   "project": {
@@ -426,6 +449,11 @@
       "plant": "plant it by a stump and a tree grows back",
       "material": "for the fire and the workbench; the camp box keeps it"
     }
+  },
+  "fire": {
+    "ring": "stone ring with log seats",
+    "bonfire": "big bonfire",
+    "cost": "%s, %d coins"
   },
   "tool": {
     "hands": "Hands",
@@ -555,5 +583,9 @@
     "glyph_pair": "%s and %s",
     "on": "On",
     "off": "Off"
+  },
+  "glyphs": {
+    "join": " ",
+    "key_pad": " "
   }
 }

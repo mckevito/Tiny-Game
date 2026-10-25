@@ -18,6 +18,8 @@ extends SceneTree
 ## --chop plays the first-minutes loop at 30 fps and saves chop_###.png frames: the camper chops a tree three times
 ## (the swing, the shudder and puff, wood popping onto the grass), the tree topples, the camper walks over the wood
 ## to sweep it up (+1 tags), then digs the stump with the shovel; a throwaway save.
+## --fire saves the camp fire at each level at dusk (fire_<level>.png) with the camp board put up beside the camper
+## (from the kit), a throwaway save.
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
@@ -46,6 +48,7 @@ func _run() -> void:
 	var hud := false
 	var hero := false
 	var chop := false
+	var fire := false
 	var swap := {}
 	var turn := ""
 	var glb := ""
@@ -60,6 +63,7 @@ func _run() -> void:
 		hud = hud or arg == "--hud"
 		hero = hero or arg == "--hero"
 		chop = chop or arg == "--chop"
+		fire = fire or arg == "--fire"
 		if arg.begins_with("--turn="):
 			turn = arg.trim_prefix("--turn=")
 		if arg.begins_with("--glb="):
@@ -79,6 +83,10 @@ func _run() -> void:
 		return
 	if stage_b:
 		await _stage_b(out)
+		quit(0)
+		return
+	if fire:
+		await _fire(out)
 		quit(0)
 		return
 	if chop:
@@ -441,6 +449,32 @@ func _chop(out: String) -> void:
 	await shoot.call(50)
 
 
+func _fire(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.start_solo(1)
+	camp.report.visible = false
+	var s: CampState = camp.state
+	var me: Camper = camp.campers["p_capture_one"]
+	me.position = Vector3(2.4, 0, 2.2)
+	s.set_player_pos("p_capture_one", Vector2(2.4, 2.2), 0.0)
+	s.build.build("p_capture_one", "project_board", Vector2(-2.0, 3.0), 0.0)
+	camp._show_object(s.build.last_id)
+	camp.camera._want_distance = Tuning.num("tuning", "camera.distance_m")
+	s.camp["calendar"]["minute"] = (19.5 - Tuning.num("day", "clock.start_hour")) * 60.0
+	for level in CampBuild.fire_levels().size() + 1:
+		s.camp["fire"] = {"level": level}
+		camp._sync_fire()
+		await _settle()
+		_save(out + "/fire_%d.png" % level)
+
+
 func _menus(out: String) -> void:
 	CampSave.dir = "user://captures_save"
 	DirAccess.make_dir_recursive_absolute(CampSave.dir)
@@ -495,6 +529,12 @@ func _hud(out: String) -> void:
 	await _settle()
 	_save(out + "/hud_pack.png")
 	camp.close_pack("p_capture_one")
+	# Player one's own controller moves first, so the second one drops in (as in test_hud).
+	var stick := InputEventJoypadMotion.new()
+	stick.device = 0
+	stick.axis = JOY_AXIS_LEFT_X
+	stick.axis_value = 1.0
+	camp._input(stick)
 	var pad := InputEventJoypadButton.new()
 	pad.device = 1
 	pad.button_index = 6

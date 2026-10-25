@@ -40,6 +40,8 @@ func count(id: String) -> int:
 			return (state.camp["journal"].get("photos", {}) as Dictionary).size()
 		"projects":
 			return (state.camp["projects"]["done"] as Array).size()
+		"fire":
+			return state.build.fire_level()
 	return 0
 
 

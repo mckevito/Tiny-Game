@@ -122,7 +122,8 @@ not each confirmed by name; they stay open under "Still open".
 | A controller player one has not used drops in with its menu button; hopping off the couch from that player's menu drops out; the character waits in the host's save and comes back next time | `test_couch.test_a_free_controller_drops_in_and_out` | Passing |
 | Player one's own controller opens the menu and never drops in a second player | `test_couch.test_player_ones_own_controller_opens_the_menu_not_a_drop_in` | Passing |
 | Each couch player steers and carries with their own devices only; a couch player's menu pauses only them | `test_couch.test_a_free_controller_drops_in_and_out`, `test_couch_players_carry_with_their_own_button` | Passing |
-| Keyboard and controller on one couch: while player one is on the keyboard and mouse, a controller neither steers them nor becomes theirs, and its Options drops in a second player (even their own old controller, to hand it over); pressing another button on their own controller takes it back | `test_couch.test_keyboard_player_one_and_a_controller_share_the_couch`, `test_player_one_can_hand_their_controller_over_from_the_keyboard`, `test_player_one_back_on_their_controller_gets_the_menu` | Passing (owner's ask, 25 Oct 2026) |
+| Keyboard and controller on one couch: alone, player one plays with every device (a keyboard start can still pick up a controller); Options on a controller player one is not on drops in a second player (a stick nudge does not take a controller from a keyboard player); on the couch each player has one device | `test_couch.test_keyboard_player_one_and_a_controller_share_the_couch`, `test_a_keyboard_start_can_still_play_alone_on_a_controller`, `test_player_one_can_hand_their_controller_over_from_the_keyboard`, `test_player_one_back_on_their_controller_gets_the_menu` | Passing (owner's ask, 25 Oct 2026; PR #31, then the Players page) |
+| Players page in the in-camp menu: each player chooses their device by pressing something on it (keyboard and mouse or a controller), player two's first choice drops them in, choosing the other player's device swaps, Swap devices trades them, and Player two: nobody drops player two out; a refused choice says why on the page | `test_couch.test_players_page_picks_swaps_and_clears_devices` | Passing (owner's idea, 25 Oct 2026) |
 | Dynamic split screen: one shared view while close, a split at right angles to the players when apart (each on their own half), merged again when close; no jump at the moment of the split | `test_couch.test_split_screen_splits_apart_and_merges_together`, `test_split_aims_merge_close_and_lean_apart`, `test_screen_direction_matches_the_camera` | Passing |
 | Two players in total across couch and online: a guest PC is told the camp is full while someone is on the couch, and a controller can't drop in while a guest PC is in | `test_couch.test_two_players_in_total_across_couch_and_online` | Passing |
 | A link code moves a couch character to its own PC as the same character (same profile ID, no new character); a wrong code is refused; a used code is cleared | `test_couch.test_a_link_code_moves_the_couch_character_to_its_own_pc` | Passing |
@@ -138,7 +139,8 @@ not each confirmed by name; they stay open under "Still open".
 3. Walk apart: the screen splits along a line between you and merges when you meet again. Either player turns the
    shared camera (L1 and R1, or Q and R).
    Keyboard and controller: play on the keyboard and mouse, and hand the DualSense to your friend; their Options
-   drops them in, and their stick never moves your camper.
+   drops them in. Or open the in-camp menu, **Players**, and pick each player's device by pressing something on it
+   (player two can take the keyboard too); **Swap devices** trades them.
 4. Options on the second DualSense opens that player's menu: it shows the couch character's link code and has
    **Hop off the couch**. Player one's menu (Tab or Options on their own controller) shows the code too.
 5. To move the couch character to its own PC: host the camp, and on the other PC type the host's address and the
@@ -344,6 +346,23 @@ Playtest's findings on round 1 (fixed in the next PR):
 | The F1 fps line sits at the bottom centre, clear of the clock and hint | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing |
 | The hint wraps only between controls ("Tab for the menu" stays whole); a toast that comes with the morning report waits until it is put away | `test_hud.test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report` | Passing |
 
+### Interface round 2: DualSense button icons and keyboard keycaps (25 Oct 2026)
+The owner (25 Oct 2026): "add the DualSense buttons instead of saying cross or triangle". Every prompt, the hint,
+toasts, the dock captions and the panels' hints now draw the button itself: on a controller an original DualSense
+icon (`art/ui/glyphs/`, made by `make_glyphs.py`), on keyboard and mouse a cream keycap with the key's name.
+
+| Proof | Test | Result |
+|---|---|---|
+| Every default pad action draws an icon and no button word leaks through ("Cross", "Triangle"); each icon file exists; a key draws a keycap; an action on two buttons draws both | `test_prompts.test_prompts_draw_pad_icons_and_keycaps` | Passing |
+| The HUD prompts, hint and Pack and clipboard hints show the icon of the device each player used last | `test_stage_b` prompt checks (now compare `Prompts.rich`) | Passing |
+| Review frames: keycaps for the keyboard player and pad icons for the controller player on the couch, in the hint, prompts and both docks | `tools/capture.gd --hud` | Looked at |
+| The icons read well on the owner's screen | Owner's play | Waiting on the owner |
+
+What changed: the hint, prompt and toast are RichTextLabels; `Prompts.rich` turns `{action}` into icons or keycaps
+(`Prompts.fill` still gives words, for the Options screen and the text tests); the icon map is `pad_icons` in
+`data/input.json`; sizes and colours are `glyphs.*` in `data/tuning.json`. The Bookings "answer" line moved from the
+page to the clipboard's hint. **Proposed:** icon height 34 px, keycaps warm cream on ink brown.
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.
@@ -397,6 +416,19 @@ hook is hit, drop into the world, collect with +1. The owner picked this round f
 | The shovel (fifth tool) digs a stump (sapling or not) into a hole, popping its roots as wood and the sapling; a hole takes a sapling; an empty hole is grass by morning and no longer blocks building | `test_gather.test_the_shovel_digs_a_stump_into_a_hole_that_grasses_over` | Passing (checked by breaking it) |
 | From the buttons: the camper swings the axe, the wood is in the air, walking onto it sweeps it up; a felled tree topples before it hides; the shovel's prompt and dig | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_stage_b.test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons` | Passing |
 | Review clip: three chops, the tree toppling away from the camper, sweeping the wood with +1 tags, digging the stump | `capture.gd --chop` (`first-minutes-g1/` in the project files) | Looked at |
+
+### First-minutes round 2: a campfire that grows, and a board you put up (25 Oct 2026)
+The owner's asks "crafting like being able to make a bonfire or upgrade the existing one" and "putting up key items
+like the board for events". Round 1 (PR #30) was merged by the owner on 25 Oct 2026.
+
+| Proof | Test | Result |
+|---|---|---|
+| At the fire, the fire grows in two levels (a stone ring with log seats, then a big bonfire), paid like a recipe from the Pack, the camp box and coins; it says what is missing and stops at the last level; its light grows | `test_projects.test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit` | Passing |
+| Each fire level counts toward the star rating, with a ranger hint | `test_projects.test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit` | Passing |
+| The camp board starts in a new camp's kit and goes up wherever the players place it in build mode (a Today first, "Put up the camp board"); projects are given there and reading it opens the clipboard's Bookings | `test_projects.test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit`, `test_projects.test_camp_projects_fill_from_both_players_and_open_a_recipe_once` | Passing |
+| A version 6 save gets its board put up where the scenery board stood, a plain fire and no second board | `test_projects.test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit` | Passing |
+| The guest PC sees the board go up and the fire grow (the fire level is shared) | `test_projects.test_the_guest_pc_sells_and_gives_to_a_project_from_the_buttons` | Passing (checked by breaking it) |
+| Review frames: the three fire levels at dusk | `capture.gd --fire` (`first-minutes-g2/` in the project files) | Looked at |
 
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
@@ -457,6 +489,12 @@ hook is hit, drop into the world, collect with +1. The owner picked this round f
   shovel is the last tool (hands, axe, rod, camera, shovel); a felled tree tips 84° over 0.6 s; puffs are 12 felt bits.
   Dropped bundles (G) still need a press to pick up; only pieces that popped out sweep up by walking. No sounds yet
   (the game has no audio so far). Online play needs both PCs on protocol 7.
+- **Proposed** first-minutes round 2 numbers (data/craft.json, data/rating.json, data/tasks.json, data/save.json): the
+  stone ring costs 6 wood, 4 sticks and 10 coins and lights 1.35 times as far; the big bonfire 12 wood, 6 sticks and
+  30 coins, 1.8 times; each fire level is 3 rating points (up to 6); "Put up the camp board" is the third Today first
+  (3 coins); an older camp's board goes up at (-6, 0). The fire is upgraded at the fire, after every other action
+  there (a fish to grill, chairs and the camp box come first). The bigger light is one shadowed light made brighter,
+  not a new light.
 - Frame rate on the weakest laptop is still unmeasured; the first-minutes round adds at most a few short-lived pieces,
   12-bit puffs (CPU particles) and tweens per chop. Round 2 adds up to 10 animals (no lights or physics), stump,
   sapling, stick and berry models, and the clipboard panel.
@@ -468,6 +506,7 @@ owner's try. Research notes are outside the repo (project files, "Title screen a
 | Proof | Test | Result |
 |---|---|---|
 | The game opens on a title over the clearing (Start game, Options, Controls, Quit) with a button in focus; cancel goes back a page | `test_settings.test_title_start_options_and_back_with_focus_on_every_page` | Passing |
+| Cross presses a focused menu button and Circle goes back on every menu page (Godot's ui_accept and ui_cancel take the pad buttons of interact and cancel, with remaps; found by Playtest, 25 Oct 2026) | `test_settings.test_cross_presses_menu_buttons_and_circle_goes_back` | Passing |
 | One Options screen, opened from the title and the in-camp menu, and back returns to where it came from | `test_settings.test_options_from_the_camp_menu_rebinds_and_goes_back` | Passing |
 | Settings are saved on this PC (user://settings.json), kept in range, and never in the camp save, the profile or the shared state | `test_settings.test_settings_are_saved_on_this_pc_and_kept_in_range`, `..._never_go_into_the_camp_save_or_to_the_other_pc` | Passing |
 | Volumes reach their buses (overall, music, effects, ambience) | `test_settings.test_sound_settings_reach_their_buses` | Passing |

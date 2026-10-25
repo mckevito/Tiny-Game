@@ -1,6 +1,6 @@
 {
-  "_about": "The camp save (scripts/camp/camp_save.gd): JSON with a version number, a backup of the previous save and migrations. new_camp is the whole-year layout every save starts from; a save missing any key gets it from here when loaded. Profiles are keyed by profile ID, never a connection ID. couch marks a character made on the host's couch that no PC has claimed yet; link_code lets its own PC claim it once. last_seen (Unix seconds) picks who drops in on the couch. Stage A (version 2): coins starts at the new camp's coins; stays are the guests in the camp now (data/day.json); last_settled is the day number of the last night that paid, so a night never pays twice; a version 1 camp with no ledger yet gets the starting coins. Stage B (version 3): reservations are the advance bookings (data/guests.json) with their state (offered, accepted, arrived, declined, done) and arrive_day; a stay may carry its request and booking; pockets hold item ids (data/fishing.json). Stage B round 2 (version 4): tasks is the Today list (data/tasks.json): active [{id, have}], done (firsts finished) and next_daily; trees maps a choppable scenery tree's index, once chopped, to {chops, stage (standing, stump or sapling), sapling_out, planted (day number)}; forage maps a forage spot's index to true when picked today (cleared each morning); journal.wildlife lists the animal kinds spotted. Round 3 (version 5): each profile's pockets became a Pack of stacks (pack: [{item, n}], data/items.json); the camp's wood pile became the camp box (box: item -> count, shared materials); kit counts the crafted buildings ready to put down (data/craft.json); bundles are dropped stacks lying in the camp (id -> {item, n, pos}). Gameplay round 2 (version 6, defaults only): crate is the sell crate's stacks [{item, n}] waiting for the night; shipped counts every item sold; projects holds what the open camp project has been given (need -> n) and the projects done (data/projects.json). looks are the camper models handed to new profiles, least-used first.",
-  "version": 6,
+  "_about": "The camp save (scripts/camp/camp_save.gd): JSON with a version number, a backup of the previous save and migrations. new_camp is the whole-year layout every save starts from; a save missing any key gets it from here when loaded. Profiles are keyed by profile ID, never a connection ID. couch marks a character made on the host's couch that no PC has claimed yet; link_code lets its own PC claim it once. last_seen (Unix seconds) picks who drops in on the couch. Stage A (version 2): coins starts at the new camp's coins; stays are the guests in the camp now (data/day.json); last_settled is the day number of the last night that paid, so a night never pays twice; a version 1 camp with no ledger yet gets the starting coins. Stage B (version 3): reservations are the advance bookings (data/guests.json) with their state (offered, accepted, arrived, declined, done) and arrive_day; a stay may carry its request and booking; pockets hold item ids (data/fishing.json). Stage B round 2 (version 4): tasks is the Today list (data/tasks.json): active [{id, have}], done (firsts finished) and next_daily; trees maps a choppable scenery tree's index, once chopped, to {chops, stage (standing, stump or sapling), sapling_out, planted (day number)}; forage maps a forage spot's index to true when picked today (cleared each morning); journal.wildlife lists the animal kinds spotted. Round 3 (version 5): each profile's pockets became a Pack of stacks (pack: [{item, n}], data/items.json); the camp's wood pile became the camp box (box: item -> count, shared materials); kit counts the crafted buildings ready to put down (data/craft.json); bundles are dropped stacks lying in the camp (id -> {item, n, pos}). Gameplay round 2 (version 6, defaults only): crate is the sell crate's stacks [{item, n}] waiting for the night; shipped counts every item sold; projects holds what the open camp project has been given (need -> n) and the projects done (data/projects.json). First minutes (version 7): the camp board is no longer scenery but a building that starts in the kit (an older camp gets it put up where the scenery board stood, board_spot); fire.level is how far the camp fire has been upgraded (data/craft.json fire). looks are the camper models handed to new profiles, least-used first.",
+  "version": 7,
   "slots": 3,
   "dir": "user://saves",
   "new_camp": {
@@ -29,7 +29,8 @@
     "trees": {},
     "forage": {},
     "box": {},
-    "kit": {},
+    "kit": {"project_board": 1},
+    "fire": {"level": 0},
     "bundles": {},
     "crate": [],
     "shipped": {},
@@ -54,6 +55,7 @@
     "couch": false,
     "last_seen": 0
   },
+  "board_spot": [-6.0, 0.0],
   "looks": ["camper_a", "camper_b"],
   "spawn": [[-1.1, -1.4], [1.2, -1.3]]
 }

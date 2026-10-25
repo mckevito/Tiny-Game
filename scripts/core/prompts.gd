@@ -3,7 +3,9 @@ extends RefCounted
 ## Fills {action} in a player-facing string with the glyph of the device that player last used
 ## (data/input.json "glyphs"). Strings never name a button themselves (CLAUDE.md). A button this PC remapped
 ## (Settings) shows its new name instead; "move" and "camera" are built from their actions (data/settings.json
-## "glyph_parts").
+## "glyph_parts"). `fill` gives words ("Cross"); `rich` gives the same as BBCode for a RichTextLabel, with a drawn
+## icon for each controller button (data/input.json "pad_icons", art/ui/glyphs/) and a felt keycap for each key
+## (data/tuning.json "glyphs").
 
 
 static func fill(text: String, pad: bool) -> String:
@@ -12,6 +14,41 @@ static func fill(text: String, pad: bool) -> String:
 		if text.contains("{%s}" % action):
 			text = text.replace("{%s}" % action, glyph(action, pad, str(glyphs[action])))
 	return text
+
+
+## Like `fill`, but as BBCode with button icons and keycaps (show it in a RichTextLabel with bbcode_enabled).
+static func rich(text: String, pad: bool) -> String:
+	var glyphs: Dictionary = Tuning.value("input", "glyphs.pad" if pad else "glyphs.keyboard", {})
+	for action: String in glyphs:
+		if text.contains("{%s}" % action):
+			text = text.replace("{%s}" % action, icons(glyph(action, pad, str(glyphs[action])), pad))
+	return text
+
+
+## One glyph's words ("L1 and R1", "WASD", "Q/E") as BBCode: an icon for each pad button the table knows, a keycap
+## for each key, and anything else as plain words.
+static func icons(words: String, pad: bool) -> String:
+	var pair := Tuning.text("options.glyph_pair") % ["", ""]
+	var parts: PackedStringArray = []
+	for name in words.replace(pair, "/").split("/"):
+		parts.append(_icon(name) if pad else _keycap(name))
+	return Tuning.text("glyphs.join").join(parts)
+
+
+static func _icon(name: String) -> String:
+	var path := str(Tuning.value("input", "pad_icons." + name, ""))
+	if path == "" or not ResourceLoader.exists(path):
+		return name
+	var tex: Texture2D = load(path)
+	var h := Tuning.num("tuning", "glyphs.icon_px", 34.0)
+	return "[img=%dx%d]%s[/img]" % [roundi(h * tex.get_width() / maxf(tex.get_height(), 1.0)), roundi(h), path]
+
+
+static func _keycap(name: String) -> String:
+	var face := Color(FeltBuilder.swatch(str(Tuning.value("tuning", "glyphs.key_swatch", "warm_cream"))).linear_to_srgb())
+	var ink := Color(FeltBuilder.swatch(str(Tuning.value("tuning", "glyphs.key_ink_swatch", "ink_brown"))).linear_to_srgb())
+	return "[bgcolor=#%s][color=#%s][outline_size=0]%s%s%s[/outline_size][/color][/bgcolor]" % [face.to_html(),
+			ink.to_html(), Tuning.text("glyphs.key_pad"), name, Tuning.text("glyphs.key_pad")]
 
 
 ## The glyph for one {name}: the table's, unless this PC remapped the action (or one of its parts).

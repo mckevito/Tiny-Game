@@ -18,12 +18,12 @@
    and its weakref sub-objects, host decides, `_share`, save versions) is in `handoff/build/HANDOFF.md` section 2.
 3. **First-minutes plan (owner, 25 Oct 18:59; picks 19:05).** The research doc "Hooked in the first minute" (Claude
    Doc, linked in the project thread and in project memory) ranks the owner's feedback into rounds, one PR each:
-   Gameplay 1 chop feel and shovel (done: loose pieces `CampPack.lay`/`sweep`, `CampGather.dig`, tree stages
-   `hole`/`cleared`, `Camper.swing`, `Camp._strike`/`_struck`/`_swept`, `capture.gd --chop`); Gameplay 2 craft a
-   bonfire and upgrade it in stages, place the events board yourself; Gameplay 3 up to 3 guests at once, 2 nights each
+   Gameplay 1 chop feel and shovel (merged, PR #30: loose pieces `CampPack.lay`/`sweep`, `CampGather.dig`, tree stages
+   `hole`/`cleared`, `Camper.swing`, `Camp._strike`/`_struck`/`_swept`, `capture.gd --chop`); Gameplay 2 the fire grows
+   in levels (`CampBuild.next_fire`/`upgrade_fire`, camp key `fire`, `Camp._sync_fire`, `capture.gd --fire`) and the
+   camp board is a building from the kit (`CampProjects.near_board(state, pos)`, save version 7); Gameplay 3 up to 3 guests at once, 2 nights each
    (owner's pick); Gameplay 4 guests fish, photograph animals, fly kites, play frisbee fetch with each other and sit on
-   chairs, the bench and logs. Interface 1 item icons, icon pop-ups, picture wish bubbles; Interface 2 a stamp-card
-   Today list, guest cards and a picture Pack. Stage B stays unsigned until the owner plays these.
+   chairs, the bench and logs. The Interface thread owns the icon and knitted-clipboard rounds (owner, 25 Oct 21:13). Stage B stays unsigned until the owner plays these.
 4. **Open work, in order:**
    1. The owner plays round 5 and signs off Stage B (chat sign-off plus the merged PR; record it in the next PR's
       `docs/STATUS.md` and the `docs/PLAN.md` decision log). Approve or change the **Proposed** numbers.
@@ -54,5 +54,8 @@
      leaves a falling mesh alone. Holes and cleared spots switch the tree's collider off.
    - Loose bundles (`loose: true`, with `from`) sweep up by walking; dropped ones (G) need a press and never merge
      into loose ones. `_airborne` (host) keeps a piece from being swept before it lands; tests wait for it.
+   - The fire's upgrade is the last action at the fire (after grilling, chairs, the box); `_sync_fire` stacks every
+     reached level's model under the fire pit's "Upgrade" node and sets its light's "scale" meta for LightMoods.
+   - `kit` is not deep-filled from new_camp on load (it would hand every old save a second camp board).
    - With the shovel in hand, dig beats taking the sapling and planting at a stump (the dig pops the sapling out); a
      hole takes a sapling whatever is in hand. A felled tree never tips toward the camera (it would fade unseen).
