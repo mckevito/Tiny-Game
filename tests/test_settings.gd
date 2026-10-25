@@ -249,3 +249,36 @@ func test_options_from_the_camp_menu_rebinds_and_goes_back() -> String:
 	camp.apply_quality(str(Quality.names()[0]), false)
 	await _done(camp)
 	return out
+
+
+## The start page's own button for an action ("solo", "host"), found by its words.
+func _start_button(menu: CampMenu, action: String) -> Button:
+	for c in menu._start.get_children():
+		if c is Button and c.text == Tuning.text("menu." + action):
+			return c
+	return null
+
+
+func test_play_alone_and_host_start_from_the_menu_buttons() -> String:
+	_defaults()
+	var out := ""
+	for row in [["solo", 2], ["host", 1]]:
+		var camp := _camp()
+		await _tree().process_frame
+		var menu: CampMenu = camp.menu
+		menu._first_title.pressed.emit()
+		menu.slot_pick.select(int(row[1]) - 1)
+		var b := _start_button(menu, str(row[0]))
+		if b == null:
+			out = "no %s button on the start page" % row[0]
+		else:
+			b.pressed.emit()
+			await _tree().process_frame
+			if camp.state == null:
+				out = "%s from the menu did not start a camp" % row[0]
+			elif camp.slot != int(row[1]):
+				out = "%s should use the camp slot picked on the start page (%d), not %s" % [row[0], row[1], camp.slot]
+		await _done(camp)
+		if out != "":
+			break
+	return out
