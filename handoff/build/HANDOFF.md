@@ -3,8 +3,8 @@
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
    Never touches the reference repos. Until an `art` role starts, Build also owns the felt models (`data/models.json`).
-2. **State now:** Milestones 0 and 1 are signed off and merged. Milestone 2 (two PCs, one camp) is built in one PR
-   waiting on CI, the owner's two-PC try and the merge; check its live state on GitHub before talking about it.
+2. **State now:** Milestones 0, 1 and 2 are signed off and merged (Milestone 2: PR #4, owner played on two PCs over
+   the home network, 25 Oct 2026).
    - `scenes/camp.tscn` + `scripts/camp/camp.gd` is the main scene: start menu (play alone, host, join), the camp,
      and all the netcode (ENet, RPCs on the Camp node). `camp_state.gd` holds the rules (host decides),
      `camp_save.gd` the save (slots, backup, upgrades), `camp_menu.gd` the menu, `scripts/net/local_profile.gd` this
@@ -14,11 +14,11 @@
      Walking goes both ways with `_moved` (unreliable, 20/s). Host-only RPCs are `authority`; guest RPCs check the
      sender's profile.
 3. **Open work, in order:**
-   1. Milestone 2: the owner's try on two PCs over Tailscale or LAN with keyboard and DualSense, then sign-off.
-   2. Milestone 3: couch drop-in on the host's PC with the dynamic split screen, and link codes. Local players are
+   1. Milestone 3: couch drop-in on the host's PC with the dynamic split screen, and link codes. Local players are
       just more profile IDs in `CampState.online`; `_guests` maps connections to profiles, so a local player needs
       no connection. Keep the two-player total across couch and online.
-   3. Stage A: day clock, sleep vote and nightly payout write into the save fields that already exist.
+      While there, have the owner try the DualSense with carry and the menu, and a Tailscale join (not yet tried).
+   2. Stage A: day clock, sleep vote and nightly payout write into the save fields that already exist.
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
    - `data/palette.json`: named swatches (the plan's five plus Proposed shades). Models use only these names.
@@ -43,6 +43,7 @@
    - Two camps in one test process: give each its own branch with `SceneTree.set_multiplayer(SceneMultiplayer.new(),
      path)` before adding the camp, keep the camp's node path the same under each branch, and set the branches apart
      in space so their colliders don't meet. Camp code uses `position` (relative to the Camp), never global.
+   - The first time a PC hosts, Windows asks to let Godot through the firewall; it must be allowed or joins fail.
    - Never `stop()` a camp from inside an RPC or a multiplayer signal: closing the peer there breaks; defer it.
    - A test that waits on the network must check every step it depends on, or a refused step makes later checks pass
      by accident (caught by breaking `pick_up` on purpose).
