@@ -189,3 +189,43 @@ func test_rejoining_brings_back_the_same_character() -> String:
 			why = "the guest did not come back where they left"
 	await _done()
 	return why
+
+
+## Gameplay round 1: the other PC sees the tool in your mitten and you asleep in the camp's tent, then up again.
+func test_the_other_pc_sees_the_tool_in_hand_and_the_tent() -> String:
+	var pair := await _pair(24716)
+	var host: Node = pair[0]
+	var guest: Node = pair[1]
+	var why: String = pair[2]
+	if why == "":
+		guest.hold_tool("p_guest", "axe")
+		if not await _until(func() -> bool: return host.campers["p_guest"].held == "axe"):
+			why = "the host should see the axe in the guest's hand"
+		elif host.campers["p_guest"].find_child("Tool", true, false) == null:
+			why = "the axe should be drawn in the guest's mitten on the host"
+	if why == "":
+		var home: Vector2 = guest.home_tent_pos()
+		guest.campers["p_guest"].position = Vector3(home.x + 1.6, 0, home.y)
+		guest.enter_tent("p_guest")
+		var tent: Node3D = host.clearing.placed[host.home_tent_index()]
+		if not await _until(func() -> bool: return host._inside.has("p_guest")):
+			why = "the host should see the guest lie down in the camp's tent"
+		elif host.campers["p_guest"].visible:
+			why = "the guest's camper should be hidden on the host while in the tent"
+		elif not await _until(func() -> bool: return host.is_open(tent, "tent")):
+			why = "the camp's tent should open on the host so the sleeping guest shows"
+		elif not host.state.day.votes.has("p_guest"):
+			why = "the guest in the tent should be ready for bed on the host"
+		else:
+			# Looks only: both voting would start the night.
+			host._lie_down("p_host")
+			var bags: Array = host._inside.values().map(func(n: Node3D) -> int: return int(n.get_meta("bag")))
+			if bags.size() != 2 or bags[0] == bags[1]:
+				why = "two players in the tent should lie in two different bags, got %s" % [bags]
+			host._get_up("p_host")
+	if why == "":
+		guest.leave_tent("p_guest")
+		if not await _until(func() -> bool: return not host._inside.has("p_guest") and host.campers["p_guest"].visible):
+			why = "the host should see the guest get up out of the tent"
+	await _done()
+	return why

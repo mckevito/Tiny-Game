@@ -302,6 +302,19 @@ How to try it: drop in a second controller (Options on it) and walk apart until 
 clipboards (J and Touchpad), both Packs (I and D-pad down) and the workbench: nothing should sit on anything else.
 Cycle the tool (T or D-pad up): the names either side of it are the one before and the one after.
 
+### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
+Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
+lay on top of their bag.
+
+| Proof | Test | Result |
+|---|---|---|
+| The tool in hand (axe, rod, camera) is drawn in the camper's mitten, and the other PC sees it | `test_net.test_the_other_pc_sees_the_tool_in_hand_and_the_tent` | Passing (checked by breaking it) |
+| A player in the camp's tent shows on the other PC: camper hidden, lying in a bag, the tent opened, ready for bed; getting up shows there too; two players lie in two different bags | `test_net.test_the_other_pc_sees_the_tool_in_hand_and_the_tent` | Passing |
+| Sleepers (players and guests) lie face up inside their sleeping bag, tucked in to the chin, head on the pillow | `tools/capture.gd --stage-b` (home_tent.png, guest_tent.png) | Looked at (cloud frames) |
+
+The tool and the tent ride on the movement message the PCs already send 20 times a second (protocol 6, so both PCs
+need this build). Neither is saved.
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -338,8 +351,9 @@ Cycle the tool (T or D-pad up): the names either side of it are the one before a
   asks again 60 game minutes after a met request, 3 requests a day from day 1, 4 from day 3, 5 from day 5; guests
   sleep from 8 pm; the tent opens within 2.8 m; a photo reaches 7 m and the first of each kind pays 5 coins; the
   photo odd job asks for 2 photos (4 coins); Apply covers picture, window, window size, vsync, frame limit and
-  interface size. Sleepers lie on top of their bag; another player's tent visit and the tool in hand are only shown
-  on their own PC.
+  interface size.
+- **Proposed** gameplay round 1 choices: tools are drawn 1.3 times life size so they read from the play camera
+  (data/tuning.json camper.tool_scale); the camp's tent has two bags (rust and honey), a guest tent one (teal).
 - **Proposed** round 4 choices: tools are hands, axe and fishing rod, every player has all three and the tool in
   hand is not saved; the Pack opens on I or D-pad down and the next tool is T or D-pad up, so zoom moved from the
   D-pad to L3 and R3 and the drop button went away (drop from the open Pack); the window size choices are 1280 × 720
