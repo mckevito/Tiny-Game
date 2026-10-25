@@ -44,9 +44,14 @@ godot --headless --script res://tests/run_tests.gd     # every test; add -- --fi
 ```
 Results print to the console and go to `user://test_results.txt`; the exit code is the number of failures.
 CI (`.github/workflows/ci.yml`) runs the same on GitHub-hosted Linux for each push and PR. Run it locally first.
+Review captures from the play camera (daylight and dusk) come from `scripts/tools/capture.gd`; the command is in
+`handoff/build/HANDOFF.md`.
 
 ## Layout
 - `scripts/core/`: shared plumbing (tuning tables, text).
+- `scripts/art/`: the felt material and the builder that makes models from `data/models.json`.
+- `scripts/camp/`: the clearing, campers, play camera and light moods.
+- `scripts/tools/`: dev-only scripts, such as the review capture (`capture.gd`).
 - `scenes/`: the sandbox and, later, the game scenes.
 - `data/`: tuning tables and text.
 - `tests/`: headless tests, `test_*.gd`, run by `tests/run_tests.gd`.

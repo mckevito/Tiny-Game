@@ -25,6 +25,10 @@ Build owns how the game loads them.
 6. Update `docs/STATUS.md`, `HANDOFF.md`, and a round-log line here.
 
 ## Craft rules
+- **Art is data.** A model is a list of parts in `data/models.json`; never hand-place meshes in a scene. New looks
+  are new swatches or slots, not new materials.
+- **Look before telling.** Run the tests, then the capture tool, and read the frames yourself before showing the
+  owner. Review from the play camera, in daylight and at dusk.
 - GDScript with static types where it helps; one script per job.
 - Tests are plain `test_*.gd` files extending `RefCounted` with `test_*` methods that return an empty string on a
   pass or a message on a failure.
@@ -32,3 +36,7 @@ Build owns how the game loads them.
 
 ## Round log
 - 25 Oct 2026: Milestone 0 skeleton: project, input map, tuning loader, sandbox, test runner, CI, method files.
+- 25 Oct 2026: Milestone 1 felt art proof: felt shader, data-driven model builder, clearing, play camera, moods.
+  Faults found by looking at frames: campers fell through a ground with no collider (why: only props had colliders;
+  stops it: the ground model has one and the sandbox test builds the real scene); colours washed out (why: ambient
+  too strong; now tuned in `data/lighting.json`); ash z-fought the dirt (why: equal tops; rule in HANDOFF traps).

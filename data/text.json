@@ -1,5 +1,10 @@
 {
   "sandbox": {
-    "hint": "Move with the keyboard or the left stick."
+    "hint_keys": "WASD to walk · Q and R turn the camera · mouse wheel zooms · F1 changes the light",
+    "hint_pad": "Left stick to walk · L1 and R1 turn the camera · D-pad up and down zoom · Create changes the light"
+  },
+  "mood": {
+    "day": "Daylight",
+    "dusk": "Dusk"
   }
 }

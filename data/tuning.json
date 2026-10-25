@@ -3,11 +3,26 @@
     "walk_speed_mps": 3.2,
     "turn_speed_rad_s": 10.0,
     "acceleration_mps2": 18.0,
-    "gravity_mps2": 9.8
+    "gravity_mps2": 9.8,
+    "waddle_deg": 6.0,
+    "waddle_hz": 4.0,
+    "bob_m": 0.04,
+    "collider_radius_m": 0.3,
+    "collider_height_m": 1.2
   },
   "camera": {
-    "height_m": 9.0,
-    "distance_m": 9.0,
-    "fov_deg": 40.0
+    "pitch_deg": 42.0,
+    "distance_m": 11.0,
+    "min_distance_m": 7.0,
+    "max_distance_m": 15.0,
+    "zoom_step_m": 1.0,
+    "fov_deg": 40.0,
+    "follow_rate": 6.0,
+    "zoom_rate": 8.0,
+    "yaw_speed_deg_s": 90.0,
+    "target_height_m": 0.7,
+    "fade_radius_m": 1.6,
+    "fade_amount": 0.6,
+    "fade_rate": 6.0
   }
 }

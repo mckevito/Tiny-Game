@@ -19,5 +19,5 @@ func test_missing_table_is_empty() -> String:
 
 
 func test_text_reads_a_string() -> String:
-	var s := Tuning.text("sandbox.hint")
-	return "" if s != "sandbox.hint" and s.length() > 0 else "sandbox.hint text missing"
+	var s := Tuning.text("sandbox.hint_keys")
+	return "" if s != "sandbox.hint_keys" and s.length() > 0 else "sandbox.hint_keys text missing"

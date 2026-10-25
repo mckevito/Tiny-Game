@@ -11,6 +11,8 @@
     "menu":         {"keys": ["Tab"], "joy_buttons": [6]},
     "camera_left":  {"keys": ["Q"], "joy_buttons": [9]},
     "camera_right": {"keys": ["R"], "joy_buttons": [10]},
+    "zoom_in":      {"keys": ["Equal"], "mouse": [4], "joy_buttons": [11]},
+    "zoom_out":     {"keys": ["Minus"], "mouse": [5], "joy_buttons": [12]},
     "dev_menu":     {"keys": ["F1"], "joy_buttons": [4]}
   }
 }

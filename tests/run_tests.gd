@@ -2,9 +2,15 @@ extends SceneTree
 ## Headless test runner: godot --headless --script res://tests/run_tests.gd [-- --filter=name]
 ## Runs every test_* method in res://tests/test_*.gd. A test returns "" on a pass or a message on a failure.
 ## Results go to the console and user://test_results.txt; the exit code is the number of failures.
+## Tests run after the first frame, so a test can add nodes under `root` and their _ready runs at once.
 
 
-func _init() -> void:
+func _initialize() -> void:
+	_run.call_deferred()
+
+
+func _run() -> void:
+	await process_frame
 	var filter := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
@@ -17,7 +23,12 @@ func _init() -> void:
 	for file in files:
 		if not (file.begins_with("test_") and file.ends_with(".gd")):
 			continue
-		var suite: Object = load("res://tests/" + file).new()
+		var script: GDScript = load("res://tests/" + file)
+		if script == null or not script.can_instantiate():
+			failed += 1
+			lines.append("FAIL %s: does not load (parse error)" % file)
+			continue
+		var suite: Object = script.new()
 		for method in suite.get_method_list():
 			var test_name: String = method.name
 			if not test_name.begins_with("test_"):
