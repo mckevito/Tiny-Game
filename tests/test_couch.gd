@@ -163,6 +163,72 @@ func test_player_ones_own_controller_opens_the_menu_not_a_drop_in() -> String:
 	return why
 
 
+func _key(code: Key) -> InputEventKey:
+	var ev := InputEventKey.new()
+	ev.physical_keycode = code
+	ev.keycode = code
+	ev.pressed = true
+	return ev
+
+
+func test_keyboard_player_one_and_a_controller_share_the_couch() -> String:
+	_fresh()
+	var camp := _camp("KeysSide", "p_host", "Hana")
+	camp.start_solo(1)
+	var why := ""
+	camp._input(_key(KEY_W))
+	camp._input(_stick(0))
+	camp._input(_pad_button(0, 0))
+	var p1: Camper = camp.campers["p_host"]
+	if camp._p1_pads.has(0):
+		why = "a controller touched while player one is on the keyboard should not become player one's"
+	elif p1.input == null or p1.input.owns_event(_stick(0)) or not p1.input.owns_event(_key(KEY_W)):
+		why = "player one on the keyboard should not be steered by a free controller"
+	if why == "":
+		camp._input(_pad_button(0, MENU_BUTTON))
+		if camp.couch_id == "" or camp.couch_pad != 0 or camp.campers.size() != 2:
+			why = "the free controller's menu button should drop in a second player beside the keyboard"
+		elif p1.input.owns_event(_stick(0)) or not p1.input.owns_event(_key(KEY_W)):
+			why = "player one should keep the keyboard and leave the couch controller alone"
+		elif camp.owner_of(_key(KEY_E)) != "p_host" or camp.owner_of(_pad_button(0, 0)) != camp.couch_id:
+			why = "keys should go to player one and the controller's buttons to the couch player"
+	await _done()
+	return why
+
+
+func test_player_one_can_hand_their_controller_over_from_the_keyboard() -> String:
+	_fresh()
+	var camp := _camp("HandSide", "p_host", "Hana")
+	camp.start_solo(1)
+	camp._input(_stick(0))
+	camp._input(_key(KEY_W))
+	camp._input(_pad_button(0, MENU_BUTTON))
+	var why := ""
+	if camp.couch_id == "" or camp.couch_pad != 0:
+		why = "after player one moves to the keyboard, their old controller's menu button should drop in a second player"
+	elif camp._p1_pads.has(0):
+		why = "the handed-over controller should no longer be player one's"
+	await _done()
+	return why
+
+
+func test_player_one_back_on_their_controller_gets_the_menu() -> String:
+	_fresh()
+	var camp := _camp("BackSide", "p_host", "Hana")
+	camp.start_solo(1)
+	camp._input(_stick(0))
+	camp._input(_key(KEY_W))
+	camp._input(_pad_button(0, 0))
+	camp._input(_pad_button(0, MENU_BUTTON))
+	var why := ""
+	if camp.couch_id != "":
+		why = "player one picking their own controller back up should open their menu, not drop in"
+	elif camp.campers["p_host"].input != null:
+		why = "player one back on a controller alone should read every action again"
+	await _done()
+	return why
+
+
 func test_couch_players_carry_with_their_own_button() -> String:
 	var camp := _couch()
 	var id: String = camp.couch_id
