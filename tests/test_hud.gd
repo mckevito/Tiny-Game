@@ -370,3 +370,68 @@ func test_the_clipboard_is_a_knitted_board_with_a_ruled_sheet() -> String:
 	camp.toggle_clipboard("p_host")
 	await _done()
 	return why
+
+
+## Playtest (PR #40): at a big interface size an open clipboard covered the prompt in the middle of the screen and the
+## toasts ran over a hint that had wrapped to four lines; a morning report with three guests ran off the top and bottom
+## of the screen. Alone on the PC the prompt and toasts move beside the clipboard and below the hint, and a report too
+## tall for the screen turns into pages: interact turns them, and on the last page it closes the report.
+func test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages() -> String:
+	_fresh()
+	var was := _tree().root.size
+	_tree().root.size = SCREEN
+	var camp := _camp("BigSide", "p_host", "Hana")
+	camp.start_solo(1)
+	var who: String = camp.local_ids()[0]
+	camp.toggle_build(who)
+	for i in 3:
+		camp._toast(Tuning.text("toast.crafted") % ["Hana", Tuning.text("build.lantern_post")])
+	var why := ""
+	for scale in [120, 150]:
+		Settings.set_value("ui_scale", scale)
+		Settings.apply("ui_scale")
+		camp.toggle_clipboard(who)
+		await _frames(3)
+		var view: Rect2 = camp.get_viewport().get_visible_rect()
+		var hud: Node = camp.get_node("Hud")
+		if str(hud.get_node("Prompt").text) == "":
+			why = "a building prompt should show at %d%%" % scale
+		if why == "":
+			why = hud_fits(view, [hud.get_node("Hint"), hud.get_node("Clock"), hud.get_node("Prompt"),
+					hud.get_node("Toast"), camp._boards[who]])
+			why = "" if why == "" else "at %d%% with the clipboard open: %s" % [scale, why]
+		camp.toggle_clipboard(who)
+		if why != "":
+			break
+	if why == "":
+		var lines: PackedStringArray = []
+		for i in 60:
+			lines.append("Guest %d had a lovely stay and left a kind note by the fire." % i)
+		camp.report.show_report("\n".join(lines), "close", "next %d of %d")
+		await _frames(3)
+		var view: Rect2 = camp.get_viewport().get_visible_rect()
+		var pages: int = camp.report.page_count()
+		if pages < 2:
+			why = "a 60-line report should take more than one page at 150%"
+		elif not view.encloses(camp.report.get_global_rect()):
+			why = "each page of the report should fit the screen, got %s in %s" % [camp.report.get_global_rect(), view]
+		var press := InputEventAction.new()
+		press.action = "interact"
+		press.pressed = true
+		for i in pages - 1:
+			if why == "":
+				camp._unhandled_input(press)
+				if not camp.report.visible:
+					why = "interact should turn to page %d, not close the report" % (i + 2)
+		if why == "":
+			camp._unhandled_input(press)
+			if camp.report.visible:
+				why = "interact on the last page should close the report"
+	camp.report.visible = false
+	Settings.reset_page("access")
+	Settings.apply("ui_scale")
+	_tree().root.size = was
+	await _done()
+	if why == "" and not Prompts.rich("{pack}", false).contains(Tuning.text("glyphs.key_pad_one") + "I"):
+		why = "a one-letter key should get the wider keycap padding"
+	return why

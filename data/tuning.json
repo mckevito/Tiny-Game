@@ -62,8 +62,10 @@
   "hud": {
     "toast_s": 3.5,
     "toast_lines": 3,
+    "toast_top_px": 150,
     "report_font_px": 26,
     "report_width_px": 980,
+    "report_gap_px": 24,
     "report_margin_px": 28,
     "report_corner_px": 18,
     "report_edge_px": 6,

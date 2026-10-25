@@ -49,8 +49,10 @@ static func _keycap(name: String, paper := false) -> String:
 	var face_key := "glyphs.paper_key_swatch" if paper else "glyphs.key_swatch"
 	var face := Color(FeltBuilder.swatch(str(Tuning.value("tuning", face_key, "warm_cream"))).linear_to_srgb())
 	var ink := Color(FeltBuilder.swatch(str(Tuning.value("tuning", "glyphs.key_ink_swatch", "ink_brown"))).linear_to_srgb())
+	# A one-letter key gets wider padding (text: glyphs.key_pad_one), so a thin letter such as I still reads as a key.
+	var pad := Tuning.text("glyphs.key_pad_one" if name.length() == 1 else "glyphs.key_pad")
 	return "[bgcolor=#%s][color=#%s][outline_size=0]%s%s%s[/outline_size][/color][/bgcolor]" % [face.to_html(),
-			ink.to_html(), Tuning.text("glyphs.key_pad"), name, Tuning.text("glyphs.key_pad")]
+			ink.to_html(), pad, name, pad]
 
 
 ## The glyph for one {name}: the table's, unless this PC remapped the action (or one of its parts).

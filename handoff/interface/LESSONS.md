@@ -39,3 +39,7 @@ See `handoff/gameplay/LESSONS.md` "Who owns what". `camp.gd` and `data/text.json
   on a panel leaves its text alone; `VERTEX` in the vertex function gives local pixels for the pattern. Draw extras
   (the clip) from the panel's `draw` signal and set layout-dependent shader values there, after the layout. Keep a
   panel's outer width when restyling it: the couch layout test is tight to the pixel (prompt column at 640).
+- 25 Oct 2026, round 3 fixes (Playtest): the report had no height limit, and the centre column ignored big interface
+  sizes. Why: the layout tests checked the couch at 150% (where the column may pass under panels) but never solo at
+  120% or 150%, and never a long report. What stops it: a solo big-size test with a full HUD and a 60-line report.
+  Panels placed under the hint must move when it resizes (`resized` signal, deferred).

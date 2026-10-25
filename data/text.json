@@ -33,6 +33,7 @@
     "cooking": "Grilling…",
     "give": "{interact} Give %s your %s",
     "report_close": "{interact} Start the day",
+    "report_next": "{interact} Next page (%d of %d)",
     "chop": "{interact} Chop wood (%d left in this tree)",
     "chopping": "Chopping…",
     "dig": "{interact} Dig up the stump",
@@ -586,6 +587,7 @@
   "glyphs": {
     "join": " ",
     "key_pad": " ",
+    "key_pad_one": " ",
     "gap": "  "
   }
 }
