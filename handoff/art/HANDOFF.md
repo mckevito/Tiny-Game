@@ -5,7 +5,7 @@
    (outside art such as a rigged camper pack) and the `--hero` mode of `scripts/tools/capture.gd`. It doesn't edit
    Gameplay or Interface files; it asks those threads instead. Placement (`data/clearing.json`) and hand and name
    positions (`data/tuning.json` "camper") belong to Gameplay; ask before moving them.
-2. **Method:** `art/RECIPE.md` is how to build a knitted or felt model that matches a reference (the owner's chosen
+2. **Method (the owner's standard for every model, 25 Oct 2026):** `art/RECIPE.md` is how to build a knitted or felt model that matches a reference (the owner's chosen
    camper is the worked example), with the shared Blender kit (`art/tools/knit_kit.py`), one review round per command
    (`art/tools/turnaround.sh`) and a measuring tool (`art/tools/compare.py`). Read it before any Blender model.
    **State now:** the art pilot (PR "Art pilot") brings the camper, the tent, the pine and the round broadleaf tree up
@@ -59,9 +59,10 @@
      bead eyes, a stitched smile, a nose, ribbed hem and collar, boots (`$boots`, `$strand` slots).
    - Sizes and colliders are unchanged; the mittens stay at `camper.hand_pos` so held tools still fit.
 3. **Open work, in order:**
-   1. The owner's verdict on the pilot and their pick between the two rebuilt campers; fix what they name. Then ask
-      Gameplay to move `camper.hand_pos` (data/tuning.json) to the rebuilt camper's mitten centre, about 6 cm higher
-      (the build prints it, in Blender axes).
+   1. Done (25 Oct 2026): the owner signed off both knitted campers and made `art/RECIPE.md` the standard for the
+      whole game. Both players use them (`camper_a` and `camper_b` in data/models.json point at `knit_camper` and
+      `knit_camper_b`), and `camper.hand_pos` (data/tuning.json) sits at the knitted mitten's centre. Guests still
+      use the code camper (`guest_a`, `guest_b`); they are the next characters to bring up to the recipe.
    2. Still plain: animals, tools, saplings, stumps, water point, lantern post, bag covers, bundles, the pitch.
    3. Ideas from the reference not yet built: a stitched fence and sign, log-stump seats, mugs, a lantern on the
       table, a soft tilt-shift blur (the play camera belongs to Gameplay; ask first).

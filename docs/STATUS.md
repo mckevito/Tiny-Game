@@ -54,8 +54,11 @@ fibres on the shared material, and a warmer day light and grass (all **Proposed*
 The owner disliked the first Blender camper and asked for two separate rebuilds from their "Beanie Camper" turnaround
 (25 Oct 2026); each is its own Proposed PR, and the owner picks one. The max-effort one knits the beanie, sweater and
 curls along their own stitch map (stitch-mapped knit, ribs, two-ply yarn, bead eyes) with baked shading. The owner
-likes the max-effort camper best (25 Oct 2026, not yet merged) and asked for its method to be written down so a
+picked the max-effort camper (25 Oct 2026, merged in PR #29) and asked for its method to be written down so a
 medium-effort thread can repeat it: `art/RECIPE.md`, with the shared Blender kit and review tools in `art/tools/`.
+A medium-effort thread then made player two by the recipe (`knit_camper_b`), and the owner signed off both campers
+and the recipe as the quality bar for the whole game (25 Oct 2026): both players now use them (`camper_a` and
+`camper_b` point at the knitted models), and the held tool sits in the knitted mitten (`camper.hand_pos`).
 
 | Proof | Test | Result |
 |---|---|---|
@@ -63,7 +66,10 @@ medium-effort thread can repeat it: `art/RECIPE.md`, with the shared Blender kit
 | The new lathe shape faces outward and its wave scallops the edge | `test_felt_models.test_lathe_faces_out_and_wave_scallops` | Passing |
 | A cord stitch (the smile, guy ropes) is unbroken | `test_felt_models.test_stitch_cord_is_unbroken` | Passing |
 | The sculpted camper keeps its stitch map, uses the knit, rib, yarn and bead weaves, and its baked shade only darkens | `test_felt_models.test_sculpted_camper_keeps_its_stitch_map_and_baked_shade` | Passing (fails without the shade) |
-| The rebuilt camper matches the owner's turnaround | Owner's verdict (eight views beside the sheet, in-camp day and dusk) | Waiting |
+| The rebuilt camper matches the owner's turnaround | Owner's verdict (eight views beside the sheet, in-camp day and dusk) | Signed off (owner, 25 Oct 2026) |
+| Both sculpted campers keep their stitch map and shade, and are painted from the palette | `test_felt_models.test_sculpted_camper_is_painted_from_the_palette` and `..._keeps_its_stitch_map_and_baked_shade` (both campers) | Passing |
+| The two players look different (sweater, headwear, hair) | `test_felt_models.test_the_two_sculpted_players_look_different` | Passing |
+| Player two, made by the recipe, matches player one's quality | Owner's verdict (side by side, against the sheet, in camp day and dusk) | Signed off (owner, 25 Oct 2026) |
 | The pilot matches the reference closely enough to roll out | Owner's verdict (sheet beside the reference, day and dusk, walk GIF) | Waiting |
 
 How to look: the capture's `--hero` mode (`handoff/art/HANDOFF.md`), or F5 the sandbox.

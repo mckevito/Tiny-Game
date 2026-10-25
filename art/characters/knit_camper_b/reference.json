@@ -1,7 +1,7 @@
 {
-  "_about": "The owner's \"Beanie Camper\" T-pose turnaround (25 Oct 2026), the reference for this model, for art/tools/compare.py. The sheet stays in the project files, not in git. views: where each figure stands on the sheet (its middle x, the row its soles touch, in pixels); px_per_m: the sheet's pixels per metre at the model's real size; background_at: a pixel of plain backdrop; pairs: the box round each view for side-by-side crops; bands: colour samples of the front view (from and to metres above the ground, half width in metres, which pixels count, the swatch they test).",
+  "_about": "Player two has no sheet of its own yet. This borrows player one's \"Beanie Camper\" turnaround (25 Oct 2026) for LAYOUT ONLY, so compare.py sheets and siblings place player two's views where player one's stand (art/RECIPE.md, \"A sibling or variant\"). outline measures against player one's figure, so trust it only below the head; the colour bands keep only the shared skin, since the sheet's hat, sweater and trousers are player one's colours. When the owner gives a player two sheet, replace this file with its own layout and bands.",
   "sheet": "/mnt/project-files/tiny-game/reference/beanie-camper-turnaround.png",
-  "title": "THE GAME'S CAMPER: SAME VIEWS, STUDIO LIGHT",
+  "title": "PLAYER TWO ON PLAYER ONE'S SHEET (LAYOUT ONLY)",
   "px_per_m": 272.8,
   "background_at": [10, 200],
   "views": {
@@ -21,10 +21,6 @@
     "left": [800, 510, 1100, 945]
   },
   "bands": {
-    "hat": [1.16, 1.4, 0.25, "blue", "beanie_teal"],
-    "skin": [0.86, 0.98, 0.12, "skin", "peach_felt"],
-    "sweater": [0.48, 0.68, 0.15, "blue", "dusk_teal"],
-    "trousers": [0.2, 0.36, 0.18, "brown", "trouser_brown"],
-    "boots": [0.02, 0.1, 0.2, "brown", "boot_brown"]
+    "skin": [0.86, 0.98, 0.12, "skin", "peach_felt"]
   }
 }

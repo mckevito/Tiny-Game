@@ -46,10 +46,10 @@
     "file_slots": ["$skin", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "button_black", "blush_felt", "warm_cream", "$thread", "$hair_shade"],
     "slots": {"skin": "peach_felt", "shirt": "mustard_knit", "pants": "moss_felt", "mitten": "rust_canvas", "hat": "rust_canvas", "hair": "bun_brown", "boots": "boot_brown", "thread": "honey_thread", "hair_shade": "ink_brown"}
   },
-  "camper_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "teal_felt", "hat": "teal_felt", "trim": "warm_cream", "mitten": "warm_cream"}},
+  "camper_a": {"base": "knit_camper"},
   "guest_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "rust_canvas", "pants": "moss_felt", "hat": "pond_blue", "trim": "honey_thread", "mitten": "warm_cream"}},
   "guest_b": {"base": "camper", "show": ["bun"], "slots": {"shirt": "pond_blue", "pants": "bark_brown", "hair": "ink_brown", "mitten": "honey_thread"}},
-  "camper_b": {"base": "camper", "show": ["bun"], "slots": {"shirt": "honey_thread", "hair": "bark_brown", "mitten": "rust_canvas"}},
+  "camper_b": {"base": "knit_camper_b"},
 
   "tent": {
     "slots": {"canvas": "rust_canvas", "door": "teal_felt", "mat": "moss_felt", "bag": "rust_canvas"}, "show": ["closed"], "collide": {"box": [2.0, 1.5, 2.2], "offset": [0, 0.75, 0]},

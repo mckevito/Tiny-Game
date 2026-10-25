@@ -1,6 +1,8 @@
 # Recipe: knitted and felt models that match a reference
 
-The owner picked the max-effort camper (PR #29, 25 Oct 2026) as the target quality. This file is how that camper was
+**This is the standard for every model in the game** (owner, 25 Oct 2026, after player two was made by it at medium
+effort: "keep this art direction and formula because its the level of quality i want for the whole game"). The owner
+picked the max-effort camper (PR #29, 25 Oct 2026) as the target quality. This file is how that camper was
 made, so that a medium-effort thread can make the next character or prop just as well. It covers the order of work,
 the numbers, and the mistakes not to repeat. The worked example is `art/characters/knit_camper/`.
 
