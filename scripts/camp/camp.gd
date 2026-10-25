@@ -864,10 +864,10 @@ func action_for(who: String) -> Dictionary:
 		return {"what": "pick_bundle", "arg": state.pack.bundle_near(at)}
 	if state.gather.spot_near(at) >= 0:
 		return {"what": "forage", "arg": state.gather.spot_near(at)}
-	if state.gather.sapling_near(at) >= 0:
-		return {"what": "take_sapling", "arg": state.gather.sapling_near(at)}
 	if has_tool(who, "dig") and state.gather.dig_near(at) >= 0:
 		return {"what": "dig", "arg": state.gather.dig_near(at)}
+	if state.gather.sapling_near(at) >= 0:
+		return {"what": "take_sapling", "arg": state.gather.sapling_near(at)}
 	if state.gather.stump_near(at) >= 0 and state.pack.first_of(who, "plant") != "":
 		return {"what": "plant", "arg": state.gather.stump_near(at)}
 	var need := ""
@@ -2285,7 +2285,8 @@ func puff(index: int, crown: bool) -> void:
 	get_tree().create_timer(life + 0.3).timeout.connect(bits.queue_free)
 
 
-## A felled tree tips over away from the nearest camper (whoever chopped it), then hides (data/gather.json fall).
+## A felled tree tips over away from the nearest camper (whoever chopped it), but never toward the camera, where it
+## would fade out unseen; then it hides (data/gather.json fall).
 func _topple(index: int, mesh: Node3D) -> void:
 	mesh.set_meta("falling", true)
 	var at := CampGather.tree_pos(index)
@@ -2296,6 +2297,10 @@ func _topple(index: int, mesh: Node3D) -> void:
 		if d.length() < best and d.length() > 0.01:
 			best = d.length()
 			away = d.normalized()
+	var to_camera := camera.global_transform.basis.z
+	to_camera.y = 0.0
+	if to_camera.length() > 0.01 and away.dot(to_camera.normalized()) > 0.0:
+		away = (away - 2.0 * away.dot(to_camera.normalized()) * to_camera.normalized()).normalized()
 	var local: Vector3 = mesh.get_parent().global_transform.basis.inverse() * away
 	local.y = 0.0
 	var axis := Vector3.UP.cross(local.normalized()).normalized()

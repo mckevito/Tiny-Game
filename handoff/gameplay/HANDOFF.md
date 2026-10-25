@@ -54,4 +54,5 @@
      leaves a falling mesh alone. Holes and cleared spots switch the tree's collider off.
    - Loose bundles (`loose: true`, with `from`) sweep up by walking; dropped ones (G) need a press and never merge
      into loose ones. `_airborne` (host) keeps a piece from being swept before it lands; tests wait for it.
-   - With the shovel in hand, dig beats plant at a stump; a hole takes a sapling whatever is in hand.
+   - With the shovel in hand, dig beats taking the sapling and planting at a stump (the dig pops the sapling out); a
+     hole takes a sapling whatever is in hand. A felled tree never tips toward the camera (it would fade unseen).
