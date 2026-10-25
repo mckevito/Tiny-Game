@@ -81,6 +81,11 @@ static func recipes() -> Array:
 	return Tuning.value("craft", "recipes", [])
 
 
+## The recipes open at the workbench now: those no project locks, and those whose project is done.
+func known_recipes() -> Array:
+	return recipes().filter(func(r: Dictionary) -> bool: return state.projects.knows(r))
+
+
 static func recipe(kind: String) -> Dictionary:
 	for r: Dictionary in recipes():
 		if r["kind"] == kind:
@@ -103,7 +108,7 @@ static func near_bench(pos: Vector2) -> bool:
 ## "" when a player could craft `kind` now, or the text key saying what is missing.
 func can_craft(profile_id: String, kind: String) -> String:
 	var r := recipe(kind)
-	if r.is_empty():
+	if r.is_empty() or not state.projects.knows(r):
 		return "deny.not_buildable"
 	if int(state.camp.get("coins", 0)) < int(r.get("coins", 0)):
 		return "deny.coins"

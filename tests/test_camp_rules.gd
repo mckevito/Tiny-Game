@@ -91,3 +91,21 @@ func test_characters_belong_to_profiles_not_connections() -> String:
 	if back["look"]["model"] != look or state.player_pos("p_guest") != Vector2(3, 2) or back["name"] != "Gus":
 		return "rejoining did not bring back the same character"
 	return "" if state.camp["profiles"].size() == 2 else "rejoining made a second character"
+
+
+## Playtest found a player could walk off the clearing into the empty field; the edge holds them now.
+func test_a_player_cannot_walk_off_the_clearing() -> String:
+	var edge := Tuning.num("tuning", "movement.edge_m")
+	if Camper.keep_in(Vector3(edge * 3.0, 0.5, 0.0)).distance_to(Vector3(edge, 0.5, 0.0)) > 0.001:
+		return "a spot far past the edge should be brought back to the edge"
+	if Camper.keep_in(Vector3(1, 0, 2)) != Vector3(1, 0, 2):
+		return "a spot inside the clearing should stay as it is"
+	var c := Camper.new()
+	c.controlled = true
+	(Engine.get_main_loop() as SceneTree).root.add_child(c)
+	c.position = Vector3(edge + 5.0, 0.0, 0.0)
+	await (Engine.get_main_loop() as SceneTree).physics_frame
+	await (Engine.get_main_loop() as SceneTree).physics_frame
+	var out := Vector2(c.position.x, c.position.z).length()
+	c.free()
+	return "" if out <= edge + 0.01 else "a walking player should be held at the edge, got %.2f m out" % out

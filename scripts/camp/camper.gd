@@ -99,7 +99,19 @@ func _physics_process(delta: float) -> void:
 		var want := atan2(-target.x, -target.z)
 		rotation.y = lerp_angle(rotation.y, want, Tuning.num("tuning", "movement.turn_speed_rad_s") * delta)
 	move_and_slide()
+	position = keep_in(position)
 	_waddle(delta)
+
+
+## A player walking out past the clearing's edge (data/tuning.json movement.edge_m from the camp's middle) is held
+## at it, so nobody wanders off into the empty field.
+static func keep_in(at: Vector3) -> Vector3:
+	var flat := Vector2(at.x, at.z)
+	var edge := Tuning.num("tuning", "movement.edge_m", 14.0)
+	if flat.length() <= edge:
+		return at
+	flat = flat.normalized() * edge
+	return Vector3(flat.x, at.y, flat.y)
 
 
 ## Eases a remote camper toward where the other PC last said it was; jumps if it is far off.

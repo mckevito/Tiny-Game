@@ -1,0 +1,13 @@
+{
+  "_about": "Where gathering goes (scripts/camp/camp_projects.gd). The sell crate (crate.model in data/clearing.json): a player within reach_m puts in their first stack with a price, one stack a press, and with nothing to sell takes the last stack back; at night it pays prices (coins each, flat and low: guests stay the main income) in the morning report and the clipboard counts everything shipped. Items with no price (saplings) stay out. Camp projects, filled at the project board (board_model) in this order, one open at a time: needs are items or item kinds (data/items.json) with counts, brought from either player's Pack and then the camp box. A finished project pays coins and opens any workbench recipe that names it (data/craft.json project). Names: data/text.json project.<id>.",
+  "reach_m": 1.4,
+  "crate": {"model": "sell_crate",
+    "prices": {"stick": 1, "wood": 2, "berries": 2, "perch": 3, "sunfish": 3, "trout": 4,
+      "grilled_perch": 5, "grilled_sunfish": 5, "grilled_trout": 6}},
+  "board_model": "project_board",
+  "projects": [
+    {"id": "stools", "needs": {"stick": 8, "berries": 4}, "coins": 0},
+    {"id": "planters", "needs": {"wood": 6, "fish": 2}, "coins": 0},
+    {"id": "woodpile", "needs": {"wood": 10, "stick": 10}, "coins": 25}
+  ]
+}

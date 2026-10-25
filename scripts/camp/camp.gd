@@ -516,6 +516,14 @@ func _carry_prompt(id: String) -> String:
 			return Tuning.text("prompt.photo") % Tuning.text("animal." + str(act["arg"]))
 		"deposit":
 			return Tuning.text("prompt.deposit")
+		"ship":
+			var item := str(act["arg"])
+			return Tuning.text("prompt.ship") % [Tuning.text("items." + item), state.pack.count(id, item),
+					CampProjects.price(item) * state.pack.count(id, item)]
+		"take_back":
+			return Tuning.text("prompt.take_back") % Tuning.text("items." + str(act["arg"]))
+		"project":
+			return Tuning.text("prompt.project") % Tuning.text("project.%s.name" % state.projects.current()["id"])
 		"plant":
 			return Tuning.text("prompt.plant")
 		"need_tool":
@@ -611,11 +619,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if _bench.has(who) and not menu.visible:
 		if event.is_action_pressed("next_kind") or event.is_action_pressed("camera_right"):
-			_bench[who]["pick"] = posmod(int(_bench[who]["pick"]) + 1, CampBuild.recipes().size())
+			_bench[who]["pick"] = posmod(int(_bench[who]["pick"]) + 1, state.build.known_recipes().size())
 		elif event.is_action_pressed("camera_left"):
-			_bench[who]["pick"] = posmod(int(_bench[who]["pick"]) - 1, CampBuild.recipes().size())
+			_bench[who]["pick"] = posmod(int(_bench[who]["pick"]) - 1, state.build.known_recipes().size())
 		elif event.is_action_pressed("interact"):
-			ask("craft", [str(CampBuild.recipes()[int(_bench[who]["pick"])]["kind"])], who)
+			ask("craft", [str(state.build.known_recipes()[int(_bench[who]["pick"])]["kind"])], who)
 		elif event.is_action_pressed("cancel") or event.is_action_pressed("menu") or event.is_action_pressed("clipboard"):
 			close_bench(who)
 		else:
@@ -857,6 +865,13 @@ func action_for(who: String) -> Dictionary:
 		return {"what": "pick_up", "arg": nearest_object(who)}
 	if at.distance_to(home_tent_pos()) <= Tuning.num("guests", "tent.reach_m", 2.0):
 		return {"what": "tent"}
+	if CampProjects.near_crate(at):
+		if state.projects.sellable(who) != "":
+			return {"what": "ship", "arg": state.projects.sellable(who)}
+		if not state.projects.crate().is_empty():
+			return {"what": "take_back", "arg": str(state.projects.crate()[-1]["item"])}
+	if CampProjects.near_board(at) and state.projects.can_give(who):
+		return {"what": "project"}
 	if CampBuild.near_bench(at):
 		return {"what": "bench"}
 	if CampPack.near_box(at) and state.pack.has_boxable(who):
@@ -887,8 +902,8 @@ func interact(who: String = "") -> void:
 			ask("give", [act["arg"]], who)
 		"forage", "take_sapling", "plant", "pick_bundle":
 			ask(act["what"], [act["arg"]], who)
-		"deposit":
-			ask("deposit", [], who)
+		"deposit", "ship", "take_back", "project":
+			ask(act["what"], [], who)
 		"bench":
 			open_bench(who)
 		"tent":
@@ -995,6 +1010,12 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		why = state.pack.pick_bundle(profile_id, args[0])
 	elif what == "deposit" and args.is_empty():
 		why = "" if state.pack.deposit(profile_id) > 0 else "deny.nothing_to_box"
+	elif what == "ship" and args.is_empty():
+		why = state.projects.ship(profile_id)
+	elif what == "take_back" and args.is_empty():
+		why = state.projects.take_back(profile_id)
+	elif what == "project" and args.is_empty():
+		why = state.projects.give(profile_id)
 	elif what == "craft" and args.size() == 1 and args[0] is String:
 		why = state.build.craft(profile_id, args[0])
 	elif (what == "spot" or what == "photo") and args.size() == 1 and args[0] is String:
@@ -1006,7 +1027,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 			_denied.rpc_id(peer, why)
 		return
 	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "forage", "spot", "take_sapling", "plant", "drop",
-			"pick_bundle", "deposit", "craft", "photo"]:
+			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project"]:
 		match what:
 			"fish":
 				_say(peer, "toast.caught", [Tuning.text("items." + state.pack.last_item)])
@@ -1040,6 +1061,18 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 				_sync_bundles()
 			"deposit":
 				_say(peer, "toast.deposited", [])
+			"ship":
+				_say(peer, "toast.shipped", [Tuning.text("items." + state.projects.last_item), state.projects.last_n])
+				_progress("ship")
+			"take_back":
+				_say(peer, "toast.took_back", [Tuning.text("items." + state.projects.last_item), state.projects.last_n])
+			"project":
+				var done := state.projects.finished
+				if done != "":
+					_say_all("toast.project_done", [Tuning.text("project.%s.name" % done), project_reward(done)])
+					_progress("project")
+				else:
+					_say(peer, "toast.project_given", [Tuning.text("project.%s.name" % state.projects.current()["id"])])
 			"craft":
 				_say_all("toast.crafted", [state.camp["profiles"][profile_id]["name"], Tuning.text("build." + args[0])])
 				_progress("craft:" + str(args[0]))
@@ -1418,6 +1451,12 @@ func morning_report(summary: Dictionary) -> String:
 				extras.append(Tuning.text("build." + str(e)))
 			lines.append(Tuning.text("report.bonus") % [Tuning.text("booking.%s.name" % b["id"]), ", ".join(extras),
 					int(b["coins"])])
+	var sale: Dictionary = summary.get("sale", {})
+	if not (sale.get("items", {}) as Dictionary).is_empty():
+		var sold: PackedStringArray = []
+		for item: String in sale["items"]:
+			sold.append(Tuning.text("pack.slot") % [Tuning.text("items." + item), int(sale["items"][item])])
+		lines.append(Tuning.text("report.sale") % [int(sale["coins"]), ", ".join(sold)])
 	lines.append("")
 	lines.append(Tuning.text("report.bookings"))
 	var any := false
@@ -1445,11 +1484,31 @@ func _today_report() -> Array[String]:
 		lines.append(CampTasks.line(row))
 	var goals := state.guests.goals()
 	lines.append_array(goals.slice(1))
+	lines.append(project_line())
 	var tomorrow := state.day.today() + 1
 	if (Tuning.value("tasks", "news", []) as Array).any(func(d: Variant) -> bool: return int(d) == tomorrow):
 		lines.append("")
 		lines.append(Tuning.text("report.tomorrow") % Tuning.text("news.day_%d" % tomorrow))
 	return lines
+
+
+## The open camp project and what it still needs, for the Today list ("" once every project is done, then a thank-you).
+func project_line() -> String:
+	var r := state.projects.current()
+	if r.is_empty():
+		return Tuning.text("project.all_done")
+	var needs: PackedStringArray = []
+	for need: String in r["needs"]:
+		needs.append(Tuning.text("bench.need") % [Tuning.text("items." + need), int(state.projects.given().get(need, 0)),
+				int(r["needs"][need])])
+	return Tuning.text("project.line") % [Tuning.text("project.%s.name" % r["id"]), ", ".join(needs),
+			project_reward(str(r["id"]))]
+
+
+## What a camp project gives, in words (data/text.json project.<id>.reward, with its coins from data/projects.json).
+static func project_reward(id: String) -> String:
+	var text := Tuning.text("project.%s.reward" % id)
+	return text % int(CampProjects.row(id).get("coins", 0)) if text.contains("%d") else text
 
 
 ## The first morning of a new camp, started from the menu: a welcome and the first Today list.
@@ -1831,6 +1890,14 @@ func clipboard_text(who: String, tab: String) -> String:
 				if not CampBuild.is_free(kind):
 					kit.append(Tuning.text("pack.slot") % [Tuning.text("build." + kind), state.build.in_kit(kind)])
 			lines.append(Tuning.text("clipboard.kit") % (", ".join(kit) if not kit.is_empty() else Tuning.text("clipboard.empty")))
+			var crate: PackedStringArray = []
+			for st: Dictionary in state.projects.crate():
+				crate.append(Tuning.text("pack.slot") % [Tuning.text("items." + str(st["item"])), int(st["n"])])
+			lines.append(Tuning.text("clipboard.crate") % (", ".join(crate) if not crate.is_empty() else Tuning.text("clipboard.empty")))
+			var shipped := 0
+			for item: String in state.camp["shipped"]:
+				shipped += int(state.camp["shipped"][item])
+			lines.append(Tuning.text("clipboard.shipped") % shipped)
 			lines.append("")
 			for id: String in state.online:
 				var names: PackedStringArray = []
@@ -2125,7 +2192,7 @@ func close_bench(who: String) -> void:
 ## The workbench panel's text for a player: each recipe (the picked one marked) with its needs as have/need.
 func bench_text(who: String, pick: int) -> String:
 	var lines: Array[String] = []
-	var recipes := CampBuild.recipes()
+	var recipes := state.build.known_recipes()
 	for i in recipes.size():
 		var r: Dictionary = recipes[i]
 		var needs: PackedStringArray = []

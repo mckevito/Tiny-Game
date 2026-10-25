@@ -8,7 +8,8 @@
     "waddle_hz": 4.0,
     "bob_m": 0.04,
     "collider_radius_m": 0.3,
-    "collider_height_m": 1.2
+    "collider_height_m": 1.2,
+    "edge_m": 14.0
   },
   "camera": {
     "pitch_deg": 42.0,
