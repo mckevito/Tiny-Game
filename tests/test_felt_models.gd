@@ -6,6 +6,7 @@ const SIZES := {
 	"camper_a": [1.1, 1.6], "camper_b": [1.1, 1.6], "tent": [1.2, 2.0], "tree_pine": [2.5, 4.5],
 	"tree_round": [2.5, 4.5], "tree_puff": [2.5, 4.5], "picnic_table": [0.6, 1.0], "chair_teal": [0.7, 1.2],
 	"chair_honey": [0.7, 1.2], "fire_pit": [0.4, 1.2], "knit_camper": [1.1, 1.6],
+	"knit_camper_b": [1.1, 1.6],
 }
 
 
@@ -114,12 +115,42 @@ func test_stitch_cord_is_unbroken() -> String:
 	return "" if dashes.is_empty() or dashes[Mesh.ARRAY_VERTEX].size() < 48 else "the dashes should leave gaps"
 
 
+## The sculpted campers: player one's (knit_camper) and player two's (knit_camper_b), built from art/RECIPE.md.
+const SCULPTED := ["knit_camper", "knit_camper_b"]
+
+
 func test_sculpted_camper_is_painted_from_the_palette() -> String:
-	var model := FeltBuilder.resolve("knit_camper")
+	for id: String in SCULPTED:
+		var fault := _painted_from_the_palette(id)
+		if fault != "":
+			return "%s: %s" % [id, fault]
+	return ""
+
+
+func test_sculpted_camper_keeps_its_stitch_map_and_baked_shade() -> String:
+	for id: String in SCULPTED:
+		var fault := _keeps_stitch_map_and_shade(id)
+		if fault != "":
+			return "%s: %s" % [id, fault]
+	return ""
+
+
+func test_the_two_sculpted_players_look_different() -> String:
+	# Told apart at a glance from the play camera: a different sweater, headwear and hair (data/models.json slots).
+	var one: Dictionary = FeltBuilder.resolve("knit_camper").get("slots", {})
+	var two: Dictionary = FeltBuilder.resolve("knit_camper_b").get("slots", {})
+	for slot in ["shirt", "hat", "hair"]:
+		if one.get(slot) == two.get(slot):
+			return "both players' %s is %s" % [slot, one.get(slot)]
+	return ""
+
+
+func _painted_from_the_palette(id: String) -> String:
+	var model := FeltBuilder.resolve(id)
 	for n: Variant in model.get("file_slots", []):
 		if not Tuning.table("palette").get("swatches", {}).has(FeltBuilder.swatch_name({"color": n}, model)):
 			return "file slot %s has no swatch" % n
-	var mesh := FeltBuilder.mesh("knit_camper")
+	var mesh := FeltBuilder.mesh(id)
 	if mesh.get_surface_count() == 0:
 		return "the sculpted camper didn't load"
 	var colors: PackedColorArray = mesh.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
@@ -131,9 +162,9 @@ func test_sculpted_camper_is_painted_from_the_palette() -> String:
 	return "" if seen.size() >= 7 else "only %d colours on the sculpted camper" % seen.size()
 
 
-func test_sculpted_camper_keeps_its_stitch_map_and_baked_shade() -> String:
-	var model := FeltBuilder.resolve("knit_camper")
-	var arrays := FeltBuilder.mesh("knit_camper").surface_get_arrays(0)
+func _keeps_stitch_map_and_shade(id: String) -> String:
+	var model := FeltBuilder.resolve(id)
+	var arrays := FeltBuilder.mesh(id).surface_get_arrays(0)
 	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
 	var stitch: Variant = arrays[Mesh.ARRAY_TEX_UV2]
 	if stitch == null or (stitch as PackedVector2Array).size() != uvs.size():
