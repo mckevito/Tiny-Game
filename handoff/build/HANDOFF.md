@@ -54,7 +54,15 @@
      (`scripts/core/player_input.gd`) reads one player's devices from `data/input.json`; campers use it only while
      someone is on the couch. `CouchView` (`scripts/camp/couch_view.gd` + `split.gdshader`) is the split screen: the
      main camera is player one's half, a SubViewport camera draws player two's half only while split.
-   - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale.
+   - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale. The preset
+     is now a setting of the PC (below); a profile from before settings existed still gives its old `quality`.
+   - Title and settings: `CampMenu` holds every page in one felt panel (title, start, in-camp, and `options`, an
+     `OptionsScreen` from `scripts/ui/options_screen.gd`); `page()` says which shows. `menu.visible` stays true while
+     Options is open, so the clock still waits. `Settings` (`scripts/core/settings.gd`, rows in `data/settings.json`)
+     keeps this PC's settings in user://settings.json and applies them; `Boot` calls `Settings.apply_all()`, which also
+     registers the input actions. Remaps live in `binds` and come through `InputSetup.row(action)`, which
+     `PlayerInput` (couch) and `Prompts` (glyphs) read, so read bindings through it, never from data/input.json
+     directly. `UiLook` (`scripts/ui/ui_look.gd`) is the shared menu theme with the focus ring.
 3. **Open work, in order:**
    1. Stage B round 2: the owner plays days 1 to 3 and signs off (or asks for changes); approve the Proposed numbers
       in `docs/STATUS.md`. Record the sign-off in the next build PR (no sign-off PR).
@@ -90,6 +98,10 @@
    - Never `stop()` a camp from inside an RPC or a multiplayer signal: closing the peer there breaks; defer it.
    - A test that waits on the network must check every step it depends on, or a refused step makes later checks pass
      by accident (caught by breaking `pick_up` on purpose).
+   - The test runner points `Settings` at user://test_settings.json (wiped each run) so tests never see the real
+     settings; a test that changes settings calls `Settings.reset_page` for each page when done.
+   - A Slider draws no focus ring; Options rows light their whole strip on focus instead (`UiLook.row_focus`).
+   - A method named `remap` on a node clashes with GDScript's global `remap()` and fails to parse; pick another name.
    - Godot's `Input` can't fake a controller's stick in headless tests. Couch tests call the Camp's `_input` and
      `_unhandled_input` with made-up joypad events, check `PlayerInput.owns_event`, and move campers by position.
    - A test that checks "each player is on their side of the split" also passed with the halves swapped; it now also
@@ -126,7 +138,8 @@
    `--write-movie OUT.png --quit-after 90` (with xvfb, no `--headless`) to save frames of a copy. The capture saves `play_<mood>.png` and `close_<mood>.png`
    from the play camera (and `clip_###.png` walking frames with `--clip`; make a GIF with ffmpeg). `--couch` instead
    plays a couch walk that splits and merges (`couch_###.png`, about 3 minutes on lavapipe). `--stage-a` saves
-   `day_11/18/21.png`: a pitch, its guest and tent, and a build ghost at three hours of the day. `--stage-b` saves
+   `day_11/18/21.png`: a pitch, its guest and tent, and a build ghost at three hours of the day. `--menus` saves the title, the start page, each
+   Options tab and Options from the in-camp menu. `--stage-b` saves
    `camp_day.png`, `camp_dusk.png` (three pitches, guests with requests, water point, lantern), `fishing.png` and
    `report.png`, plus `welcome.png`, `chop.png` and `stump_log_clipboard.png` (round 2). It uses Forward+
    on software Vulkan (lavapipe, installed by the start-up script), so frames match the owner's renderer.

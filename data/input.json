@@ -1,10 +1,9 @@
 {
-  "_about": "Every gameplay action with its default keyboard/mouse and joypad bindings. Keys use Godot key names; joy_buttons and joy_axes use Godot's JoyButton and JoyAxis numbers (0 = Cross / left stick X). glyphs names each action's button per device for prompts: a string writes {action} and gets the glyph of the device that player last used.",
+  "_about": "Every gameplay action with its default keyboard/mouse and joypad bindings. Keys use Godot key names; joy_buttons and joy_axes use Godot's JoyButton and JoyAxis numbers (0 = Cross / left stick X). glyphs names each action's button per device for prompts: a string writes {action} and gets the glyph of the device that player last used. These are the defaults: each PC can remap them and set the stick deadzone in Options (data/settings.json, scripts/core/settings.gd).",
   "glyphs": {
     "keyboard": {"interact": "E", "menu": "Tab", "cancel": "Esc", "move": "WASD", "camera": "Q and R", "build": "B", "rotate": "F", "undo": "Z", "next_kind": "C", "clipboard": "J", "tabs": "Q and R", "drop": "G"},
     "pad": {"interact": "Cross", "menu": "Options", "cancel": "Circle", "move": "Left stick", "camera": "L1 and R1", "build": "Triangle", "rotate": "Square", "undo": "D-pad left", "next_kind": "D-pad right", "clipboard": "Touchpad", "tabs": "L1 and R1", "drop": "D-pad left"}
   },
-  "deadzone": 0.2,
   "actions": {
     "move_forward": {"keys": ["W", "Up"], "joy_axes": [[1, -1.0]]},
     "move_back":    {"keys": ["S", "Down"], "joy_axes": [[1, 1.0]]},

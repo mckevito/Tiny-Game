@@ -99,8 +99,10 @@ func _ready() -> void:
 		profile = LocalProfile.load_or_create(_profile_file)
 	menu.name_edit.text = str(profile.get("name", ""))
 	menu.address_edit.text = str(profile.get("last_address", ""))
-	menu.show_start()
-	apply_quality(str(profile.get("quality", Quality.names()[0])), false)
+	menu.show_title()
+	# The picture preset is a setting of this PC (Settings); a profile from before settings existed held it.
+	apply_quality(str(Settings.value("picture") if Settings.has_value("picture") or not profile.has("quality")
+			else profile["quality"]), false)
 	if args.has("slot"):
 		menu.slot_pick.select(clampi(int(args["slot"]) - 1, 0, CampSave.slot_count() - 1))
 	if args.has("solo"):
@@ -147,7 +149,7 @@ func _on_menu(action: String) -> void:
 			var who := _menu_for
 			_close_menu()
 			ask("booking", [str(state.guests.current().get("id", "")), action.trim_prefix("booking_")], who)
-		"quality": apply_quality(Quality.next(str(profile.get("quality", ""))))
+		"picture": apply_quality(str(Settings.value("picture")), false)
 	LocalProfile.save(profile, _profile_file)
 
 
@@ -434,7 +436,7 @@ func _process(delta: float) -> void:
 			_dev_clock = Tuning.num("tuning", "dev.fps_refresh_s", 0.5)
 			var size := get_viewport().get_visible_rect().size
 			$Hud/Dev.text = Tuning.text("dev.stats") % [Engine.get_frames_per_second(),
-					Tuning.text("quality." + str(profile.get("quality", ""))), "%dx%d" % [get_window().size.x,
+					Tuning.text("quality." + Quality.current), "%dx%d" % [get_window().size.x,
 					get_window().size.y] if get_window() else "%dx%d" % [size.x, size.y],
 					roundi(get_viewport().scaling_3d_scale * 100.0), roundi(_clock_scale())]
 
@@ -500,16 +502,15 @@ func _update_hint() -> void:
 	$Hud/Hint.text = text
 
 
-## Applies a picture preset (data/graphics.json) to every view; `keep` saves it for this PC.
+## Applies a picture preset (data/graphics.json) to every view; `keep` saves it in this PC's settings (Options does
+## that itself, then asks for this).
 func apply_quality(preset: String, keep: bool = true) -> void:
 	if not Quality.names().has(preset):
 		preset = str(Quality.names()[0])
-	profile["quality"] = preset
 	var views: Array[Viewport] = [get_viewport(), couch.second_view()]
 	Quality.apply(preset, views, $World.environment, $Sun, couch.split)
-	menu.set_quality(Tuning.text("menu.quality") % Tuning.text("quality." + preset))
 	if keep:
-		LocalProfile.save(profile, _profile_file)
+		Settings.set_value("picture", preset)
 
 
 # --- Input -------------------------------------------------------------------------------------------------------
