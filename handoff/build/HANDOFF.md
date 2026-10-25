@@ -1,26 +1,29 @@
-# Build hand-off, 25 Oct 2026 (Milestone 2)
+# Build hand-off, 25 Oct 2026 (Milestone 3)
 
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
    Never touches the reference repos. Until an `art` role starts, Build also owns the felt models (`data/models.json`).
-2. **State now:** Milestones 0, 1 and 2 are signed off and merged (Milestone 2: PR #4, owner played on two PCs over
-   the home network, 25 Oct 2026).
-   - `scenes/camp.tscn` + `scripts/camp/camp.gd` is the main scene: start menu (play alone, host, join), the camp,
-     and all the netcode (ENet, RPCs on the Camp node). `camp_state.gd` holds the rules (host decides),
-     `camp_save.gd` the save (slots, backup, upgrades), `camp_menu.gd` the menu, `scripts/net/local_profile.gd` this
-     PC's profile ID (user://profile.json).
-   - Message flow: guest connects, sends `_hello(protocol, profile id, name)`; host answers `_welcome(snapshot)` or
-     `_refused(text key)`. Changes go `_request` -> host `_decide` -> `_object_changed` to the guest (or `_denied`).
-     Walking goes both ways with `_moved` (unreliable, 20/s). Host-only RPCs are `authority`; guest RPCs check the
-     sender's profile.
+2. **State now:** Milestones 0, 1 and 2 are signed off and merged. Milestone 3 (couch and link codes) is built and
+   tested in the cloud, in its PR, waiting on the owner's hands-on try (`docs/STATUS.md`).
+   - `scenes/camp.tscn` + `scripts/camp/camp.gd` is the main scene: start menu (play alone, host, join with an
+     optional link code), the camp, the couch, and all the netcode (ENet, RPCs on the Camp node). `camp_state.gd`
+     holds the rules (host decides) and link codes, `camp_save.gd` the save (slots, backup, upgrades),
+     `camp_menu.gd` the menu, `scripts/net/local_profile.gd` this PC's profile ID and picture preset
+     (user://profile.json).
+   - Message flow: guest connects, sends `_hello(protocol, profile id, name, link code)`; host answers
+     `_welcome(snapshot, your id)` or `_refused(text key)`. With a link code the host hands that couch character to
+     the PC (dropping it off the couch first) and the PC adopts its profile ID. Changes go `_request` -> host
+     `_decide` -> `_object_changed` to the guest (or `_denied`). Walking goes both ways with `_moved` (unreliable,
+     20/s), one per local player. Host-only RPCs are `authority`; guest RPCs check the sender's profile. Protocol 2.
+   - Couch: `couch_id`/`couch_pad` on the Camp. `_input` sees controller events before the menus: a controller not
+     in `_p1_pads` pressing `menu` calls `drop_in`; `owner_of(event)` routes buttons. `PlayerInput`
+     (`scripts/core/player_input.gd`) reads one player's devices from `data/input.json`; campers use it only while
+     someone is on the couch. `CouchView` (`scripts/camp/couch_view.gd` + `split.gdshader`) is the split screen: the
+     main camera is player one's half, a SubViewport camera draws player two's half only while split.
+   - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale.
 3. **Open work, in order:**
-   1. Milestone 3: couch drop-in on the host's PC with the dynamic split screen, and link codes. Local players are
-      just more profile IDs in `CampState.online`; `_guests` maps connections to profiles, so a local player needs
-      no connection. Keep the two-player total across couch and online.
-      While there, have the owner try the DualSense with carry and the menu, and a Tailscale join (not yet tried).
-      Performance: the owner's weakest PC is a Ryzen 7 5825U laptop with built-in graphics; it must hold at least
-      30 fps (aim 60), split screen included. See "Performance target" in `docs/PLAN.md`: SSAO is on today
-      (`light_moods.gd`), so add the low quality preset and the F1 fps readout as part of this milestone.
+   1. Milestone 3 sign-off: the owner tries couch with two DualSenses, a link code to the second PC, a Tailscale
+      join, and the fps on the weakest laptop (Light preset, split screen). Tune `data/graphics.json` from that.
    2. Stage A: day clock, sleep vote and nightly payout write into the save fields that already exist.
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**
@@ -50,6 +53,12 @@
    - Never `stop()` a camp from inside an RPC or a multiplayer signal: closing the peer there breaks; defer it.
    - A test that waits on the network must check every step it depends on, or a refused step makes later checks pass
      by accident (caught by breaking `pick_up` on purpose).
+   - Godot's `Input` can't fake a controller's stick in headless tests. Couch tests call the Camp's `_input` and
+     `_unhandled_input` with made-up joypad events, check `PlayerInput.owns_event`, and move campers by position.
+   - A test that checks "each player is on their side of the split" also passed with the halves swapped; it now also
+     checks each player is on screen. Check both side and bounds for anything on screen.
+   - A camp in a test must not call `LocalProfile.save` with no profile file named, or it overwrites the real
+     user://profile.json; `apply_quality(..., false)` at start-up exists for that.
 7. **How to check things:**
    ```
    godot --headless --import
@@ -60,5 +69,6 @@
    The exit code of the tests is the number of failures. Two real game copies on one machine:
    `godot --headless -- --host --slot=2` and `godot --headless -- --join=127.0.0.1 --profile=b`. Add
    `--write-movie OUT.png --quit-after 90` (with xvfb, no `--headless`) to save frames of a copy. The capture saves `play_<mood>.png` and `close_<mood>.png`
-   from the play camera (and `clip_###.png` walking frames with `--clip`; make a GIF with ffmpeg). It uses Forward+
+   from the play camera (and `clip_###.png` walking frames with `--clip`; make a GIF with ffmpeg). `--couch` instead
+   plays a couch walk that splits and merges (`couch_###.png`, about 3 minutes on lavapipe). It uses Forward+
    on software Vulkan (lavapipe, installed by the start-up script), so frames match the owner's renderer.

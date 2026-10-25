@@ -100,9 +100,10 @@ memory), 32 GB RAM, Windows 11. Every stage must hold **at least 30 fps, aiming 
 busiest scene that stage has (an event with about 10 guests; from Milestone 3, couch split screen too).
 
 **Proposed** ways to stay there:
-- A quality table (`data/graphics.json`) with a low preset for this laptop: render scale about 0.75 with FSR
-  upscaling, SSAO and glow off, one sun shadow at a modest size, FXAA instead of MSAA, fewer particles.
-- Split screen draws the world twice, so it gets its own lower render scale on the low preset.
+- A quality table (`data/graphics.json`, built in Milestone 3) with a low preset for this laptop: render scale 0.75
+  with FSR upscaling, SSAO and glow off, one sun shadow at a modest size, FXAA instead of MSAA, fewer particles.
+- Split screen draws the world twice, so it gets its own lower render scale (built in Milestone 3: 0.6 on low), and
+  draws the second view only while split.
 - Many-of-a-kind scenery (trees, grass tufts, path stones) drawn with `MultiMeshInstance3D`; guests stay at about 10.
 - An fps and frame-time readout on the F1 dev menu, and a timing check on this laptop at every stage sign-off.
 - If Forward+ can't hold 30 fps on the low preset, try Godot's Mobile renderer before cutting art.
@@ -152,4 +153,7 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, owner: licence MIT for code and CC BY 4.0 for original art.
 - 25 Oct 2026, owner: the weakest PC (Ryzen 7 5825U laptop, built-in Radeon graphics) must run at least 30 fps,
   aiming for 60.
+- 25 Oct 2026, **Proposed** (Milestone 3): a controller player one hasn't used drops in with Options; couch players
+  share the camera's turn and zoom; a new couch character is "Couch friend" until its own PC claims it with a
+  one-use link code, after which that PC plays it under the same profile ID.
 - 25 Oct 2026, **Proposed**: three save slots; thank-you letters; background wildlife; upkeep never below zero.

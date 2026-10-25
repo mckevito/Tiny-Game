@@ -1,5 +1,5 @@
 {
-  "_about": "The camp save (scripts/camp/camp_save.gd): JSON with a version number, a backup of the previous save and migrations. new_camp is the whole-year layout every save starts from; a save missing any key gets it from here when loaded. Profiles are keyed by profile ID, never a connection ID. looks are the camper models handed to new profiles, least-used first.",
+  "_about": "The camp save (scripts/camp/camp_save.gd): JSON with a version number, a backup of the previous save and migrations. new_camp is the whole-year layout every save starts from; a save missing any key gets it from here when loaded. Profiles are keyed by profile ID, never a connection ID. couch marks a character made on the host's couch that no PC has claimed yet; link_code lets its own PC claim it once. last_seen (Unix seconds) picks who drops in on the couch. looks are the camper models handed to new profiles, least-used first.",
   "version": 1,
   "slots": 3,
   "dir": "user://saves",
@@ -40,7 +40,9 @@
     "pockets": [],
     "pos": [0, 0],
     "yaw": 0,
-    "link_code": ""
+    "link_code": "",
+    "couch": false,
+    "last_seen": 0
   },
   "looks": ["camper_a", "camper_b"],
   "spawn": [[-1.1, -1.4], [1.2, -1.3]]

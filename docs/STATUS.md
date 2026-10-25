@@ -75,9 +75,52 @@ through the Windows firewall).
    host with `-- --host --slot=2`. `--solo` plays alone.
 
 ### Still open
-- Not yet tried by the owner: the DualSense with carry and the menu, and joining over Tailscale. Check both during
-  Milestone 3 (owner chose to sign off without them, 25 Oct 2026).
+- The DualSense with carry and the menu: tried and good (owner, 25 Oct 2026). Joining over Tailscale is still to
+  try; it is checked in Milestone 3.
 - Typing a name or an address needs a keyboard; a pad can do everything else. Both are remembered.
 - **Proposed:** each PC steers its own camper and tells the other where it is (the host still decides every change
   to the camp). This keeps walking smooth on a slow link; the host doesn't check walking.
-- The weaker PC's specs are not known yet; movement is sent 20 times a second (`data/net.json`), well within any PC.
+- Movement is sent 20 times a second (`data/net.json`), well within any PC. The weakest PC is now known (see the
+  performance target in `docs/PLAN.md`).
+
+## Milestone 3: Couch and link codes
+Signed off: not yet. Built and tested in the cloud; waits on the owner's hands-on try (below).
+
+| Proof | Test | Result |
+|---|---|---|
+| A controller player one has not used drops in with its menu button; hopping off the couch from that player's menu drops out; the character waits in the host's save and comes back next time | `test_couch.test_a_free_controller_drops_in_and_out` | Passing |
+| Player one's own controller opens the menu and never drops in a second player | `test_couch.test_player_ones_own_controller_opens_the_menu_not_a_drop_in` | Passing |
+| Each couch player steers and carries with their own devices only; a couch player's menu pauses only them | `test_couch.test_a_free_controller_drops_in_and_out`, `test_couch_players_carry_with_their_own_button` | Passing |
+| Dynamic split screen: one shared view while close, a split at right angles to the players when apart (each on their own half), merged again when close; no jump at the moment of the split | `test_couch.test_split_screen_splits_apart_and_merges_together`, `test_split_aims_merge_close_and_lean_apart`, `test_screen_direction_matches_the_camera` | Passing |
+| Two players in total across couch and online: a guest PC is told the camp is full while someone is on the couch, and a controller can't drop in while a guest PC is in | `test_couch.test_two_players_in_total_across_couch_and_online` | Passing |
+| A link code moves a couch character to its own PC as the same character (same profile ID, no new character); a wrong code is refused; a used code is cleared | `test_couch.test_a_link_code_moves_the_couch_character_to_its_own_pc` | Passing |
+| Link codes avoid look-alike letters and ignore case and the dash | `test_couch.test_link_codes_are_easy_to_read_and_type` | Passing |
+| Picture presets: a low preset for the weakest PC reaches every view; the split screen draws its second view only while split, at a lower render scale | `test_couch.test_picture_presets_apply_to_every_view`, `test_split_screen_splits_apart_and_merges_together` | Passing |
+| Couch play with two DualSenses, a link code to the second PC, a Tailscale join, and at least 30 fps on the weakest PC (F1 shows the fps) | Owner's hands-on try | Not yet |
+
+### How to try it
+1. Press F5 and play alone or host a camp, with the keyboard or the first DualSense.
+2. Pick up a second DualSense and press Options on it: a second camper drops in. The first time it is a new couch
+   character called "Couch friend"; after that it is whoever played in this camp most recently (not the host).
+3. Walk apart: the screen splits along a line between you and merges when you meet again. Either player turns the
+   shared camera (L1 and R1, or Q and R).
+4. Options on the second DualSense opens that player's menu: it shows the couch character's link code and has
+   **Hop off the couch**. Player one's menu (Tab or Options on their own controller) shows the code too.
+5. To move the couch character to its own PC: host the camp, and on the other PC type the host's address and the
+   link code, then **Join a friend**. The camper leaves the couch and appears on that PC, and that PC plays it from
+   now on. The code works once.
+6. Tailscale: type the host's Tailscale name or address as the friend's address.
+7. Press F1 for the fps counter. The in-camp menu has **Picture: Sharp / Light, for laptops**; try Light on the
+   laptop, and split the screen there to see the slowest case.
+
+### Still open
+- **Proposed:** controllers are told apart by use: player one owns the keyboard, the mouse and every controller they
+  have touched; a controller they haven't touched drops in with Options. If player one uses only the keyboard, the
+  first controller to press Options drops in rather than opening player one's menu.
+- **Proposed:** the camera turn and zoom are shared on the couch (either player can turn it), so the split line stays
+  true. Trees fade only for player one's camera.
+- **Proposed:** a couch character's name is "Couch friend" until it is claimed by its own PC, which keeps that PC's
+  character name after that. Renaming on the couch needs the polish stage's name entry for pads.
+- If a couch controller goes quiet, its camper waits; the next controller to connect that player one has not used
+  takes over.
+- Frame rate on the weakest PC is not measured yet (the cloud has no GPU); the presets are a first guess.

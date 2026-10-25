@@ -1,0 +1,11 @@
+{
+  "_about": "Picture presets (scripts/core/quality.gd), picked in the in-camp menu and kept per PC. low is for the weakest PC (a Ryzen 7 5825U laptop with built-in Radeon graphics; docs/PLAN.md 'Performance target'): the 3D view drawn smaller and upscaled with FSR, FXAA, no ambient occlusion or glow, one sun shadow at a shorter distance. split_render_scale is used for both halves while the couch screen is split, since that draws the world twice.",
+  "order": [
+    "normal",
+    "low"
+  ],
+  "presets": {
+    "normal": {"render_scale": 1.0, "split_render_scale": 0.85, "fxaa": false, "ssao": true, "glow": true, "shadow_splits": 4, "shadow_atlas_px": 4096, "shadow_distance_m": 40.0},
+    "low": {"render_scale": 0.75, "split_render_scale": 0.6, "fxaa": true, "ssao": false, "glow": false, "shadow_splits": 1, "shadow_atlas_px": 2048, "shadow_distance_m": 24.0}
+  }
+}
