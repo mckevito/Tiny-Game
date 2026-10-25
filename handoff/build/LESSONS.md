@@ -51,3 +51,4 @@ Build owns how the game loads them.
   the menu sat off-centre and too tall (why: centred before its size was known; stops it: `_fit()` on every show);
   a carried chair hid the player's name (why: label behind the chair; stops it: names draw on top); a network test
   passed with pick-up broken (why: an unchecked wait; stops it: check each step, rule in HANDOFF traps).
+- 25 Oct 2026: Milestone 2 signed off by the owner after two-PC play on the home network (firewall prompt allowed).

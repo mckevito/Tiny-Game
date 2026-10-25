@@ -46,8 +46,8 @@ Signed off: yes, as a first draft (owner, 25 Oct 2026). Polish comes later; PR #
 - The prompts in the sandbox hint are words ("L1", "WASD"); real button glyphs come with the prompt system.
 
 ## Milestone 2: Two PCs, one camp
-Signed off: not yet. Built and tested in the cloud (two real game copies joined over the network on one machine);
-the owner's try on two PCs is next.
+Signed off: yes, 25 Oct 2026 (PR #4 merged; the owner played on two PCs over their home network after letting Godot
+through the Windows firewall).
 
 | Proof | Test | Result |
 |---|---|---|
@@ -60,7 +60,7 @@ the owner's try on two PCs is next.
 | The camp save has room for the whole year (calendar, coins, wood, ledger, reservations, five areas, three staff, visitors, rating, journal, mailbox, profiles with outfits, pet and pockets) | `test_camp_save.test_new_camp_has_room_for_the_whole_year` | Passing |
 | Three save slots; a backup of the previous save is used if the save breaks; older saves are upgraded; a newer save is refused and left alone | `tests/test_camp_save.gd` | Passing |
 | Prompts show the button of the device the player last used; no string names a button | `tests/test_prompts.gd` | Passing |
-| Host and join over Tailscale or LAN between the owner's two PCs, with keyboard and a DualSense | Owner's hands-on try | Open |
+| Host and join between the owner's two PCs | Owner's hands-on try | Passed on the home network (owner, 25 Oct 2026) |
 
 ### How to try it
 1. Both PCs: open the project in Godot 4.7.2 and press F5. The camp menu opens (the M1 sandbox is still in
@@ -75,7 +75,8 @@ the owner's try on two PCs is next.
    host with `-- --host --slot=2`. `--solo` plays alone.
 
 ### Still open
-- Owner's two-PC try (Tailscale or LAN, keyboard and DualSense).
+- Not yet tried by the owner: the DualSense with carry and the menu, and joining over Tailscale. Check both during
+  Milestone 3 (owner chose to sign off without them, 25 Oct 2026).
 - Typing a name or an address needs a keyboard; a pad can do everything else. Both are remembered.
 - **Proposed:** each PC steers its own camper and tells the other where it is (the host still decides every change
   to the camp). This keeps walking smooth on a slow link; the host doesn't check walking.
