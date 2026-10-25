@@ -7,7 +7,7 @@ config_version=5
 
 config/name="Our Little Campground"
 config/description="A tiny cozy two-player co-op campground game."
-run/main_scene="res://scenes/sandbox.tscn"
+run/main_scene="res://scenes/camp.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]

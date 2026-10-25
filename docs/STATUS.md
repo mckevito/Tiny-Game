@@ -44,3 +44,39 @@ Signed off: yes, as a first draft (owner, 25 Oct 2026). Polish comes later; PR #
 - Art polish later (owner, 25 Oct 2026: "we can always make it look better later").
 - The extra palette shades in `data/palette.json` (grass, pine, wood, skin, stone, fire and so on) are Proposed.
 - The prompts in the sandbox hint are words ("L1", "WASD"); real button glyphs come with the prompt system.
+
+## Milestone 2: Two PCs, one camp
+Signed off: not yet. Built and tested in the cloud (two real game copies joined over the network on one machine);
+the owner's try on two PCs is next.
+
+| Proof | Test | Result |
+|---|---|---|
+| Host and join over the network; both players appear on both PCs, each steering only their own camper | `test_net.test_host_and_join_both_players_appear` | Passing |
+| Each player's walking reaches the other PC | `test_net.test_movement_reaches_the_other_pc` | Passing |
+| The guest carries and places a chair; the host decides (it refuses to take a chair out of the guest's hands); both PCs agree and the host's save holds it | `test_net.test_guest_carries_and_places_a_chair_and_the_host_decides` | Passing |
+| Two players in total: a third PC is told the camp is full | `test_net.test_a_third_pc_is_told_the_camp_is_full` | Passing |
+| Characters belong to profile IDs: rejoining on a new connection brings back the same character, where they left; a chair being carried goes back to its spot | `test_net.test_rejoining_brings_back_the_same_character`, `test_camp_rules.*` | Passing |
+| Carry rules: one carrier per thing, one thing per player, reach, camp edge, room to put it down, scenery stays put | `tests/test_camp_rules.gd` | Passing |
+| The camp save has room for the whole year (calendar, coins, wood, ledger, reservations, five areas, three staff, visitors, rating, journal, mailbox, profiles with outfits, pet and pockets) | `test_camp_save.test_new_camp_has_room_for_the_whole_year` | Passing |
+| Three save slots; a backup of the previous save is used if the save breaks; older saves are upgraded; a newer save is refused and left alone | `tests/test_camp_save.gd` | Passing |
+| Prompts show the button of the device the player last used; no string names a button | `tests/test_prompts.gd` | Passing |
+| Host and join over Tailscale or LAN between the owner's two PCs, with keyboard and a DualSense | Owner's hands-on try | Open |
+
+### How to try it
+1. Both PCs: open the project in Godot 4.7.2 and press F5. The camp menu opens (the M1 sandbox is still in
+   `scenes/sandbox.tscn`).
+2. Type your name. On the host PC pick a camp slot and choose **Host a camp**. Windows may ask to let Godot through
+   the firewall the first time: allow it.
+3. On the other PC type the host's address (its Tailscale name or address, or its LAN address) and choose **Join a
+   friend**. The address is remembered for next time. The port is 24680 (`data/net.json`).
+4. Walk with WASD or the left stick. Stand by a chair and press E or Cross to pick it up, again to put it down in
+   front of you. Tab or Options opens the menu (back to camp, or leave).
+5. To try on one PC: run a second copy with `-- --join=127.0.0.1 --profile=b` (a second player file), or start the
+   host with `-- --host --slot=2`. `--solo` plays alone.
+
+### Still open
+- Owner's two-PC try (Tailscale or LAN, keyboard and DualSense).
+- Typing a name or an address needs a keyboard; a pad can do everything else. Both are remembered.
+- **Proposed:** each PC steers its own camper and tells the other where it is (the host still decides every change
+  to the camp). This keeps walking smooth on a slow link; the host doesn't check walking.
+- The weaker PC's specs are not known yet; movement is sent 20 times a second (`data/net.json`), well within any PC.

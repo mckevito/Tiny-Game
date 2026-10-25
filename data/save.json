@@ -1,0 +1,47 @@
+{
+  "_about": "The camp save (scripts/camp/camp_save.gd): JSON with a version number, a backup of the previous save and migrations. new_camp is the whole-year layout every save starts from; a save missing any key gets it from here when loaded. Profiles are keyed by profile ID, never a connection ID. looks are the camper models handed to new profiles, least-used first.",
+  "version": 1,
+  "slots": 3,
+  "dir": "user://saves",
+  "new_camp": {
+    "calendar": {"year": 1, "season": "spring", "day": 1, "minute": 0},
+    "coins": 0,
+    "wood": 0,
+    "ledger": [],
+    "reservations": [],
+    "areas": {
+      "clearing": {"open": true},
+      "lakeside": {"open": false},
+      "rv_loop": {"open": false},
+      "woodland_trail": {"open": false},
+      "cabin_hill": {"open": false}
+    },
+    "staff": {
+      "caretaker": {"hired": false, "task": ""},
+      "shopkeeper": {"hired": false, "task": ""},
+      "groundskeeper": {"hired": false, "task": ""}
+    },
+    "visitors": {},
+    "rating": {"stars": 0, "ranger_visits": []},
+    "journal": {"fish": [], "recipes": [], "visitors": [], "decorations": [], "scrapbook": []},
+    "mailbox": [],
+    "unlocks": [],
+    "objects": {},
+    "next_object_id": 1,
+    "host_profile": "",
+    "profiles": {}
+  },
+  "new_profile": {
+    "name": "",
+    "look": {"model": "camper_a", "hat": "", "hair": ""},
+    "outfit": "",
+    "outfits": [],
+    "pet": {"kind": "", "name": ""},
+    "pockets": [],
+    "pos": [0, 0],
+    "yaw": 0,
+    "link_code": ""
+  },
+  "looks": ["camper_a", "camper_b"],
+  "spawn": [[-1.1, -1.4], [1.2, -1.3]]
+}

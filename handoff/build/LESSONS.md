@@ -15,7 +15,9 @@ owner something these files should answer, add the answer here.
 - **Small PRs, never stacked; the owner merges.** Stacked PRs once merged into a branch instead of `main`.
 
 ## Who owns what
-Build owns everything in the repo for now. When an `art` role starts, it owns `art/` and the model builders, and
+Build owns everything in the repo for now. Outside art (for example a rigged .glb made with another tool) goes in
+`art/<kind>/<name>/` (`<name>.glb` plus its source, snake_case, animations named by verb), with a `CREDITS.md` row, in
+its own art-only PR titled "Proposed:"; Build wires it into the game in a separate PR (owner, 25 Oct 2026). When an `art` role starts, it owns `art/` and the model builders, and
 Build owns how the game loads them.
 
 ## Running a round
@@ -34,7 +36,9 @@ Build owns how the game loads them.
 - GDScript with static types where it helps; one script per job.
 - Tests are plain `test_*.gd` files extending `RefCounted` with `test_*` methods that return an empty string on a
   pass or a message on a failure.
-- Prefer a failing check over a silent pass.
+- Prefer a failing check over a silent pass. Break the code on purpose once to see each new test fail.
+- **Netcode:** the host's `CampState` decides; rules take profile IDs, never connection IDs; every refusal is a text
+  key shown to the player. Test networking with two real camps over ENet in one process (`tests/test_net.gd`).
 
 ## Round log
 - 25 Oct 2026: Milestone 0 skeleton: project, input map, tuning loader, sandbox, test runner, CI, method files.
@@ -42,3 +46,8 @@ Build owns how the game loads them.
   Faults found by looking at frames: campers fell through a ground with no collider (why: only props had colliders;
   stops it: the ground model has one and the sandbox test builds the real scene); colours washed out (why: ambient
   too strong; now tuned in `data/lighting.json`); ash z-fought the dirt (why: equal tops; rule in HANDOFF traps).
+- 25 Oct 2026: Milestone 2 two PCs, one camp: ENet host and join, host-decided carry and place, profile IDs, a
+  whole-year camp save with slots, backup and upgrades, glyph prompts, real two-camp network tests. Faults found:
+  the menu sat off-centre and too tall (why: centred before its size was known; stops it: `_fit()` on every show);
+  a carried chair hid the player's name (why: label behind the chair; stops it: names draw on top); a network test
+  passed with pick-up broken (why: an unchecked wait; stops it: check each step, rule in HANDOFF traps).

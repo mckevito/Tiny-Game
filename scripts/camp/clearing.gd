@@ -1,7 +1,11 @@
 class_name Clearing
 extends Node3D
-## The Milestone 1 clearing: places felt models from data/clearing.json, gives solid models a collider
+## The clearing: places felt models from data/clearing.json, gives solid models a collider
 ## (data/models.json "collide") and fire pits a light (data/models.json "light"; colour and strength by mood).
+
+## Also place the starting camp objects (data/clearing.json "objects"). The sandbox does; the camp scene builds its
+## objects from the camp save instead.
+@export var include_objects := true
 
 var fire_lights: Array[OmniLight3D] = []
 ## Meshes that dither away when they hide a player (data/models.json "fade").
@@ -11,6 +15,9 @@ var faders: Array[MeshInstance3D] = []
 func _ready() -> void:
 	for row: Dictionary in Tuning.table("clearing").get("placements", []):
 		place(row)
+	if include_objects:
+		for row: Dictionary in Tuning.table("clearing").get("objects", []):
+			place(row)
 
 
 ## A placement's ground position and yaw: "yaw" in degrees, or "face" [x, z] to turn the front (-Z) toward a point.

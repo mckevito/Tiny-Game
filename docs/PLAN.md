@@ -133,5 +133,7 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   visitors; about 10 visible guests; three staff roles; rich content; one valley with five areas; a large camp (12
   pitches, 6 RV pads, 5 cabins); seasonal outfits; a few optional together actions; a camp star rating with hints; a
   journal with an automatic scrapbook; pings and emotes; a pet each; v1 is just for the two of us.
+- 25 Oct 2026, **Proposed** (Milestone 2): each PC steers its own camper and tells the other where it is; the host
+  decides every change to the camp (carrying, placing, everything saved). A third PC is told the camp is full.
 - 25 Oct 2026, **Proposed**: licence MIT for code and CC BY 4.0 for original art; three save slots; thank-you letters;
   background wildlife; upkeep never below zero.

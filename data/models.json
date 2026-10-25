@@ -1,5 +1,5 @@
 {
-  "_about": "Felt models built by code (scripts/art/felt_builder.gd). Metres, +Y up, -Z is the front, origin at the ground centre. A part is a shape with a size (its bounding box in metres), pos, rot (degrees) and a palette swatch name, or a $slot filled by the model or its variant. Shapes: sphere, cone, cylinder (taper = top/bottom radius), capsule, prism (tip 0..1), box (round = edge radius), stitch (dashes from -> to, in the part's frame), ring (stitched ellipse of size [x, _, z]), seam (count stitched meridians on an ellipsoid of size, from_lat..to_lat degrees, turn). Optional per part: glow 0..1, repeat (copies spun round Y), option (built only when the variant shows it). Per model: base (variant of another model), slots, show, sway, fade (dithers away when it hides a player), collide {box, offset} or {radius, height}, light {pos}.",
+  "_about": "Felt models built by code (scripts/art/felt_builder.gd). Metres, +Y up, -Z is the front, origin at the ground centre. A part is a shape with a size (its bounding box in metres), pos, rot (degrees) and a palette swatch name, or a $slot filled by the model or its variant. Shapes: sphere, cone, cylinder (taper = top/bottom radius), capsule, prism (tip 0..1), box (round = edge radius), stitch (dashes from -> to, in the part's frame), ring (stitched ellipse of size [x, _, z]), seam (count stitched meridians on an ellipsoid of size, from_lat..to_lat degrees, turn). Optional per part: glow 0..1, repeat (copies spun round Y), option (built only when the variant shows it). Per model: base (variant of another model), slots, show, sway, fade (dithers away when it hides a player), collide {box, offset} or {radius, height}, light {pos}, carry (a player can pick it up and put it down).",
 
   "camper": {
     "slots": {"shirt": "teal_felt", "pants": "denim_felt", "mitten": "warm_cream", "hat": "teal_felt", "trim": "warm_cream", "hair": "bark_brown"},
@@ -105,6 +105,7 @@
   },
 
   "chair": {
+    "carry": true,
     "slots": {"fabric": "teal_felt", "thread": "warm_cream"},
     "collide": {"radius": 0.3, "height": 0.9},
     "parts": [
