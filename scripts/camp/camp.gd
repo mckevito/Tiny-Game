@@ -301,6 +301,7 @@ func _build_world() -> void:
 	_sync_forage()
 	_sync_trees(false)
 	_sync_bundles(false)
+	_sync_fire()
 	camera.target = campers.get(profile["id"])
 	camera.snap()
 	menu.visible = false
@@ -558,6 +559,15 @@ func _carry_prompt(id: String) -> String:
 			return Tuning.text("prompt.plant")
 		"dig":
 			return Tuning.text("prompt.dig")
+		"read_board":
+			return Tuning.text("prompt.read_board")
+		"upgrade_fire":
+			var r := state.build.next_fire()
+			var parts: Array[String] = []
+			for item: String in r.get("items", {}):
+				parts.append("%d %s" % [int(r["items"][item]), Tuning.text("items." + item)])
+			return Tuning.text("prompt.upgrade_fire") % [Tuning.text("fire." + str(r["id"])),
+					Tuning.text("fire.cost") % [", ".join(parts), int(r.get("coins", 0))]]
 		"need_tool":
 			return Tuning.text("prompt.need_tool") % Tuning.text("tool." + str(act["arg"]))
 		"cook":
@@ -857,10 +867,10 @@ func set_device(who: String, device: int) -> String:
 	else:
 		couch_pad = device
 	_sync_inputs()
-	if why != "":
-		_toast(Tuning.text(why))
 	if menu.visible and menu.page() == "players":
-		_show_players()
+		_show_players(Tuning.text(why) if why != "" else "")
+	elif why != "":
+		_toast(Tuning.text(why))
 	return why
 
 
@@ -1003,12 +1013,14 @@ func action_for(who: String) -> Dictionary:
 			return {"what": "ship", "arg": state.projects.sellable(who)}
 		if not state.projects.crate().is_empty():
 			return {"what": "take_back", "arg": str(state.projects.crate()[-1]["item"])}
-	if CampProjects.near_board(at) and state.projects.can_give(who):
-		return {"what": "project"}
+	if CampProjects.near_board(state, at):
+		return {"what": "project"} if state.projects.can_give(who) else {"what": "read_board"}
 	if CampBuild.near_bench(at):
 		return {"what": "bench"}
 	if CampPack.near_box(at) and state.pack.has_boxable(who):
 		return {"what": "deposit"}
+	if CampPack.can_cook_at(at) and not state.build.next_fire().is_empty():
+		return {"what": "upgrade_fire"}
 	if CampPack.can_fish_at(at):
 		if has_tool(who, "fish"):
 			return {"what": "fish"}
@@ -1035,8 +1047,15 @@ func interact(who: String = "") -> void:
 			ask("give", [act["arg"]], who)
 		"forage", "take_sapling", "plant", "pick_bundle":
 			ask(act["what"], [act["arg"]], who)
-		"deposit", "ship", "take_back", "project":
+		"deposit", "ship", "take_back", "project", "upgrade_fire":
 			ask(act["what"], [], who)
+		"read_board":
+			if not _boards.has(who):
+				toggle_clipboard(who)
+			var board: Clipboard = _boards.get(who)
+			if board:
+				board.flip(1 - board.tab)
+				_refresh_boards()
 		"bench":
 			open_bench(who)
 		"tent":
@@ -1145,6 +1164,8 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		why = state.gather.plant(profile_id, args[0])
 	elif what == "dig" and args.size() == 1 and args[0] is int:
 		why = state.gather.dig(profile_id, args[0])
+	elif what == "upgrade_fire" and args.is_empty():
+		why = state.build.upgrade_fire(profile_id)
 	elif what == "drop" and args.size() == 1 and args[0] is int:
 		why = state.pack.drop(profile_id, args[0])
 	elif what == "pick_bundle" and args.size() == 1 and args[0] is String:
@@ -1167,7 +1188,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		else:
 			_denied.rpc_id(peer, why)
 		return
-	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "dig", "forage", "spot", "take_sapling", "plant", "drop",
+	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "dig", "upgrade_fire", "forage", "spot", "take_sapling", "plant", "drop",
 			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project"]:
 		match what:
 			"fish":
@@ -1187,6 +1208,11 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 					_sync_trees()
 				_sync_bundles()
 				_progress("chop")
+			"upgrade_fire":
+				var level: Dictionary = CampBuild.fire_levels()[state.build.fire_level() - 1]
+				_say_all("toast.fire_up", [state.camp["profiles"][profile_id]["name"], Tuning.text("fire." + str(level["id"]))])
+				_sync_fire()
+				_progress("fire")
 			"dig":
 				_strike(profile_id, "dig", args[0])
 				_say(peer, "toast.dug", [])
@@ -1775,6 +1801,7 @@ func _shared(data: Dictionary) -> void:
 		_sync_forage()
 		_sync_trees()
 		_sync_bundles()
+		_sync_fire()
 		_refresh_boards()
 
 
@@ -2344,6 +2371,46 @@ func _sync_bundles(animate: bool = true) -> void:
 			if animate and row.get("loose", false) and row.has("from"):
 				_pop_out(node, Vector2(float(row["from"][0]), float(row["from"][1])))
 				_airborne[id] = Tuning.num("gather", "drops.sweep_wait_s", 0.6)
+
+
+## The camp fire on screen follows its level: the models of every level reached stand on the fire pit and its light
+## grows (data/craft.json fire; LightMoods reads the light's "scale").
+func _sync_fire() -> void:
+	if state == null:
+		return
+	var rows: Array = Tuning.table("clearing").get("placements", [])
+	for i in rows.size():
+		if str(rows[i].get("model", "")) != str(Tuning.value("craft", "fire.model", "fire_pit")):
+			continue
+		var root := clearing.placed[i]
+		var old := root.get_node_or_null("Upgrade")
+		var level := mini(state.build.fire_level(), CampBuild.fire_levels().size())
+		if old and int(old.get_meta("level", -1)) == level:
+			continue
+		if old:
+			root.remove_child(old)
+			old.queue_free()
+		var scale := 1.0
+		var radius := -1.0
+		if level > 0:
+			var up := Node3D.new()
+			up.name = "Upgrade"
+			up.set_meta("level", level)
+			for row: Dictionary in CampBuild.fire_levels().slice(0, level):
+				up.add_child(FeltBuilder.build(str(row.get("model", ""))))
+			root.add_child(up)
+			scale = float(CampBuild.fire_levels()[level - 1].get("light_scale", 1.0))
+			radius = float(CampBuild.fire_levels()[level - 1].get("collide_m", -1.0))
+		for child in root.get_children():
+			if child is OmniLight3D:
+				child.set_meta("scale", scale)
+			elif child is StaticBody3D:
+				for shape in child.get_children():
+					if shape is CollisionShape3D and shape.shape is CylinderShape3D:
+						if not shape.has_meta("radius"):
+							shape.set_meta("radius", shape.shape.radius)
+						shape.shape.radius = radius if radius > 0.0 else float(shape.get_meta("radius"))
+		_light_t = -1.0
 
 
 # --- First-minutes round: the swing, the drop and the sweep ---------------------------------------------------------

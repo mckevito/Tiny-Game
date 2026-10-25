@@ -178,7 +178,7 @@ func test_three_days_of_play_from_the_buttons() -> String:
 			why = "the camper should swing the axe and the wood should be in the air"
 		elif not await _sweep_up(camp, "p_host") or s.pack.count("p_host", "wood") != 1:
 			why = "walking over the landed wood should sweep it into the Pack"
-		elif not camp.get_node("Hud/Clock").text.contains(CampTasks.line({"id": "first_bench", "have": 0}, true)):
+		elif not camp.get_node("Hud/Clock").text.contains(CampTasks.line({"id": "first_board", "have": 0}, true)):
 			why = "the HUD's Today list should move on from the first chop, got " + camp.get_node("Hud/Clock").text
 	if why == "":
 		_stand(camp, "p_host", Vector2(1.3, 0.3))

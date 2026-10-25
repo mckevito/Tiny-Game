@@ -4,6 +4,7 @@
   "firsts": [
     {"id": "first_sticks", "event": "forage:stick", "count": 3, "bonus": 3, "place": "edges"},
     {"id": "first_chop", "event": "chop", "count": 1, "bonus": 3, "place": "trees"},
+    {"id": "first_board", "event": "build:project_board", "count": 1, "bonus": 3, "place": "board"},
     {"id": "first_bench", "event": "build:log_bench", "count": 1, "bonus": 5, "place": "fire"},
     {"id": "first_fish", "event": "fish", "count": 1, "bonus": 3, "place": "pond"},
     {"id": "first_grill", "event": "cook", "count": 1, "bonus": 3, "place": "fire"},
