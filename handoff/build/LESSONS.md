@@ -15,7 +15,9 @@ owner something these files should answer, add the answer here.
 - **Small PRs, never stacked; the owner merges.** Stacked PRs once merged into a branch instead of `main`.
 
 ## Who owns what
-Build owns everything in the repo for now. When an `art` role starts, it owns `art/` and the model builders, and
+Build owns everything in the repo for now. Outside art (for example a rigged .glb made with another tool) goes in
+`art/<kind>/<name>/` (`<name>.glb` plus its source, snake_case, animations named by verb), with a `CREDITS.md` row, in
+its own art-only PR titled "Proposed:"; Build wires it into the game in a separate PR (owner, 25 Oct 2026). When an `art` role starts, it owns `art/` and the model builders, and
 Build owns how the game loads them.
 
 ## Running a round
