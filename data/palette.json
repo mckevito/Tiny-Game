@@ -7,22 +7,23 @@
     "pond_blue": "#6B929C",
     "warm_cream": "#EEE3CB",
 
-    "grass_felt": "#7A8B47",
-    "meadow_felt": "#919C58",
-    "pine_felt": "#3E5B47",
+    "grass_felt": "#626E38",
+    "meadow_felt": "#636F38",
+    "pine_felt": "#2F5A47",
     "leaf_felt": "#6F8A4A",
-    "bark_brown": "#6E4B36",
-    "wood_felt": "#9A6743",
-    "stone_grey": "#8C877D",
-    "sand_felt": "#C9AE84",
+    "bark_brown": "#5F3B26",
+    "wood_felt": "#8E5A38",
+    "stone_grey": "#7F8288",
+    "sand_felt": "#C7A56E",
     "skin_felt": "#EBC09C",
     "blush_felt": "#DB8F78",
     "ink_brown": "#3B2C25",
-    "teal_felt": "#3F7471",
+    "teal_felt": "#33706C",
     "denim_felt": "#4F6787",
     "ember_felt": "#E07A3A",
     "flame_felt": "#F4C459",
     "olive_felt": "#6E7D3A",
-    "sage_thread": "#B5C08F"
+    "sage_thread": "#B5C08F",
+    "lake_blue": "#3E7DB8"
   }
 }

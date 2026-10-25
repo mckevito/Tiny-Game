@@ -1,10 +1,10 @@
 {
-  "_about": "The shared felt material (scripts/art/felt.gdshader) and how the builder makes meshes and stitches (scripts/art/felt_builder.gd).",
+  "_about": "The shared wool material (scripts/art/felt.gdshader) and how the builder makes meshes and stitches (scripts/art/felt_builder.gd). weaves: what a part (or a whole model, \"weave\") is made of, by the number the shader reads.",
   "felt": {
     "noise_scale": 4.0,
-    "noise_strength": 0.28,
+    "noise_strength": 0.32,
     "grain_scale": 28.0,
-    "grain_strength": 0.14,
+    "grain_strength": 0.2,
     "fuzz_strength": 0.18,
     "rim": 0.25,
     "rim_tint": 0.7,
@@ -12,9 +12,28 @@
     "sway_amount_m": 0.05,
     "sway_speed": 0.9,
     "sway_height_m": 3.0,
-    "fibre_scale": 70.0,
-    "fibre_strength": 0.22,
-    "bump_strength": 0.004
+    "fibre_scale": 80.0,
+    "fibre_strength": 0.45,
+    "bump_strength": 0.006,
+    "hair_edge": 0.35,
+    "knit_scale": 24.0,
+    "knit_depth": 0.5,
+    "knit_bump": 0.008,
+    "wood_scale": 9.0,
+    "wood_strength": 0.3,
+    "water_scale": 2.2,
+    "water_strength": 0.6,
+    "grass_tint": 0.35,
+    "grass_light": [
+      1.06,
+      1.0,
+      0.78
+    ],
+    "grass_dark": [
+      0.66,
+      0.74,
+      0.6
+    ]
   },
   "mesh": {
     "sphere_segments": 24,
@@ -33,5 +52,12 @@
   "fire": {
     "flicker_speed": 7.0,
     "flicker_amount": 0.18
+  },
+  "weaves": {
+    "felt": 0,
+    "knit": 1,
+    "wood": 2,
+    "water": 3,
+    "grass": 4
   }
 }

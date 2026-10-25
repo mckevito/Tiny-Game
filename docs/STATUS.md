@@ -46,7 +46,9 @@ Signed off: yes, as a first draft (owner, 25 Oct 2026). Polish comes later; PR #
 - The prompts in the sandbox hint are words ("L1", "WASD"); real button glyphs come with the prompt system.
 
 ### Art pilot: toward the felt reference picture (25 Oct 2026)
-Not signed off: waits on the owner's verdict. The owner asked for the models to look like their original felt
+Not signed off. Round 1 (camper, tent, pine, broadleaf) was "not good enough" (owner): round 2 makes the whole world
+look knitted (wool weaves in the material, a ground of felt plants, every model in view reworked) and waits on the
+owner's verdict. The owner asked for the models to look like their original felt
 reference picture; the Art role's pilot covers the camper, the tent, the pine and the round broadleaf tree, felt
 fibres on the shared material, and a warmer day light and grass (all **Proposed**). Sizes and colliders are unchanged.
 

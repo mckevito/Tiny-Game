@@ -7,7 +7,22 @@
    positions (`data/tuning.json` "camper") belong to Gameplay; ask before moving them.
 2. **State now:** the art pilot (PR "Art pilot") brings the camper, the tent, the pine and the round broadleaf tree up
    to the owner's felt reference picture, adds felt fibres to the shared material, and warms the day light and grass.
-   It waits on the owner's verdict. Review images: `/mnt/project-files/tiny-game/art-pilot/` (outside the repo).
+   Owner's verdict on that first pass (25 Oct 2026): "we can do way better... it should literally look like the whole
+   world was knitted together". Round 2 (same PR) is the knitted world: weaves in the material (knit, wood, water,
+   grass), hairy edges, colour grading, a ground covered in felt clover, flowers, grass and ferns, and every model in
+   view reworked. It waits on the owner's verdict. Review images: `/mnt/project-files/tiny-game/art-knit/` (round 2)
+   and `art-pilot/` (round 1), outside the repo.
+   - Weaves: a part's (or model's) `weave` names one of data/art.json "weaves"; the builder writes its number into
+     UV.x and the shader draws knit V-stitches, wood grain along X, wavy water strands or patchy grass felt from it.
+     Fibres fade with distance (no sparkle). `hair_edge` cuts fibres out of outlines.
+   - Builder: `scatter` strews copies of a part over an area (seeded; `avoid` circles, `keep_in`, `keep_out`);
+     `pivot` makes `repeat` spin round a plant's own stem; `segments` lowers detail for tiny, many-copied parts.
+   - Ground scatter: inside the camp (12.5 m) only flat clover and flowers lower than a pitch's top, so nothing
+     pokes through what players build; taller grass and ferns only past 13 m, and plants at the feet of trees and
+     rocks (inside their build blockers). The avoid circles follow data/clearing.json; if Gameplay moves scenery,
+     update them in the ground model.
+   - `scripts/camp/light_moods.gd` gained `_adjust` (saturation and contrast from data/lighting.json); it is the
+     only file outside `scripts/art/` the Art role touched.
    - Builder additions: the `lathe` shape (a profile of [radius, height] points turned round Y, with an optional
      `wave` [count, depth] that scallops pine tiers or ribs a knit beanie); `stitch` takes `points` (a polyline)
      as well as from/to; stitches, rings and seams take `thick`, `dash` and `gap` multipliers, and `gap: 0` makes a
@@ -19,11 +34,11 @@
    - Sizes and colliders are unchanged; the mittens stay at `camper.hand_pos` so held tools still fit.
 3. **Open work, in order:**
    1. The owner's verdict on the pilot; fix what they name.
-   2. Roll-out, one family per PR: puff tree, bush and saplings; furniture (chairs, picnic table, log bench,
-      workbench, camp box) with wood-grain stitches; the fire pit and stones; the pond with cattails and lily pads;
-      stitched paths, fences and a sign; rocks; animals; tools.
-   3. Grass tufts and small plants as scenery (needs Gameplay to place them; MultiMesh for the laptop).
-   4. A timing check of the fibre shader on the laptop floor; if it costs, the Light preset sets `bump_strength` 0.
+   2. Still plain: animals, tools, saplings, stumps, water point, lantern post, bag covers, bundles, the pitch.
+   3. Ideas from the reference not yet built: a stitched fence and sign, log-stump seats, mugs, a lantern on the
+      table, a soft tilt-shift blur (the play camera belongs to Gameplay; ask first).
+   4. A timing check on the laptop floor: the scene is about 180k vertices (ground scatter 65k) and the shader runs
+      about seven noises per pixel; if it costs, give the Light preset a lighter material.
 4. **Owner decisions:** the felt reference picture (25 Oct 2026) is the target look; pilot first (3 to 5 pieces), shown
    beside the reference in day and dusk, then roll out.
 5. **Traps:**

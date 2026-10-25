@@ -65,23 +65,28 @@ static func mesh(id: String) -> ArrayMesh:
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var colors := PackedColorArray()
+	var uvs := PackedVector2Array()
 	var indices := PackedInt32Array()
 	var shown: Array = model.get("show", [])
+	var weaves: Dictionary = Tuning.table("art").get("weaves", {})
 	for part: Dictionary in model.get("parts", []):
 		if part.has("option") and not shown.has(part["option"]):
 			continue
 		var color := swatch(swatch_name(part, model))
 		color.a = 1.0 - float(part.get("glow", 0.0))
-		var copies := int(part.get("repeat", 1))
-		for i in copies:
-			var spin := Basis(Vector3.UP, TAU * i / copies)
-			var xform := Transform3D(spin, Vector3.ZERO) * _part_transform(part)
-			_append(_part_arrays(part), xform, color, verts, normals, colors, indices)
+		var weave := float(weaves.get(str(part.get("weave", model.get("weave", "felt"))), 0))
+		var arrays := _part_arrays(part)
+		var start := verts.size()
+		for xform: Transform3D in _copies(part):
+			_append(arrays, xform * _part_transform(part), color, verts, normals, colors, indices)
+		for i in verts.size() - start:
+			uvs.append(Vector2(weave, 0.0))
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = verts
 	arrays[Mesh.ARRAY_NORMAL] = normals
 	arrays[Mesh.ARRAY_COLOR] = colors
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_INDEX] = indices
 	var out := ArrayMesh.new()
 	if not verts.is_empty():
@@ -98,8 +103,11 @@ static func material(sway: bool) -> ShaderMaterial:
 	mat.shader = SHADER
 	var felt: Dictionary = Tuning.table("art").get("felt", {})
 	for key in ["noise_scale", "noise_strength", "grain_scale", "grain_strength", "fuzz_strength", "rim", "rim_tint",
-			"glow_strength", "sway_speed", "fibre_scale", "fibre_strength", "bump_strength"]:
+			"glow_strength", "sway_speed", "fibre_scale", "fibre_strength", "bump_strength", "hair_edge", "knit_scale",
+			"knit_depth", "knit_bump", "wood_scale", "wood_strength", "water_scale", "water_strength", "grass_tint"]:
 		mat.set_shader_parameter(key, float(felt.get(key, 0.0)))
+	for key in ["grass_light", "grass_dark"]:
+		mat.set_shader_parameter(key, vec3(felt.get(key), Vector3.ONE))
 	mat.set_shader_parameter("sway_height", float(felt.get("sway_height_m", 3.0)))
 	mat.set_shader_parameter("sway_amount", float(felt.get("sway_amount_m", 0.0)) if sway else 0.0)
 	_materials[sway] = mat
@@ -110,6 +118,51 @@ static func material(sway: bool) -> ShaderMaterial:
 static func clear_cache() -> void:
 	_meshes.clear()
 	_materials.clear()
+
+
+## Where a part's copies go: one in place; `repeat` copies spun round Y; `scatter` copies strewn over an area.
+## scatter: {count, area [x, z] (centred on pos), seed, scale [min, max], avoid [[x, z, radius], ...] in the model's
+## space, keep_out (radius of a circle round the origin left empty), keep_in (only inside this radius)}. Placement is
+## seeded, so every PC builds the same.
+static func _copies(part: Dictionary) -> Array[Transform3D]:
+	var out: Array[Transform3D] = []
+	var copies := int(part.get("repeat", 1))
+	# Copies spin round the model's centre, or round `pivot` (a plant's own stem) when the part names one.
+	var pivot := vec3(part.get("pivot"))
+	for i in copies:
+		out.append(Transform3D(Basis(), pivot) * Transform3D(Basis(Vector3.UP, TAU * i / copies), -pivot))
+	var cfg: Dictionary = part.get("scatter", {})
+	if cfg.is_empty():
+		return out
+	out.clear()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(cfg.get("seed", 1))
+	var area: Array = cfg.get("area", [10, 10])
+	var scale: Array = cfg.get("scale", [1, 1])
+	var keep_out := float(cfg.get("keep_out", 0.0))
+	var keep_in := float(cfg.get("keep_in", 1.0e9))
+	var centre := vec3(part.get("pos"))
+	var tries := 0
+	while out.size() < int(cfg.get("count", 10)) and tries < int(cfg.get("count", 10)) * 20:
+		tries += 1
+		var at := Vector3(rng.randf_range(-0.5, 0.5) * float(area[0]), 0.0, rng.randf_range(-0.5, 0.5) * float(area[1]))
+		var spot := Vector2(centre.x + at.x, centre.z + at.z)
+		var turn := rng.randf() * TAU
+		var size := rng.randf_range(float(scale[0]), float(scale[1]))
+		if spot.length() < keep_out or spot.length() > keep_in:
+			continue
+		var clear := true
+		for a: Array in cfg.get("avoid", []):
+			if spot.distance_to(Vector2(float(a[0]), float(a[1]))) < float(a[2]):
+				clear = false
+				break
+		if not clear:
+			continue
+		# Spun and sized about the part's own position, then moved to the spot.
+		var about := Transform3D(Basis(), centre) * Transform3D(Basis(Vector3.UP, turn).scaled(Vector3.ONE * size),
+				Vector3.ZERO) * Transform3D(Basis(), -centre)
+		out.append(Transform3D(Basis(), at) * about)
+	return out
 
 
 ## A JSON [x, y, z] array as a Vector3.
@@ -144,15 +197,16 @@ static func _part_arrays(part: Dictionary) -> Array:
 			var m := SphereMesh.new()
 			m.radius = 0.5
 			m.height = 1.0
-			m.radial_segments = int(mesh_cfg.get("sphere_segments", 24))
-			m.rings = int(mesh_cfg.get("sphere_rings", 12))
+			# Tiny or many-times-copied parts (leaves, clover) ask for fewer segments.
+			m.radial_segments = int(part.get("segments", mesh_cfg.get("sphere_segments", 24)))
+			m.rings = maxi(int(part.get("segments", mesh_cfg.get("sphere_rings", 12) * 2)) / 2, 3)
 			return m.get_mesh_arrays()
 		"cone", "cylinder":
 			var m := CylinderMesh.new()
 			m.bottom_radius = 0.5
 			m.top_radius = 0.0 if part["shape"] == "cone" else 0.5 * float(part.get("taper", 1.0))
 			m.height = 1.0
-			m.radial_segments = segs
+			m.radial_segments = int(part.get("segments", segs))
 			m.rings = 1
 			return m.get_mesh_arrays()
 		"capsule":

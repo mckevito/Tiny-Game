@@ -209,3 +209,6 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   the hat, a stitched smile; scalloped pine tiers; a broadleaf crown with honey seams and leaf sprigs; a plumper
   stitched tent with pegs; felt fibres in the shared material; a warmer day light and olive grass; two new swatches
   (`olive_felt`, `sage_thread`).
+- 25 Oct 2026, owner: the pilot's first pass is not enough: the world should look literally knitted together, like
+  the reference. **Proposed** (built): knit, wood, water and grass weaves in the one material, hairy edges, richer
+  graded colour, a ground strewn with felt clover, flowers, grass and ferns, and every model in view reworked.
