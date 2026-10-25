@@ -100,6 +100,11 @@ func _page_button(parent: Control, text_key: String, go: Callable) -> Button:
 	return b
 
 
+## The camp slot picked on the start page (1 to the slot count).
+func slot() -> int:
+	return slot_pick.get_selected_id()
+
+
 ## The page showing now: "title", "start", "pause" or "options".
 func page() -> String:
 	for p: Array in [[_title, "title"], [_start, "start"], [_pause, "pause"], [options, "options"]]:
