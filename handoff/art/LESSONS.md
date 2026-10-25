@@ -2,7 +2,7 @@
 
 ## Start here (fresh thread)
 Read `CLAUDE.md`, `docs/PLAN.md` (art direction), `docs/STATUS.md`, `handoff/build/HANDOFF.md` sections 5 and 6, and
-this folder's `HANDOFF.md`. Add your line to the thread list (`/mnt/project-files/handoff/THREADS.md`). The owner's
+this folder's `HANDOFF.md`. For a model built in Blender, `art/RECIPE.md` holds the method, numbers and mistakes. Add your line to the thread list (`/mnt/project-files/handoff/THREADS.md`). The owner's
 reference picture is in the project's uploads; ask the coordinator if it is missing.
 
 ## Owner rules (with reasons)
@@ -46,3 +46,8 @@ All of `handoff/build/LESSONS.md` "Owner rules" apply. For art especially:
   bulged past the cuff and peaked (rebuilt as an upright egg with round tops); a speckled band on the forehead (the
   hair mass sat too close to the skin); seams on the sheet (the floor's occlusion; composite each row by its own
   backdrop); the sweater knit read as chevron rows (V legs touched across columns; short rows, legs stopping short).
+- 25 Oct 2026, the recipe (owner: "get the recipe... so we can create the same output on medium"): the method is
+  written down in `art/RECIPE.md`, the shared Blender code moved into `art/tools/knit_kit.py` (the camper builds the
+  same file byte for byte) and the review scripts into `art/tools/`. Lesson: keep review tools in the repo from the
+  first round; scratch copies die with the session. Measuring again after the new stitch showed the knit parts 5 to
+  9% darker than the sheet (more shade between stitches); the two teals were lifted to match.

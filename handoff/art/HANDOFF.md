@@ -5,7 +5,10 @@
    (outside art such as a rigged camper pack) and the `--hero` mode of `scripts/tools/capture.gd`. It doesn't edit
    Gameplay or Interface files; it asks those threads instead. Placement (`data/clearing.json`) and hand and name
    positions (`data/tuning.json` "camper") belong to Gameplay; ask before moving them.
-2. **State now:** the art pilot (PR "Art pilot") brings the camper, the tent, the pine and the round broadleaf tree up
+2. **Method:** `art/RECIPE.md` is how to build a knitted or felt model that matches a reference (the owner's chosen
+   camper is the worked example), with the shared Blender kit (`art/tools/knit_kit.py`), one review round per command
+   (`art/tools/turnaround.sh`) and a measuring tool (`art/tools/compare.py`). Read it before any Blender model.
+   **State now:** the art pilot (PR "Art pilot") brings the camper, the tent, the pine and the round broadleaf tree up
    to the owner's felt reference picture, adds felt fibres to the shared material, and warms the day light and grass.
    Owner's verdict on that first pass (25 Oct 2026): "we can do way better... it should literally look like the whole
    world was knitted together". Round 2 (same PR) is the knitted world: weaves in the material (knit, wood, water,
@@ -36,8 +39,8 @@
      it beside the code camper. Its proportions follow the owner's "Beanie Camper" turnaround (big head, beanie wider
      than the head with a folded cuff, separate sleeves, short trousers, boots); `--turn=knit_camper` renders front,
      right, back and left on a cream backdrop to compare with it.
-   - The camper rebuilt from the turnaround (one of two attempts the owner asked for, 25 Oct 2026; PR "Proposed: the
-     camper rebuilt from the owner's turnaround"): knitted parts are grids whose columns are the knit's own columns,
+   - The camper rebuilt from the turnaround (one of two attempts the owner asked for, 25 Oct 2026, PR #29; the owner
+     likes it best, 25 Oct 2026): knitted parts are grids whose columns are the knit's own columns,
      each vertex carrying its stitch position (column, row) in a second UV map, so the shader draws V stitches up
      the columns and ribs (weaves `knit_map`, `rib_map`); the curls are two-ply yarn tubes (`yarn`), the eyes and
      smile smooth beads (`bead`). Occlusion is baked into the vertex colour, which the builder multiplies into the
@@ -86,9 +89,8 @@
      --resolution 1280x720 --fixed-fps 30 -- --out=OUT_DIR --hero     # hero_<mood>.png, face_<mood>.png
    ```
    Then the plain capture (play camera) and `--clip` for a walk GIF. Put each next to the reference picture.
-   The camper against the owner's turnaround (eight views, studio light):
+   The camper against the owner's turnaround (eight views in the studio, laid beside the sheet), then measured:
    ```
-   blender --background --factory-startup --python art/characters/knit_camper/build_knit_camper.py -- OUT.glb --pose=t
-   xvfb-run -a -s "-screen 0 1920x1080x24" godot --script res://scripts/tools/capture.gd --resolution 1000x920 \
-     -- --out=OUT_DIR --turn=knit_camper --glb=OUT.glb                  # turn_<view>.png
+   art/tools/turnaround.sh art/characters/knit_camper OUT_DIR          # versus.png, compare8.png, pairs.png
+   python3 art/tools/compare.py outline OUT_DIR art/characters/knit_camper/reference.json right
    ```

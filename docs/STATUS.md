@@ -53,7 +53,9 @@ reference picture; the Art role's pilot covers the camper, the tent, the pine an
 fibres on the shared material, and a warmer day light and grass (all **Proposed**). Sizes and colliders are unchanged.
 The owner disliked the first Blender camper and asked for two separate rebuilds from their "Beanie Camper" turnaround
 (25 Oct 2026); each is its own Proposed PR, and the owner picks one. The max-effort one knits the beanie, sweater and
-curls along their own stitch map (stitch-mapped knit, ribs, two-ply yarn, bead eyes) with baked shading.
+curls along their own stitch map (stitch-mapped knit, ribs, two-ply yarn, bead eyes) with baked shading. The owner
+likes the max-effort camper best (25 Oct 2026, not yet merged) and asked for its method to be written down so a
+medium-effort thread can repeat it: `art/RECIPE.md`, with the shared Blender kit and review tools in `art/tools/`.
 
 | Proof | Test | Result |
 |---|---|---|

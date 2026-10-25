@@ -56,6 +56,8 @@ Review captures from the play camera (daylight and dusk) come from `scripts/tool
 - `scripts/ui/`: the shared menu look and the one Options screen.
 - `scripts/net/`: online identity (the local profile ID); the netcode itself is in `scripts/camp/camp.gd`.
 - `scripts/tools/`: dev-only scripts, such as the review capture (`capture.gd`).
+- `art/`: models built in Blender from code (`art/<kind>/<id>/build_<id>.py` makes `<id>.glb`), the shared Blender
+  kit and review tools (`art/tools/`), and the method (`art/RECIPE.md`).
 - `scenes/`: the camp (the main scene) and the sandbox.
 - `data/`: tuning tables and text.
 - `tests/`: headless tests, `test_*.gd`, run by `tests/run_tests.gd`.

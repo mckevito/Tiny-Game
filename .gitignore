@@ -15,3 +15,6 @@ export_credentials.cfg
 .claude/settings.local.json
 .DS_Store
 Thumbs.db
+# Python bytecode from the art tools
+__pycache__/
+*.pyc
