@@ -91,7 +91,8 @@ func fish(profile_id: String) -> String:
 	return ""
 
 
-## Grills the first raw fish in the player's pockets into its recipe.
+## Grills the first raw fish in the player's pockets into its recipe, burning wood from the camp's pile
+## (data/gather.json cook_wood).
 func cook(profile_id: String) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
@@ -100,6 +101,10 @@ func cook(profile_id: String) -> String:
 	var raw := first_of(profile_id, "fish")
 	if raw == "":
 		return "deny.no_fish"
+	var fuel := int(Tuning.num("gather", "cook_wood", 1))
+	if int(state.camp.get("wood", 0)) < fuel:
+		return "deny.no_wood"
+	state.camp["wood"] = int(state.camp.get("wood", 0)) - fuel
 	var list := pockets(profile_id)
 	last_item = str(Tuning.value("fishing", "recipes." + raw, raw))
 	list[list.find(raw)] = last_item

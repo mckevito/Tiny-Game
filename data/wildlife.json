@@ -1,0 +1,14 @@
+{
+  "_about": "Friendly felt animals (scripts/camp/wildlife.gd): scenery that wanders and reacts, never a resource or a threat. Each herd row places count animals of a model that wander within roam_m of home ([x, z] metres) at speed_mps, pausing idle_s between walks, and hop away from a player closer than shy_m (0 = never shy). They show only between the hours in hours (pairs of [from, to]) and from from_day (a day number); sit makes one stay put at home. A local player within spot_m of an animal spots it: the first sighting of each kind goes in the journal (wildlife) and counts for the Today list. max_animals caps how many are drawn at once (the laptop budget). hop_m and hop_hz shape the hop of hoppers.",
+  "max_animals": 10,
+  "spot_m": 5.0,
+  "herds": [
+    {"model": "rabbit", "count": 3, "home": [-3.5, -3.5], "roam_m": 4.5, "speed_mps": 1.6, "idle_s": 2.5, "shy_m": 2.4, "hop": true, "hours": [[7, 22]], "from_day": 1},
+    {"model": "squirrel", "count": 2, "home": [6.0, 3.6], "roam_m": 3.0, "speed_mps": 2.0, "idle_s": 2.0, "shy_m": 2.0, "hop": true, "hours": [[7, 20]], "from_day": 1},
+    {"model": "deer", "count": 2, "home": [-8.5, -2.5], "roam_m": 3.0, "speed_mps": 0.9, "idle_s": 4.0, "shy_m": 4.0, "hop": false, "hours": [[7, 10], [16.5, 22]], "from_day": 2},
+    {"model": "bear", "count": 1, "home": [1.7, -1.6], "roam_m": 0.0, "speed_mps": 0.7, "idle_s": 6.0, "shy_m": 0.0, "hop": false, "sit": true, "hours": [[18, 22]], "from_day": 3}
+  ],
+  "enter_from": [-10.5, 0.0],
+  "hop_m": 0.12,
+  "hop_hz": 3.0
+}

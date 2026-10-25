@@ -52,9 +52,15 @@ func test_fishing_and_grilling_fill_the_pockets_and_never_fail() -> String:
 	if state.pockets.cook("p_host") != "deny.no_fire":
 		return "grilling away from the fire should say so"
 	state.set_player_pos("p_host", Vector2(1.2, 0.4), 0.0)
+	state.camp["wood"] = 0
+	if state.pockets.cook("p_host") != "deny.no_wood":
+		return "grilling with an empty wood pile should ask for wood"
+	state.camp["wood"] = 5
 	var raw := str(held[0])
 	if state.pockets.cook("p_host") != "" or str(held[0]) != str(Tuning.value("fishing", "recipes." + raw)):
 		return "grilling should turn the first raw fish into its recipe, got %s" % [held]
+	if int(state.camp["wood"]) != 5 - int(Tuning.num("gather", "cook_wood")):
+		return "grilling should burn wood from the pile"
 	if CampPockets.kind_of(state.pockets.last_item) != "meal":
 		return "a grilled fish should be a meal"
 	state.camp["profiles"]["p_guest"]["pockets"] = ["grilled_trout"]

@@ -18,6 +18,7 @@
     "sunfish": {"kind": "fish"},
     "grilled_perch": {"kind": "meal"},
     "grilled_trout": {"kind": "meal"},
-    "grilled_sunfish": {"kind": "meal"}
+    "grilled_sunfish": {"kind": "meal"},
+    "berries": {"kind": "fruit"}
   }
 }

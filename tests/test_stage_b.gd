@@ -137,6 +137,17 @@ func test_three_days_of_play_from_the_buttons() -> String:
 			why = "interact by the pond should cast and catch a fish"
 		elif not camp.get_node("Hud/Clock").text.contains(Tuning.text("items." + s.pockets.first_of("p_host", "fish"))):
 			why = "the HUD should list what's in the pockets"
+	# Chop a tree for the fire's wood.
+	if why == "":
+		var tree: Dictionary = CampGather.trees()[0]
+		_stand(camp, "p_host", (tree["pos"] as Vector2) + Vector2(1.0, 0.0))
+		await _tree().process_frame
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.chop") % 3, false)):
+			why = "by a tree the prompt should offer to chop, got " + camp.get_node("Hud/Prompt").text
+		elif not await _use(camp, "p_host") or int(s.camp["wood"]) != 1:
+			why = "interact by a tree should chop one wood onto the pile"
+		elif not camp.get_node("Hud/Clock").text.contains(CampTasks.line({"id": "first_bench", "have": 0}, true)):
+			why = "the HUD's Today list should move on from the first chop, got " + camp.get_node("Hud/Clock").text
 	if why == "":
 		_stand(camp, "p_host", Vector2(1.3, 0.3))
 		if not await _use(camp, "p_host") or s.pockets.first_of("p_host", "meal") == "":
@@ -161,7 +172,8 @@ func test_three_days_of_play_from_the_buttons() -> String:
 	if why == "":
 		var text: String = camp.report.text()
 		for want in [Tuning.text("report.morning") % [Tuning.text("clock.season.spring"), 2], guest_name,
-				Tuning.text("booking.ferns.name"), Tuning.text("report.today")]:
+				Tuning.text("booking.ferns.name"), Tuning.text("report.today"),
+				Tuning.text("report.tomorrow") % Tuning.text("news.day_3")]:
 			if not text.contains(str(want)):
 				why = "the morning report should say %s, got:\n%s" % [want, text]
 				break

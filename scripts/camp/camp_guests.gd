@@ -25,9 +25,10 @@ static func _v(key: String, fallback: Variant = null) -> Variant:
 
 # --- Requests ----------------------------------------------------------------------------------------------------
 
-## The request a new guest brings, the n-th in turn from request_order.
-static func new_request(n: int) -> Dictionary:
-	var order: Array = _v("request_order", [])
+## The request a new guest brings on day `today`, the n-th in turn from request_order among those open that day.
+static func new_request(n: int, today: int = 1 << 30) -> Dictionary:
+	var order: Array = (_v("request_order", []) as Array).filter(func(k: String) -> bool:
+			return int(_v("requests.%s.from_day" % k, 1)) <= today)
 	if order.is_empty():
 		return {}
 	return {"kind": str(order[n % order.size()]), "done": false}
@@ -253,7 +254,7 @@ func maybe_arrive() -> Array[String]:
 			var id := "stay_%d" % n
 			state.camp["stays"][id] = {"pitch": free[i], "name": str(names[i % names.size()]),
 					"look": str(looks[i % looks.size()]), "nights_left": int(p.get("nights", 1)),
-					"arrived": state.day.today(), "booking": r["id"], "request": new_request(n)}
+					"arrived": state.day.today(), "booking": r["id"], "request": new_request(n, state.day.today())}
 			made.append(id)
 		var extras: Array = []
 		var bonus := 0
