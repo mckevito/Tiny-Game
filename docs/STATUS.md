@@ -381,6 +381,12 @@ prop to the same brief (wood-felt board, honey clip, cream sheet). **Proposed** 
 board wood_felt, sheet warm_cream, clip and rules honey_thread, stitches 16 x 11 px on the board and 12 x 8 px on the
 sheet, paper keycaps honey_thread.
 
+Playtest's notes on round 2, fixed here: the D-pad icons' pressed arm is now filled honey, so up, down, left and right
+tell apart at prompt size; the Bookings line reads "Answer a new booking from the menu: Tab" (no gap inside brackets);
+the top hint parts its controls with a wide space (text: glyphs.gap) instead of a dot, so a wrapped line never ends on
+a lone dot (`test_hud.test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report`). The hint crossing the
+couch split and showing only player one's keys waits on the owner's controls-line pick.
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.

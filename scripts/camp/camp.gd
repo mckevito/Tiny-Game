@@ -596,11 +596,12 @@ func _toast(text: String) -> void:
 
 
 func _update_hint() -> void:
-	# Spaces inside each control are non-breaking, so the line only wraps between controls ("Tab for the menu").
+	# Spaces inside each control are non-breaking, so the line only wraps between controls ("Tab for the menu"); the
+	# controls sit apart by a wide space (text: glyphs.gap) rather than a dot, so a wrapped line never ends on one.
 	var parts: PackedStringArray = []
 	for part in (Prompts.rich(Tuning.text("prompt.controls"), _pad) if state else "").split(" · "):
 		parts.append(part.replace(" ", "\u00a0"))
-	var text := " · ".join(parts)
+	var text := Tuning.text("glyphs.gap").join(parts)
 	if can_drop_in() == "":
 		text += "\n" + Prompts.rich(Tuning.text("prompt.drop_in"), true)
 	$Hud/Hint.text = text

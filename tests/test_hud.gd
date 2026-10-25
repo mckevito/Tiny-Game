@@ -301,7 +301,7 @@ func test_the_menu_key_closes_the_menu_it_opened() -> String:
 	return why
 
 
-## Playtest: the hint wrapped inside a control ("Tab for the / menu"), and a toast that came with the morning report
+## Playtest: the hint wrapped inside a control ("Tab for the / menu") or left a lone dot at a line's end, and a toast that came with the morning report
 ## drew under it and was never read.
 func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> String:
 	_fresh()
@@ -310,8 +310,11 @@ func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> St
 	await _frames(2)
 	var why := ""
 	var hint: String = camp.get_node("Hud/Hint").text.get_slice("\n", 0)
-	for part in hint.split(" · "):
-		if part.contains(" "):
+	# The only breakable spaces come after a dot, so a wrapped line ends on its dot and never starts with one.
+	if hint.contains(" ·"):
+		why = "a dot in the hint should stay on the line before it: " + hint
+	for part in hint.split("\u00a0· "):
+		if why == "" and part.contains(" "):
 			why = "the hint should only break between controls, but %s can break inside" % part
 	if why == "":
 		camp._welcome_report()

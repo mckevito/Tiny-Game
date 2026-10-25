@@ -63,9 +63,13 @@ def stick(text):
 def dpad(arm):
     plus = (f'<path d="M24,4 L40,4 L40,24 L60,24 L60,40 L40,40 L40,60 L24,60 L24,40 L4,40 L4,24 L24,24 Z" '
             f'fill="{INK}" stroke="{CREAM}" stroke-width="3" stroke-linejoin="round"/>')
-    tips = {"up": "M32,9 L37,18 L27,18 Z", "down": "M32,55 L37,46 L27,46 Z",
-            "left": "M9,32 L18,27 L18,37 Z", "right": "M55,32 L46,27 L46,37 Z"}
-    return svg(64, 64, plus + f'<path d="{tips[arm]}" fill="{CREAM}"/>')
+    # The pressed arm is filled honey with an ink arrow, so up, down, left and right tell apart at prompt size.
+    arms = {"up": (24, 4, 16, 22), "down": (24, 38, 16, 22), "left": (4, 24, 22, 16), "right": (38, 24, 22, 16)}
+    tips = {"up": "M32,9 L38,19 L26,19 Z", "down": "M32,55 L38,45 L26,45 Z",
+            "left": "M9,32 L19,26 L19,38 Z", "right": "M55,32 L45,26 L45,38 Z"}
+    x, y, w, h = arms[arm]
+    lit = f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="3" fill="{HONEY}"/>'
+    return svg(64, 64, plus + lit + f'<path d="{tips[arm]}" fill="{INK}"/>')
 
 
 ICONS = {

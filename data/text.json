@@ -419,7 +419,7 @@
       "guide": "Field guide"
     },
     "hint": "{tabs} turn the page · {clipboard} put it away",
-    "answer": "Answer a new booking from the menu ({menu}).",
+    "answer": "Answer a new booking from the menu: {menu}",
     "staying": "Staying now",
     "nobody": "Nobody yet. Guests come to a free pitch in the afternoon.",
     "stay": "%s at the %s: would like %s",
@@ -585,6 +585,7 @@
   },
   "glyphs": {
     "join": " ",
-    "key_pad": " "
+    "key_pad": " ",
+    "gap": "  "
   }
 }
