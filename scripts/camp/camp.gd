@@ -487,12 +487,12 @@ func _process(delta: float) -> void:
 			var line := _build_prompt(id) if _building.has(id) else _carry_prompt(id)
 			if line == "":
 				continue
-			line = Prompts.fill(line, _glyph(id))
+			line = Prompts.rich(line, _glyph(id))
 			lines.append(Tuning.text("prompt.for_player") % [state.camp["profiles"][id]["name"], line] \
 					if couch_id != "" else line)
 		var bed := _bed_line()
 		if bed != "":
-			lines.append(Prompts.fill(bed, _pad))
+			lines.append(Prompts.rich(bed, _pad))
 	$Hud/Prompt.text = "\n".join(lines)
 	_update_clock()
 	_update_hint()
@@ -586,7 +586,7 @@ func _toast(text: String) -> void:
 	if report.visible:
 		_held_toasts.append(text)
 		return
-	text = Prompts.fill(text, _pad)
+	text = Prompts.rich(text, _pad)
 	if _toast_left > 0.0 and $Hud/Toast.text != "" and $Hud/Toast.text != text:
 		var lines: PackedStringArray = (str($Hud/Toast.text) + "\n" + text).split("\n")
 		var keep := int(Tuning.num("tuning", "hud.toast_lines", 3))
@@ -598,11 +598,11 @@ func _toast(text: String) -> void:
 func _update_hint() -> void:
 	# Spaces inside each control are non-breaking, so the line only wraps between controls ("Tab for the menu").
 	var parts: PackedStringArray = []
-	for part in (Prompts.fill(Tuning.text("prompt.controls"), _pad) if state else "").split(" · "):
+	for part in (Prompts.rich(Tuning.text("prompt.controls"), _pad) if state else "").split(" · "):
 		parts.append(part.replace(" ", "\u00a0"))
 	var text := " · ".join(parts)
 	if can_drop_in() == "":
-		text += "\n" + Prompts.fill(Tuning.text("prompt.drop_in"), true)
+		text += "\n" + Prompts.rich(Tuning.text("prompt.drop_in"), true)
 	$Hud/Hint.text = text
 
 
@@ -1591,7 +1591,7 @@ func _show_night(summary: Dictionary) -> void:
 		leave_tent(who, false)
 	for who: String in _busy.keys():
 		_end_busy(who)
-	report.show_report(morning_report(summary), Prompts.fill(Tuning.text("prompt.report_close"), _pad))
+	report.show_report(morning_report(summary), Prompts.rich(Tuning.text("prompt.report_close"), _pad))
 	_sync_stays(false)
 	_sync_forage()
 	_sync_trees()
@@ -1702,7 +1702,7 @@ func _welcome_report() -> void:
 		return
 	var lines: Array[String] = [Tuning.text("report.welcome"), ""]
 	lines.append_array(_today_report())
-	report.show_report("\n".join(lines), Prompts.fill(Tuning.text("prompt.report_close"), _pad))
+	report.show_report("\n".join(lines), Prompts.rich(Tuning.text("prompt.report_close"), _pad))
 
 
 func _update_night(delta: float) -> void:
@@ -2049,8 +2049,11 @@ func _refresh_boards() -> void:
 			toggle_clipboard(who)
 			continue
 		var board: Clipboard = _boards[who]
-		board.show_text(clipboard_text(who, board.tab_name()), Prompts.fill(Tuning.text("clipboard.hint"),
-				_glyph(who)))
+		# The button glyphs live on the hint line (a RichTextLabel): the bookings page's answer line goes there too.
+		var hint := Prompts.rich(Tuning.text("clipboard.hint"), _glyph(who))
+		if board.tab_name() == "bookings":
+			hint = Prompts.rich(Tuning.text("clipboard.answer"), _glyph(who)) + "\n" + hint
+		board.show_text(clipboard_text(who, board.tab_name()), hint)
 		_fit_panel(board, who)
 
 
@@ -2070,7 +2073,6 @@ func clipboard_text(who: String, tab: String) -> String:
 					any = true
 			if not any:
 				lines.append(Tuning.text("report.none"))
-			lines.append(Prompts.fill(Tuning.text("clipboard.answer"), _glyph(who)))
 			lines.append("")
 			lines.append(Tuning.text("clipboard.staying"))
 			if (state.camp["stays"] as Dictionary).is_empty():
@@ -2185,8 +2187,8 @@ func _refresh_docks() -> void:
 		if not CampBuild.is_free(kind):
 			label = Tuning.text("pack.slot") % [label, state.build.in_kit(kind)]
 		dock.show_dock(tool_names, posmod(int(_tools.get(who, 0)), tools().size()), piece_names, kinds.find(kind), label,
-				[Prompts.fill(Tuning.text("dock.tool"), pad),
-				Prompts.fill(Tuning.text("dock.build"), pad), Prompts.fill(Tuning.text("dock.pack"), pad)
+				[Prompts.rich(Tuning.text("dock.tool"), pad),
+				Prompts.rich(Tuning.text("dock.build"), pad), Prompts.rich(Tuning.text("dock.pack"), pad)
 				% [state.pack.slots(who).size(), int(Tuning.num("items", "pack_slots", 8))]])
 
 
@@ -2216,9 +2218,9 @@ func _update_clock() -> void:
 func _fit_panel(panel: Clipboard, who: String) -> void:
 	_update_clock()
 	var gap := Tuning.num("tuning", "clipboard.gap_px", 24.0)
-	var above: Label = $Hud/Clock if who == couch_id else $Hud/Hint
+	var above: Control = $Hud/Clock if who == couch_id else $Hud/Hint
 	var top := Tuning.num("tuning", "clipboard.top_px", 150.0)
-	if above.visible and above.text != "":
+	if above.visible and str(above.get("text")) != "":
 		top = maxf(top, above.position.y + above.get_combined_minimum_size().y + gap)
 	panel.fit(top, get_viewport().get_visible_rect().size.y - gap)
 
@@ -2341,7 +2343,7 @@ func _refresh_packs() -> void:
 			continue
 		var panel: PackPanel = _packs[who]["panel"]
 		panel.show_pack(Tuning.text("pack.title") % state.camp["profiles"][who]["name"], state.pack.slots(who),
-				int(_packs[who]["pick"]), Prompts.fill(Tuning.text("pack.hint"), _glyph(who)))
+				int(_packs[who]["pick"]), Prompts.rich(Tuning.text("pack.hint"), _glyph(who)))
 
 
 ## Dropped bundles on screen follow the camp's. A loose piece new since the last look pops out of its tree in an arc
@@ -2629,7 +2631,7 @@ func _refresh_bench() -> void:
 			close_bench(who)
 			continue
 		var panel: Clipboard = _bench[who]["panel"]
-		panel.show_text(bench_text(who, int(_bench[who]["pick"])), Prompts.fill(Tuning.text("bench.hint"),
+		panel.show_text(bench_text(who, int(_bench[who]["pick"])), Prompts.rich(Tuning.text("bench.hint"),
 				_glyph(who)))
 		_fit_panel(panel, who)
 

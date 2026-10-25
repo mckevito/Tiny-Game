@@ -11,7 +11,7 @@ var tab := 0
 var heading := ""
 var _head := Label.new()
 var _body := Label.new()
-var _hint := Label.new()
+var _hint := UiLook.rich_label(true)
 
 
 static func _n(key: String, fallback: float = 0.0) -> float:
@@ -35,14 +35,16 @@ func _ready() -> void:
 	felt.set_corner_radius_all(int(Tuning.num("tuning", "hud.report_corner_px", 18)))
 	felt.set_content_margin_all(_n("margin_px", 22))
 	add_theme_stylebox_override("panel", felt)
-	theme.set_color("font_color", "Label", FeltBuilder.swatch(str(Tuning.value("tuning", "hud.report_ink_swatch", "ink_brown"))))
+	var ink := FeltBuilder.swatch(str(Tuning.value("tuning", "hud.report_ink_swatch", "ink_brown")))
+	theme.set_color("font_color", "Label", ink)
+	theme.set_color("default_color", "RichTextLabel", ink)
 	var box := VBoxContainer.new()
 	add_child(box)
-	for label in [_head, _body, _hint]:
+	for label in [_head, _body]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	for label: Control in [_head, _body, _hint]:
 		label.custom_minimum_size.x = _n("width_px", 560)
 		box.add_child(label)
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 
 ## Puts the panel on the left (player one) or the right (the couch player) of the screen.

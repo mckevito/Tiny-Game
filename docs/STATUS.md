@@ -340,6 +340,23 @@ Playtest's findings on round 1 (fixed in the next PR):
 | The F1 fps line sits at the bottom centre, clear of the clock and hint | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing |
 | The hint wraps only between controls ("Tab for the menu" stays whole); a toast that comes with the morning report waits until it is put away | `test_hud.test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report` | Passing |
 
+### Interface round 2: DualSense button icons and keyboard keycaps (25 Oct 2026)
+The owner (25 Oct 2026): "add the DualSense buttons instead of saying cross or triangle". Every prompt, the hint,
+toasts, the dock captions and the panels' hints now draw the button itself: on a controller an original DualSense
+icon (`art/ui/glyphs/`, made by `make_glyphs.py`), on keyboard and mouse a cream keycap with the key's name.
+
+| Proof | Test | Result |
+|---|---|---|
+| Every default pad action draws an icon and no button word leaks through ("Cross", "Triangle"); each icon file exists; a key draws a keycap; an action on two buttons draws both | `test_prompts.test_prompts_draw_pad_icons_and_keycaps` | Passing |
+| The HUD prompts, hint and Pack and clipboard hints show the icon of the device each player used last | `test_stage_b` prompt checks (now compare `Prompts.rich`) | Passing |
+| Review frames: keycaps for the keyboard player and pad icons for the controller player on the couch, in the hint, prompts and both docks | `tools/capture.gd --hud` | Looked at |
+| The icons read well on the owner's screen | Owner's play | Waiting on the owner |
+
+What changed: the hint, prompt and toast are RichTextLabels; `Prompts.rich` turns `{action}` into icons or keycaps
+(`Prompts.fill` still gives words, for the Options screen and the text tests); the icon map is `pad_icons` in
+`data/input.json`; sizes and colours are `glyphs.*` in `data/tuning.json`. The Bookings "answer" line moved from the
+page to the clipboard's hint. **Proposed:** icon height 34 px, keycaps warm cream on ink brown.
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.

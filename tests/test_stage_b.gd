@@ -141,7 +141,7 @@ func test_three_days_of_play_from_the_buttons() -> String:
 	if why == "":
 		_stand(camp, "p_host", _shore())
 		await _tree().process_frame
-		var rod := Prompts.fill(Tuning.text("prompt.need_tool") % Tuning.text("tool.rod"), false)
+		var rod := Prompts.rich(Tuning.text("prompt.need_tool") % Tuning.text("tool.rod"), false)
 		if not camp.get_node("Hud/Prompt").text.contains(rod):
 			why = "by the pond with bare hands the prompt should ask for the rod, got " + camp.get_node("Hud/Prompt").text
 		# The next-tool button goes hands, axe, rod, and the corner dock shows it.
@@ -152,7 +152,7 @@ func test_three_days_of_play_from_the_buttons() -> String:
 			pass
 		elif camp._docks["p_host"].tool_text() != Tuning.text("tool.rod"):
 			why = "two presses of next tool should take out the rod, the dock shows " + camp._docks["p_host"].tool_text()
-		elif not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.fish"), false)):
+		elif not camp.get_node("Hud/Prompt").text.contains(Prompts.rich(Tuning.text("prompt.fish"), false)):
 			why = "by the pond with the rod the prompt should offer to fish, got " + camp.get_node("Hud/Prompt").text
 		elif not await _use(camp, "p_host") or s.pack.first_of("p_host", "fish") == "":
 			why = "interact by the pond should cast and catch a fish"
@@ -170,7 +170,7 @@ func test_three_days_of_play_from_the_buttons() -> String:
 		_stand(camp, "p_host", (tree["pos"] as Vector2) + Vector2(1.0, 0.0))
 		camp.hold_tool("p_host", "axe")
 		await _tree().process_frame
-		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.chop") % 3, false)):
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.rich(Tuning.text("prompt.chop") % 3, false)):
 			why = "by a tree the prompt should offer to chop, got " + camp.get_node("Hud/Prompt").text
 		elif not await _use(camp, "p_host") or s.pack.count("p_host", "wood") != 0 or s.camp["bundles"].size() != 1:
 			why = "interact by a tree should pop one wood out onto the grass"
@@ -198,7 +198,7 @@ func test_three_days_of_play_from_the_buttons() -> String:
 		s.pack.add_to_box("wood", 10)
 		_stand(camp, "p_host", CampBuild.bench_pos() + Vector2(0.0, -1.2))
 		await _tree().process_frame
-		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.bench"), false)):
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.rich(Tuning.text("prompt.bench"), false)):
 			why = "by the workbench the prompt should offer it, got " + camp.get_node("Hud/Prompt").text
 		camp._unhandled_input(_key("interact"))
 		if why == "" and not camp._bench.has("p_host"):
@@ -346,7 +346,7 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 			why = "interact by the stump should pick up the sapling"
 	if why == "":
 		await _tree().process_frame
-		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.plant"), false)):
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.rich(Tuning.text("prompt.plant"), false)):
 			why = "with a sapling in the Pack the stump should offer to plant, got " + camp.get_node("Hud/Prompt").text
 		camp._unhandled_input(_key("interact"))
 		if s.gather.tree(index)["stage"] != "sapling" or (camp._tree_props.get(index, []) as Array).size() != 1:
@@ -366,7 +366,7 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 		_stand(camp, "p_host", (other["pos"] as Vector2) + Vector2(1.0, 0.0))
 		camp.hold_tool("p_host", "shovel")
 		await _tree().process_frame
-		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.dig"), false)):
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.rich(Tuning.text("prompt.dig"), false)):
 			why = "with the shovel by a stump the prompt should offer to dig, got " + camp.get_node("Hud/Prompt").text
 		elif not await _use(camp, "p_host") or s.gather.tree(j)["stage"] != "hole" or s.camp["bundles"].size() != 1:
 			why = "interact with the shovel should dig the stump into a hole and pop out its roots"
@@ -439,7 +439,7 @@ func test_dropping_the_camp_box_and_a_hud_that_stays_on_screen() -> String:
 		camp._unhandled_input(_key("cancel"))
 	if why == "":
 		await _tree().process_frame
-		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.pick_bundle")
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.rich(Tuning.text("prompt.pick_bundle")
 				% [Tuning.text("items.stick"), 5], false)):
 			why = "by a bundle the prompt should offer to pick it up, got " + camp.get_node("Hud/Prompt").text
 		camp._unhandled_input(_key("interact"))

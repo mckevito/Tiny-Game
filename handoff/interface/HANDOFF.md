@@ -1,4 +1,4 @@
-# Interface hand-off, 25 Oct 2026 (new role, split from Build after Stage B round 5; round 1 done)
+# Interface hand-off, 25 Oct 2026 (new role, split from Build after Stage B round 5; rounds 1 and 2 done)
 
 1. **Owns:** everything the player reads and presses.
    - Scripts: `scripts/ui/options_screen.gd`, `ui_look.gd`; `scripts/camp/camp_menu.gd`, `clipboard.gd`,
@@ -27,10 +27,14 @@
    for Apply.
 3. **Open work, in order:**
    1. The owner plays round 5 and interface round 1; fix anything that overlaps or reads badly on their screen.
-   2. The clipboard's map tab with plan marks both players see (with Gameplay), after the next gameplay round.
-   3. Remaps: two actions can share a button only in different modes (D-pad left: undo in build mode). Settings
+   2. Round 3 (owner, 25 Oct): a knitted clipboard panel with a knitted paper sheet, and a clipboard the camper holds
+      while it is open (the prop is Art's; the hand pose is Gameplay's `camper.gd`). Keep `board.flip` for the camp
+      board, which opens Bookings. Round 4: item icons in the Pack and picture wish bubbles.
+   3. Waiting on the owner: swap the always-on controls hint for a short context legend (icons for what you can do now).
+   4. The clipboard's map tab with plan marks both players see (with Gameplay), after the next gameplay round.
+   5. Remaps: two actions can share a button only in different modes (D-pad left: undo in build mode). Settings
       swaps only an action's main binding.
-   4. Later ideas: item icons in the Pack (render each item's felt model once), per-player prompts inside each half
+   6. Later ideas: item icons in the Pack (render each item's felt model once), per-player prompts inside each half
       of the split; 2D panels use `FeltBuilder.swatch`, which is the linear colour (darker than the palette); the
       Pack tokens convert back with `linear_to_srgb()`, the panels were left as the owner has seen them.
 4. **Owner decisions:** Animal Crossing is the model for the Pack and the tool and build cyclers; prompts show the

@@ -151,5 +151,11 @@
     "near_px": 17,
     "near_alpha": 0.5,
     "centre_share": 1.6
+  },
+  "glyphs": {
+    "_about": "Button glyphs in prompts (scripts/core/prompts.gd rich): controller icons icon_px tall; keyboard keys as keycaps in key_swatch with key_ink_swatch letters.",
+    "icon_px": 34,
+    "key_swatch": "warm_cream",
+    "key_ink_swatch": "ink_brown"
   }
 }
