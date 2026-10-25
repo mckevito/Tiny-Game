@@ -374,6 +374,7 @@ func _spawn_camper(id: String) -> void:
 
 
 func _remove_camper(id: String) -> void:
+	_get_up(id)
 	if campers.has(id):
 		campers[id].queue_free()
 		campers.erase(id)
@@ -400,6 +401,9 @@ func _physics_process(delta: float) -> void:
 	if state == null:
 		return
 	_note_own_position()
+	for id in local_ids():
+		if campers.has(id):
+			(campers[id] as Camper).hold(tool_of(id))
 	var hold := FeltBuilder.vec3(Tuning.value("tuning", "carry.hold_pos"))
 	var spots: Array[Vector3] = []
 	for c: Camper in campers.values():
@@ -418,7 +422,7 @@ func _physics_process(delta: float) -> void:
 			var me: Camper = campers.get(id)
 			if me:
 				for peer: int in ([1] if mode == Mode.GUEST else _guests.keys()):
-					_moved.rpc_id(peer, id, me.position, me.rotation.y)
+					_moved.rpc_id(peer, id, me.position, me.rotation.y, tool_of(id), _inside.has(id))
 
 
 func _process(delta: float) -> void:
@@ -1182,8 +1186,10 @@ func _told(key: String, args: Array) -> void:
 	_toast(Tuning.text(key) % args if not args.is_empty() else Tuning.text(key))
 
 
+## Where the other PC's player is, the tool in their hand and whether they lie in the camp's tent (looks only: the
+## tool and the tent are never saved, and the bed vote that goes with the tent is sent through `ask`).
 @rpc("any_peer", "call_remote", "unreliable_ordered")
-func _moved(profile_id: String, pos: Vector3, yaw: float) -> void:
+func _moved(profile_id: String, pos: Vector3, yaw: float, tool: String, in_tent: bool) -> void:
 	if state == null or local_ids().has(profile_id):
 		return
 	var sender := multiplayer.get_remote_sender_id()
@@ -1194,6 +1200,11 @@ func _moved(profile_id: String, pos: Vector3, yaw: float) -> void:
 	if c:
 		c.remote_target = pos
 		c.remote_yaw = yaw
+		c.hold(tool if tools().has(tool) else "hands")
+	if in_tent and not _inside.has(profile_id):
+		_lie_down(profile_id)
+	elif not in_tent and _inside.has(profile_id):
+		_get_up(profile_id)
 
 
 func _on_connected() -> void:
@@ -2061,26 +2072,28 @@ static func home_tent_pos() -> Vector2:
 	return Vector2(o.x, o.z)
 
 
-## A felt camper lying in a tent's sleeping bag, feet at the bag's spot (data/guests.json tent.bags), head on the pillow.
-func _sleeper(tent: Node3D, look: String, bag: int) -> Node3D:
-	var spots: Array = Tuning.value("guests", "tent.bags", [[0, 0.45]])
-	var spot: Array = spots[bag % spots.size()]
+## A felt camper tucked into a sleeping bag in a tent: `bag` is a row of data/guests.json (tent.bags or
+## tent.home_bags): [x, feet z, the bag's cover model]. The body lies face up with its head on the pillow and the
+## cover hides it to the chin.
+func _sleeper(tent: Node3D, look: String, bag: Array) -> Node3D:
+	var holder := Node3D.new()
+	holder.position = Vector3(float(bag[0]), 0.0, 0.0)
 	var body := FeltBuilder.build(look)
-	body.position = Vector3(float(spot[0]), Tuning.num("guests", "tent.lie_y_m", 0.2), float(spot[1]))
-	body.rotation = Vector3(deg_to_rad(Tuning.num("guests", "tent.lie_deg", -80.0)), PI, 0.0)
+	body.position = Vector3(0.0, Tuning.num("guests", "tent.lie_y_m", 0.2), float(bag[1]))
+	body.rotation = Vector3(deg_to_rad(Tuning.num("guests", "tent.lie_deg", 80.0)), 0.0, 0.0)
 	body.scale = Vector3.ONE * Tuning.num("guests", "tent.lie_scale", 1.0)
-	tent.add_child(body)
-	return body
+	holder.add_child(body)
+	holder.add_child(FeltBuilder.build(str(bag[2])))
+	tent.add_child(holder)
+	return holder
 
 
 ## A player on this PC crawls into the camp's tent: they lie in a sleeping bag (the tent opens so you can see them)
-## and are ready for bed; interact or back gets them up again.
+## and are ready for bed; interact or back gets them up again. The other PC sees it through `_moved`.
 func enter_tent(who: String) -> void:
 	if _inside.has(who) or not campers.has(who) or home_tent_index() < 0:
 		return
-	var tent: Node3D = clearing.placed[home_tent_index()]
-	_inside[who] = _sleeper(tent, str(campers[who].model_id), _inside.size())
-	campers[who].visible = false
+	_lie_down(who)
 	campers[who].controlled = false
 	campers[who].velocity = Vector3.ZERO
 	if not state.day.votes.has(who):
@@ -2090,13 +2103,37 @@ func enter_tent(who: String) -> void:
 func leave_tent(who: String, cancel_bed: bool = true) -> void:
 	if not _inside.has(who):
 		return
+	_get_up(who)
+	if not local_ids().has(who):
+		return
+	if campers.has(who):
+		campers[who].controlled = _menu_for != who
+	if cancel_bed and state != null and state.day.votes.has(who):
+		ask("sleep", [false], who)
+
+
+## Shows a player (on this PC or the other) in the first free bag of the camp's tent, their camper hidden.
+func _lie_down(who: String) -> void:
+	if _inside.has(who) or not campers.has(who) or home_tent_index() < 0:
+		return
+	var bags: Array = Tuning.value("guests", "tent.home_bags", [[0, 0, "bag_cover"]])
+	var used: Array = _inside.values().map(func(n: Node3D) -> int: return int(n.get_meta("bag")))
+	var bag := 0
+	while used.has(bag):
+		bag += 1
+	var sleeper := _sleeper(clearing.placed[home_tent_index()], str(campers[who].model_id), bags[bag % bags.size()])
+	sleeper.set_meta("bag", bag)
+	_inside[who] = sleeper
+	campers[who].visible = false
+
+
+func _get_up(who: String) -> void:
+	if not _inside.has(who):
+		return
 	(_inside[who] as Node3D).queue_free()
 	_inside.erase(who)
 	if campers.has(who):
 		campers[who].visible = true
-		campers[who].controlled = _menu_for != who
-	if cancel_bed and state != null and state.day.votes.has(who):
-		ask("sleep", [false], who)
 
 
 func guests_asleep() -> bool:
@@ -2116,7 +2153,7 @@ func _tick_tents() -> void:
 			continue
 		var c: Camper = visitors.get(id)
 		if night and not _asleep.has(id):
-			_asleep[id] = _sleeper(tent, str(state.camp["stays"][id]["look"]), 0)
+			_asleep[id] = _sleeper(tent, str(state.camp["stays"][id]["look"]), Tuning.value("guests", "tent.bags")[0])
 		elif not night and _asleep.has(id):
 			(_asleep[id] as Node3D).queue_free()
 			_asleep.erase(id)

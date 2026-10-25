@@ -22,9 +22,13 @@ var walk_speed := 1.5
 ## A player's walking pace as a share of the usual (a long log carried alone is slow; CampGather.carry_speed).
 var speed_scale := 1.0
 
+## The tool shown in the camper's mitten (data/items.json tools.order; "hands" shows none).
+var held := "hands"
+
 signal arrived
 
 var _body: Node3D
+var _tool: Node3D
 var _walk_phase := 0.0
 
 
@@ -49,6 +53,26 @@ func _ready() -> void:
 		label.pixel_size = 0.004
 		label.no_depth_test = true
 		add_child(label)
+
+
+## Shows a tool in the camper's mitten: its model and turn come from data/items.json tools.held, the grip from
+## data/tuning.json camper.hand_pos and tool_scale.
+func hold(tool: String) -> void:
+	if tool == held or _body == null:
+		return
+	held = tool
+	if _tool:
+		_tool.queue_free()
+		_tool = null
+	var row: Dictionary = Tuning.value("items", "tools.held." + tool, {})
+	if row.is_empty():
+		return
+	_tool = FeltBuilder.build(str(row["model"]))
+	_tool.name = "Tool"
+	_tool.position = FeltBuilder.vec3(Tuning.value("tuning", "camper.hand_pos"))
+	_tool.rotation_degrees = FeltBuilder.vec3(row.get("rot", [0, 0, 0]))
+	_tool.scale = Vector3.ONE * Tuning.num("tuning", "camper.tool_scale", 1.0)
+	_body.add_child(_tool)
 
 
 ## The wanted ground velocity for a stick or key input, turned by the camera's yaw.

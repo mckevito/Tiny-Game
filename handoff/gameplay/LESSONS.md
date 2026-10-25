@@ -26,3 +26,6 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
 
 ## Round log
 - 25 Oct 2026: role split from Build (owner). Stage B rounds 1 to 5 are in `handoff/build/LESSONS.md`.
+- 25 Oct 2026: round 1: the tool in hand and tent visits reach the other PC on `_moved`; sleepers tucked into bags.
+  Fault found: round 5's sleepers lay on top of the bag (why: the bag was part of the tent model, with nothing to
+  cover a body; stops it: a sleeper is a holder with the body and a cover model, looked at before the PR).

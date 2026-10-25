@@ -21,8 +21,8 @@
       `docs/STATUS.md` and the `docs/PLAN.md` decision log). Approve or change the **Proposed** numbers.
    2. Next round (owner's pick, 25 Oct): a sell crate, camp projects, the star rating; then the clipboard's map tab
       (with Interface). The research report "Cozy inventory and crafting" in the project files ranks them.
-   3. Gaps left on purpose: a player in the tent and the tool in hand are local to their PC (not sent, not saved);
-      sleepers lie on top of their bag; guests' requests have no walk-up animation.
+   3. Gaps left on purpose: guests' requests have no walk-up animation. (Gameplay round 1 sent the tent visit and
+      the tool in hand to the other PC and tucked sleepers into their bags; neither is saved.)
    4. Stage C (the autumn chapter) when the owner says go.
 4. **Owner decisions:** the decision log in `docs/PLAN.md`. The ones that shape gameplay most: the cozy contract (no
    failure, timers or lost items); guests' requests are the core loop and gathering is optional money (25 Oct); the
@@ -32,4 +32,7 @@
      bed adds a second online player with `state.join` first.
    - A guest who walks in only pitches their tent on arrival (`Camper.arrived`); tests call `_pitch_tent(stay)`.
    - Request kinds with `near` are met by the camp itself; `refresh_requests` skips ones that stay already had.
+   - `_moved` carries the tool and "in the tent" as well as the position (protocol 6). Remote tent visits use
+     `_lie_down`/`_get_up` (looks only); `enter_tent`/`leave_tent` are for players on this PC and send the bed vote.
+     Two players both in the tent vote for bed and start the night: a test that only wants the look calls `_lie_down`.
    - Tents swap meshes (`_tent_look`, the model's `_open` variant), so a tent node's child 0 must stay its mesh.

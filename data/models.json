@@ -64,6 +64,13 @@
   "tent_guest": {"base": "tent", "slots": {"canvas": "pond_blue", "door": "honey_thread", "mat": "moss_felt", "bag": "teal_felt"}},
   "tent_open": {"base": "tent", "show": ["open", "bag_two"]},
   "tent_guest_open": {"base": "tent_guest", "show": ["open", "bag_one"]},
+  "bag_cover": {"slots": {"bag": "rust_canvas"}, "parts": [
+    {"shape": "capsule", "size": [0.84, 1.5, 0.46], "pos": [0, 0.24, -0.2], "rot": [90, 0, 0], "color": "$bag"},
+    {"shape": "sphere", "size": [0.8, 0.38, 0.16], "pos": [0, 0.28, 0.5], "color": "warm_cream"},
+    {"shape": "stitch", "from": [0.38, 0.32, -0.9], "to": [0.38, 0.32, 0.4], "color": "honey_thread"}
+  ]},
+  "bag_cover_honey": {"base": "bag_cover", "slots": {"bag": "honey_thread"}},
+  "bag_cover_teal": {"base": "bag_cover", "slots": {"bag": "teal_felt"}},
 
   "tree_pine": {
     "sway": true,
@@ -190,6 +197,23 @@
     {"shape": "sphere", "size": [0.16, 0.12, 0.16], "pos": [0, 0.08, 0], "color": "warm_cream"},
     {"shape": "sphere", "size": [0.16, 0.09, 0.16], "pos": [0, 0.13, 0], "color": "rust_canvas"},
     {"shape": "cylinder", "size": [0.02, 0.1, 0.02], "pos": [0, 0.21, 0], "color": "ink_brown"}
+  ]},
+
+  "tool_axe": {"parts": [
+    {"shape": "cylinder", "size": [0.05, 0.52, 0.05], "pos": [0, 0.12, 0], "color": "wood_felt"},
+    {"shape": "box", "size": [0.06, 0.12, 0.2], "pos": [0, 0.33, -0.07], "round": 0.02, "color": "stone_grey"},
+    {"shape": "box", "size": [0.065, 0.13, 0.04], "pos": [0, 0.33, -0.17], "round": 0.015, "color": "warm_cream"}
+  ]},
+  "tool_rod": {"parts": [
+    {"shape": "cylinder", "size": [0.03, 1.15, 0.03], "pos": [0, 0.45, 0], "taper": 0.5, "color": "wood_felt"},
+    {"shape": "cylinder", "size": [0.055, 0.2, 0.055], "pos": [0, -0.02, 0], "color": "warm_cream"},
+    {"shape": "sphere", "size": [0.09, 0.09, 0.05], "pos": [0.05, 0.12, 0], "color": "stone_grey"},
+    {"shape": "sphere", "size": [0.05, 0.05, 0.05], "pos": [0, 1.04, 0], "color": "rust_canvas"}
+  ]},
+  "tool_camera": {"parts": [
+    {"shape": "box", "size": [0.22, 0.14, 0.09], "pos": [0, 0.1, -0.04], "round": 0.025, "color": "rust_canvas"},
+    {"shape": "cylinder", "size": [0.09, 0.07, 0.09], "pos": [0, 0.1, -0.11], "rot": [90, 0, 0], "color": "stone_grey"},
+    {"shape": "box", "size": [0.05, 0.03, 0.04], "pos": [0.06, 0.185, -0.03], "round": 0.01, "color": "warm_cream"}
   ]},
 
   "log_bench": {

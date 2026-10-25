@@ -40,7 +40,9 @@
   "camper": {
     "name_height_m": 1.75,
     "name_font_px": 48,
-    "name_outline_px": 12
+    "name_outline_px": 12,
+    "hand_pos": [0.41, 0.3, -0.04],
+    "tool_scale": 1.3
   },
   "couch": {
     "split_m": 7.0,
