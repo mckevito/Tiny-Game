@@ -15,7 +15,7 @@ Signed off: yes, 25 Oct 2026 (PR #1 merged; the owner moved the capsule with the
 | A DualSense and the keyboard both move the test capsule | Owner's hands-on try | Passed (owner, 25 Oct 2026) |
 
 ### Still open
-- Licence choice is Proposed (MIT code, CC BY 4.0 art).
+- None. The licence (MIT code, CC BY 4.0 art) was approved by the owner on 25 Oct 2026.
 
 ## Milestone 1: Look and feel (felt art proof)
 Signed off: yes, as a first draft (owner, 25 Oct 2026). Polish comes later; PR #2 waits on the owner's merge.
