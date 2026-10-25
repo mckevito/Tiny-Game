@@ -33,40 +33,102 @@ func _pitch(state: CampState, at: Vector2) -> String:
 	return state.build.last_id if why == "" else ""
 
 
-func test_fishing_and_grilling_fill_the_pockets_and_never_fail() -> String:
+func test_fishing_and_grilling_fill_the_pack_and_never_fail() -> String:
 	var state := _camp()
 	state.set_player_pos("p_host", Vector2(0, 9), 0.0)
-	if state.pockets.fish("p_host") != "deny.no_water":
+	if state.pack.fish("p_host") != "deny.no_water":
 		return "fishing away from the water should say so"
 	var shore := _scenery("pond") + Vector2(-3.4, 0)
 	state.set_player_pos("p_host", shore, 0.0)
 	for i in 5:
-		if state.pockets.fish("p_host") != "":
+		if state.pack.fish("p_host") != "":
 			return "a cast at the water's edge should always catch something"
-	var held := state.pockets.pockets("p_host")
-	if held.size() != 5 or CampPockets.kind_of(str(held[0])) != "fish":
-		return "each catch should go into the pockets as a fish, got %s" % [held]
-	state.pockets.fish("p_host")
-	if state.pockets.fish("p_host") != "deny.pockets_full" or held.size() != int(Tuning.num("fishing", "pockets_max")):
-		return "a full pocket should refuse more, keeping what it holds"
-	if state.pockets.cook("p_host") != "deny.no_fire":
+	var caught := 0
+	for st: Dictionary in state.pack.slots("p_host"):
+		if CampPack.kind_of(str(st["item"])) == "fish":
+			caught += int(st["n"])
+	if caught != 5 or state.pack.slots("p_host").size() > 3:
+		return "each catch should stack in the Pack as a fish, got %s" % [state.pack.slots("p_host")]
+	if state.pack.cook("p_host") != "deny.no_fire":
 		return "grilling away from the fire should say so"
 	state.set_player_pos("p_host", Vector2(1.2, 0.4), 0.0)
-	state.camp["wood"] = 0
-	if state.pockets.cook("p_host") != "deny.no_wood":
-		return "grilling with an empty wood pile should ask for wood"
-	state.camp["wood"] = 5
-	var raw := str(held[0])
-	if state.pockets.cook("p_host") != "" or str(held[0]) != str(Tuning.value("fishing", "recipes." + raw)):
-		return "grilling should turn the first raw fish into its recipe, got %s" % [held]
-	if int(state.camp["wood"]) != 5 - int(Tuning.num("gather", "cook_wood")):
-		return "grilling should burn wood from the pile"
-	if CampPockets.kind_of(state.pockets.last_item) != "meal":
+	if state.pack.cook("p_host") != "deny.no_wood":
+		return "grilling with no stick or wood should ask for some"
+	state.pack.add_to_box("wood", 2)
+	state.pack.add("p_host", "stick", 1)
+	var raw := state.pack.first_of("p_host", "fish")
+	if state.pack.cook("p_host") != "" or state.pack.count("p_host", str(Tuning.value("fishing", "recipes." + raw))) != 1:
+		return "grilling should turn the first raw fish into its recipe, got %s" % [state.pack.slots("p_host")]
+	if state.pack.count("p_host", "stick") != 0 or state.pack.box_count("wood") != 2:
+		return "grilling should burn a stick from the Pack before the box's wood"
+	if state.pack.cook("p_host") != "" or state.pack.box_count("wood") != 1:
+		return "with no sticks left the fire should take wood from the camp box"
+	if CampPack.kind_of(state.pack.last_item) != "meal":
 		return "a grilled fish should be a meal"
-	state.camp["profiles"]["p_guest"]["pockets"] = ["grilled_trout"]
+	state.camp["profiles"]["p_guest"]["pack"] = [{"item": "grilled_trout", "n": 1}]
 	state.set_player_pos("p_guest", Vector2(1.2, 0.4), 0.0)
-	if state.pockets.cook("p_guest") != "deny.no_fish":
+	if state.pack.cook("p_guest") != "deny.no_fish":
 		return "grilling with no raw fish should say so"
+	return ""
+
+
+func test_the_pack_stacks_drops_bundles_and_never_loses_anything() -> String:
+	var state := _camp()
+	var cap := int(Tuning.num("items", "stack_max"))
+	var slots := int(Tuning.num("items", "pack_slots"))
+	if state.pack.add("p_host", "stick", cap + 5) != cap + 5 or state.pack.slots("p_host").size() != 2:
+		return "a stack should hold up to stack_max and spill into a new slot"
+	if state.pack.room_for("p_host", "berries") != (slots - 2) * cap:
+		return "room should count free slots"
+	for i in slots - 2:
+		state.pack.add("p_host", "item_%d" % i, cap)
+	if state.pack.add("p_host", "berries") != 0 or state.pack.room_for("p_host", "stick") != cap - 5:
+		return "a full Pack should take no new kind but still top up its own stacks"
+	state.set_player_pos("p_host", Vector2(-3, 6), 0.0)
+	if state.pack.drop("p_host", 1) != "" or state.pack.count("p_host", "stick") != cap:
+		return "dropping should set down the whole picked stack"
+	var bundle := state.pack.last_bundle
+	if state.pack.bundle_near(Vector2(-3, 6)) != bundle or int(state.camp["bundles"][bundle]["n"]) != 5:
+		return "the dropped stack should lie as a bundle at the player's feet"
+	state.pack.drop("p_host", 0)
+	if state.camp["bundles"].size() != 1 or int(state.camp["bundles"][bundle]["n"]) != cap + 5:
+		return "a stack dropped by a bundle of the same thing should join it"
+	state.set_player_pos("p_guest", Vector2(-3, 6.5), 0.0)
+	if state.pack.pick_bundle("p_guest", bundle) != "" or state.pack.count("p_guest", "stick") != cap + 5 \
+			or state.camp["bundles"].has(bundle):
+		return "the other player should pick the whole bundle up: dropping is how you hand things over"
+	state.camp["profiles"]["p_guest"]["pack"] = []
+	for i in slots - 1:
+		state.pack.add("p_guest", "item_%d" % i, cap)
+	state.pack.add("p_guest", "stick", cap - 3)
+	state.camp["bundles"]["b1"] = {"item": "stick", "n": 10, "pos": [-3, 6.5]}
+	if state.pack.pick_bundle("p_guest", "b1") != "" or int(state.camp["bundles"]["b1"]["n"]) != 7:
+		return "what doesn't fit should stay in the bundle, never lost"
+	return ""
+
+
+func test_the_camp_box_takes_materials_and_pays_for_crafts() -> String:
+	var state := _camp()
+	state.pack.add("p_host", "wood", 6)
+	state.pack.add("p_host", "stick", 3)
+	state.pack.add("p_host", "perch", 1)
+	state.set_player_pos("p_host", Vector2(5, 5), 0.0)
+	if state.pack.deposit("p_host") != 0:
+		return "the box should be out of reach from across the camp"
+	state.set_player_pos("p_host", CampPack.box_pos() + Vector2(0.9, 0.0), 0.0)
+	if state.pack.deposit("p_host") != 9 or state.pack.box_count("wood") != 6 or state.pack.count("p_host", "perch") != 1:
+		return "deposit should put every material in the box and keep the fish"
+	state.set_player_pos("p_host", CampBuild.bench_pos() + Vector2(0.0, 1.2), 0.0)
+	var r := CampBuild.recipe("log_bench")
+	if state.build.craft("p_host", "log_bench") != "" or state.build.in_kit("log_bench") != 1:
+		return "the workbench should craft a log bench from the camp box into the kit"
+	if state.pack.box_count("wood") != 6 - int(r["items"]["wood"]):
+		return "crafting should take materials from the box"
+	if state.build.craft("p_host", "water_point") != "deny.materials":
+		return "a recipe short of materials should say so"
+	state.set_player_pos("p_host", Vector2(5, 5), 0.0)
+	if state.build.craft("p_host", "log_bench") != "deny.too_far":
+		return "crafting happens at the workbench"
 	return ""
 
 
@@ -80,17 +142,17 @@ func test_a_request_is_met_by_a_gift_or_a_chair_and_tips_at_once() -> String:
 	state.camp["stays"][stay]["request"] = {"kind": "meal", "done": false}
 	var stand := state.day.stand_point(stay)
 	state.set_player_pos("p_host", stand + Vector2(1, 0), 0.0)
-	state.camp["profiles"]["p_host"]["pockets"] = ["perch"]
+	state.camp["profiles"]["p_host"]["pack"] = [{"item": "perch", "n": 1}]
 	if state.guests.guest_near("p_host") != stay:
 		return "a guest with an open request should be found within talk reach"
 	if state.guests.give("p_host", stay) != "deny.nothing_to_give":
 		return "a raw fish is not the meal they asked for"
-	state.camp["profiles"]["p_host"]["pockets"] = ["perch", "grilled_perch"]
+	state.camp["profiles"]["p_host"]["pack"] = [{"item": "perch", "n": 1}, {"item": "grilled_perch", "n": 1}]
 	var coins := int(state.camp["coins"])
 	if state.guests.give("p_host", stay) != "":
 		return "handing over the grilled fish should be allowed"
-	if state.pockets.pockets("p_host") != ["perch"]:
-		return "only the meal should leave the pockets, got %s" % [state.pockets.pockets("p_host")]
+	if state.pack.slots("p_host") != [{"item": "perch", "n": 1}]:
+		return "only the meal should leave the Pack, got %s" % [state.pack.slots("p_host")]
 	var tip := int(Tuning.value("guests", "requests.meal.tip"))
 	if int(state.camp["coins"]) != coins + tip or state.guests.open_request(stay) != "":
 		return "a met request should pay its tip at once and close"
@@ -114,6 +176,7 @@ func test_each_stay_is_scored_once_with_a_line_that_names_its_cause() -> String:
 	var state := _camp()
 	_pitch(state, NEAR_FIRE)
 	_pitch(state, OPEN)
+	state.camp["kit"]["water_point"] = 1
 	if state.build.build("p_host", "water_point", WATER, 0.0) != "":
 		return "the water point could not be built"
 	state.camp["reservations"].append({"id": "nobody", "state": "declined", "arrive_day": 0})
@@ -172,6 +235,7 @@ func test_a_booking_waits_on_the_board_and_comes_when_there_is_room() -> String:
 	if not state.guests.booking_line(row).contains(Tuning.text("booking.waiting") % 1):
 		return "the board should say how many more pitches they wait for"
 	_pitch(state, OPEN)
+	state.camp["kit"]["water_point"] = 1
 	state.build.build("p_host", "water_point", WATER, 0.0)
 	var came := state.day.arrivals()
 	if came.size() != int(plan["essential"]["pitches"]) or row["state"] != "arrived":
@@ -219,13 +283,26 @@ func test_stage_b_survives_save_and_load() -> String:
 	var state := _camp()
 	state.guests.refresh_offers()
 	state.guests.decide("p_host", "ferns", "accept")
-	state.camp["profiles"]["p_host"]["pockets"] = ["trout", "grilled_perch"]
+	state.camp["profiles"]["p_host"]["pack"] = [{"item": "trout", "n": 2}]
+	state.pack.add_to_box("wood", 4)
+	state.camp["kit"]["log_bench"] = 1
+	state.camp["bundles"]["bundle_9"] = {"item": "stick", "n": 3, "pos": [1, 2]}
 	CampSave.save(1, state.camp)
 	var loaded := CampSave.load_slot(1)["camp"] as Dictionary
 	CampSave.dir = ""
 	if loaded == null or loaded["reservations"][0]["state"] != "accepted" \
-			or loaded["profiles"]["p_host"]["pockets"] != ["trout", "grilled_perch"]:
-		return "bookings and pockets should come back from the save"
+			or int(loaded["profiles"]["p_host"]["pack"][0]["n"]) != 2 or int(loaded["box"]["wood"]) != 4 \
+			or int(loaded["kit"]["log_bench"]) != 1 or int(loaded["bundles"]["bundle_9"]["n"]) != 3:
+		return "bookings, Packs, the box, the kit and bundles should come back from the save"
+	var v4 := CampSave.new_camp()
+	v4["version"] = 4
+	v4["wood"] = 7
+	v4.erase("box")
+	v4["profiles"]["p_old"] = {"name": "Old", "pockets": ["perch", "perch", "berries"]}
+	var up := CampSave.upgrade(v4)
+	if int(up["box"].get("wood", 0)) != 7 or up.has("wood") or up["profiles"]["p_old"].has("pockets") \
+			or up["profiles"]["p_old"]["pack"] != [{"item": "perch", "n": 2}, {"item": "berries", "n": 1}]:
+		return "a round 2 save should move its wood pile into the box and its pockets into stacks, got %s" % [up["profiles"]["p_old"]]
 	var old := CampSave.new_camp()
 	old["version"] = 2
 	old.erase("reservations")

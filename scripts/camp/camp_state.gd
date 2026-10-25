@@ -7,8 +7,8 @@ extends RefCounted
 ## The camp save (see CampSave), or on a guest the part of it the host shared.
 var camp: Dictionary
 ## The parts of the camp a guest PC mirrors besides objects and profiles: the day, the coins and the guests.
-const SHARED: Array[String] = ["calendar", "coins", "wood", "stays", "last_settled", "ledger", "reservations", "tasks",
-		"trees", "forage", "journal"]
+const SHARED: Array[String] = ["calendar", "coins", "stays", "last_settled", "ledger", "reservations", "tasks",
+		"trees", "forage", "journal", "box", "kit", "bundles"]
 ## Object id -> profile id of whoever carries it. Not saved: a carried thing stays at its last spot in the save.
 var carriers := {}
 ## Profile ids of the players in the camp right now.
@@ -16,9 +16,10 @@ var online: Array[String] = []
 ## Stage A: the day, sleep and night (CampDay), and grid placement (CampBuild).
 var day: CampDay
 var build: CampBuild
-## Stage B: requests, satisfaction and bookings (CampGuests), and fishing and grilling (CampPockets).
+## Stage B: requests, satisfaction and bookings (CampGuests); round 3: each player's Pack, the camp box, dropped
+## bundles, fishing and grilling (CampPack).
 var guests: CampGuests
-var pockets: CampPockets
+var pack: CampPack
 ## Stage B round 2: chopping and forage (CampGather), and the Today list (CampTasks).
 var gather: CampGather
 var tasks: CampTasks
@@ -37,7 +38,7 @@ func _init(data: Dictionary) -> void:
 	day = CampDay.new(self)
 	build = CampBuild.new(self)
 	guests = CampGuests.new(self)
-	pockets = CampPockets.new(self)
+	pack = CampPack.new(self)
 	gather = CampGather.new(self)
 	tasks = CampTasks.new(self)
 
@@ -220,12 +221,12 @@ func snapshot() -> Dictionary:
 
 
 ## The shared day as a guest PC mirrors it: SHARED plus who is ready for bed and what the players in the camp carry
-## in their pockets.
+## in their Packs.
 func shared() -> Dictionary:
 	var held := {}
 	for id in online:
-		held[id] = camp["profiles"][id].get("pockets", [])
-	var out := {"votes": day.votes.duplicate(), "pockets": held}
+		held[id] = camp["profiles"][id].get("pack", [])
+	var out := {"votes": day.votes.duplicate(), "packs": held}
 	for key in SHARED:
 		out[key] = camp[key]
 	return out
@@ -238,9 +239,9 @@ func apply_shared(data: Dictionary) -> void:
 			camp[key] = data[key]
 	if data.has("votes"):
 		day.votes.assign(data["votes"])
-	for id: String in data.get("pockets", {}):
+	for id: String in data.get("packs", {}):
 		if camp["profiles"].has(id):
-			camp["profiles"][id]["pockets"] = data["pockets"][id]
+			camp["profiles"][id]["pack"] = data["packs"][id]
 
 
 ## A guest's mirror of the camp, built from the host's snapshot.

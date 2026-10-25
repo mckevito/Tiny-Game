@@ -8,11 +8,13 @@ extends Node3D
 ## menu; the couch character lives in the host's save and its link code lets its own PC claim it later.
 ## Stage A: the host's day clock (CampDay), guests who come to a free pitch, the sleep vote from the menu, the night
 ## that pays exactly once, and grid placement with undo (CampBuild) in build mode.
-## Stage B: guests' small requests, fishing at the pond and grilling at the fire (CampPockets), two improvements to
+## Stage B: guests' small requests, fishing at the pond and grilling at the fire (CampPack), two improvements to
 ## build, the booking board in the menu, satisfaction lines and the morning report (CampGuests, CampReport).
 ## Stage B round 2: the Today list (CampTasks) whose firsts teach day 1, chopping the clearing's trees and picking up
 ## what the forage spots hold (CampGather), the log bench built from wood, felt animals to spot (Wildlife), and the
 ## morning report's line about tomorrow, and each player's clipboard (Today, Bookings, Supplies; Clipboard).
+## Round 3: each player's Pack of stacks along the bottom (PackBar; pick a slot with next kind, drop it as a bundle),
+## the camp box for materials, and the workbench that crafts into the shared build kit build mode places from.
 ## Command line: -- --solo | --host | --join=ADDRESS [--link=CODE], plus --slot=N and --profile=NAME (a second local
 ## player file).
 
@@ -65,6 +67,12 @@ var _tree_props := {}
 ## Open clipboards by player on this PC, and the countdown to refreshing their text.
 var _boards := {}
 var _board_clock := 0.0
+## Round 3: each local player's Pack bar and picked slot, open workbench panels ({panel, pick}), and dropped
+## bundles' nodes by bundle id.
+var _bars := {}
+var _picked := {}
+var _bench := {}
+var _bundle_nodes := {}
 
 @onready var clearing: Clearing = $Clearing
 @onready var camera: PlayCamera = $PlayCamera
@@ -251,6 +259,7 @@ func _build_world() -> void:
 	add_child(wildlife)
 	_sync_forage()
 	_sync_trees()
+	_sync_bundles()
 	camera.target = campers.get(profile["id"])
 	camera.snap()
 	menu.visible = false
@@ -264,6 +273,14 @@ func _clear_world() -> void:
 		toggle_build(id)
 	for who: String in _boards.keys():
 		toggle_clipboard(who)
+	for who: String in _bench.keys():
+		close_bench(who)
+	for who: String in _bars.keys():
+		_bars[who].queue_free()
+	_bars.clear()
+	for node: Node3D in _bundle_nodes.values():
+		node.queue_free()
+	_bundle_nodes.clear()
 	if wildlife:
 		wildlife.queue_free()
 		wildlife = null
@@ -409,7 +426,7 @@ func _process(delta: float) -> void:
 		if bed != "":
 			lines.append(Prompts.fill(bed, _pad))
 	$Hud/Prompt.text = "\n".join(lines)
-	$Hud/Clock.text = clock_line() + pockets_lines() + today_lines() if state else ""
+	$Hud/Clock.text = clock_line() + today_lines() if state else ""
 	_update_hint()
 	if $Hud/Dev.visible:
 		_dev_clock -= delta
@@ -428,6 +445,8 @@ func _carry_prompt(id: String) -> String:
 		var put := action_for(id)
 		if put.get("what", "") == "place":
 			return Tuning.text("prompt.put_down") + " · " + Tuning.text("prompt.log_alone")
+	if _bench.has(id):
+		return ""
 	if _busy.has(id):
 		return Tuning.text({"fish": "prompt.fishing", "cook": "prompt.cooking", "chop": "prompt.chopping"}[_busy[id]["what"]])
 	var act := action_for(id)
@@ -444,13 +463,20 @@ func _carry_prompt(id: String) -> String:
 			return Tuning.text("prompt.forage") % Tuning.text("items." + str(CampGather.spots()[act["arg"]]["item"]))
 		"take_sapling":
 			return Tuning.text("prompt.take_sapling")
+		"pick_bundle":
+			var b: Dictionary = state.camp["bundles"][act["arg"]]
+			return Tuning.text("prompt.pick_bundle") % [Tuning.text("items." + str(b["item"])), int(b["n"])]
+		"bench":
+			return Tuning.text("prompt.bench")
+		"deposit":
+			return Tuning.text("prompt.deposit")
 		"plant":
 			return Tuning.text("prompt.plant")
 		"cook":
 			return Tuning.text("prompt.cook") % Tuning.text("items." + str(act["arg"]))
 		"give":
 			var stay: Dictionary = state.camp["stays"][act["arg"]]
-			var item := state.pockets.first_of(id, CampGuests.gift_kind(state.guests.open_request(act["arg"])))
+			var item := state.pack.first_of(id, CampGuests.gift_kind(state.guests.open_request(act["arg"])))
 			return Tuning.text("prompt.give") % [stay["name"], Tuning.text("items." + item)]
 	return ""
 
@@ -458,6 +484,7 @@ func _carry_prompt(id: String) -> String:
 ## A short line at the top of the screen. Lines that come close together stack, newest last (data/tuning.json
 ## hud.toast_lines at most).
 func _toast(text: String) -> void:
+	text = Prompts.fill(text, _pad)
 	if _toast_left > 0.0 and $Hud/Toast.text != "" and $Hud/Toast.text != text:
 		var lines: PackedStringArray = (str($Hud/Toast.text) + "\n" + text).split("\n")
 		var keep := int(Tuning.num("tuning", "hud.toast_lines", 3))
@@ -522,6 +549,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if state == null:
 		return
+	if _bench.has(who) and not menu.visible:
+		if event.is_action_pressed("next_kind") or event.is_action_pressed("camera_right"):
+			_bench[who]["pick"] = posmod(int(_bench[who]["pick"]) + 1, CampBuild.recipes().size())
+		elif event.is_action_pressed("camera_left"):
+			_bench[who]["pick"] = posmod(int(_bench[who]["pick"]) - 1, CampBuild.recipes().size())
+		elif event.is_action_pressed("interact"):
+			ask("craft", [str(CampBuild.recipes()[int(_bench[who]["pick"])]["kind"])], who)
+		elif event.is_action_pressed("cancel") or event.is_action_pressed("menu") or event.is_action_pressed("clipboard"):
+			close_bench(who)
+		else:
+			return
+		_refresh_boards()
+		get_viewport().set_input_as_handled()
+		return
 	if report.visible and not menu.visible:
 		if event.is_action_pressed("interact") or event.is_action_pressed("cancel") or event.is_action_pressed("menu"):
 			report.visible = false
@@ -546,6 +587,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		ask("undo", [], who)
 	elif _building.has(who) and event.is_action_pressed("interact"):
 		build_here(who)
+	elif not _building.has(who) and event.is_action_pressed("next_kind"):
+		var size := state.pack.slots(who).size()
+		_picked[who] = posmod(int(_picked.get(who, 0)) + 1, maxi(size, 1))
+		_refresh_boards()
+	elif not _building.has(who) and event.is_action_pressed("drop"):
+		ask("drop", [int(_picked.get(who, 0))], who)
 	elif event.is_action_pressed("interact"):
 		interact(who)
 
@@ -618,7 +665,7 @@ func drop_in(pad: int) -> String:
 	return ""
 
 
-## The couch player leaves this PC; their character, pockets and spot wait in the save. Anything they carried goes
+## The couch player leaves this PC; their character, Pack and spot wait in the save. Anything they carried goes
 ## back to its last spot.
 func drop_out(id: String) -> void:
 	if id == "" or id != couch_id:
@@ -685,8 +732,9 @@ func nearest_object(who: String = "") -> String:
 
 
 ## What the interact button does for a player on this PC right now, first that applies: put down what they carry,
-## give a guest what they asked for, grill a fish at the fire, pick up what a forage spot holds, chop a tree, pick
-## up the nearest thing, or fish at the water's edge. {"what", "arg"}, or {} for nothing.
+## give a guest what they asked for, grill a fish at the fire, pick up a bundle, pick up what a forage spot holds,
+## take or plant a sapling, chop a tree, pick up the nearest thing, use the workbench, fill the camp box, or fish at
+## the water's edge. {"what", "arg"}, or {} for nothing.
 func action_for(who: String) -> Dictionary:
 	var me: Camper = campers.get(who)
 	if me == null or _busy.has(who):
@@ -696,21 +744,27 @@ func action_for(who: String) -> Dictionary:
 	var at := Vector2(me.position.x, me.position.z)
 	state.set_player_pos(who, at, rad_to_deg(me.rotation.y))
 	var guest := state.guests.guest_near(who)
-	if guest != "" and state.pockets.first_of(who, CampGuests.gift_kind(state.guests.open_request(guest))) != "":
+	if guest != "" and state.pack.first_of(who, CampGuests.gift_kind(state.guests.open_request(guest))) != "":
 		return {"what": "give", "arg": guest}
-	if CampPockets.can_cook_at(at) and state.pockets.first_of(who, "fish") != "":
-		return {"what": "cook", "arg": state.pockets.first_of(who, "fish")}
+	if CampPack.can_cook_at(at) and state.pack.first_of(who, "fish") != "":
+		return {"what": "cook", "arg": state.pack.first_of(who, "fish")}
+	if state.pack.bundle_near(at) != "":
+		return {"what": "pick_bundle", "arg": state.pack.bundle_near(at)}
 	if state.gather.spot_near(at) >= 0:
 		return {"what": "forage", "arg": state.gather.spot_near(at)}
 	if state.gather.sapling_near(at) >= 0:
 		return {"what": "take_sapling", "arg": state.gather.sapling_near(at)}
-	if state.gather.stump_near(at) >= 0 and state.pockets.first_of(who, "plant") != "":
+	if state.gather.stump_near(at) >= 0 and state.pack.first_of(who, "plant") != "":
 		return {"what": "plant", "arg": state.gather.stump_near(at)}
 	if state.gather.tree_near(at) >= 0:
 		return {"what": "chop", "arg": state.gather.tree_near(at)}
 	if nearest_object(who) != "":
 		return {"what": "pick_up", "arg": nearest_object(who)}
-	if CampPockets.can_fish_at(at):
+	if CampBuild.near_bench(at):
+		return {"what": "bench"}
+	if CampPack.near_box(at) and state.pack.has_boxable(who):
+		return {"what": "deposit"}
+	if CampPack.can_fish_at(at):
 		return {"what": "fish"}
 	return {}
 
@@ -732,8 +786,12 @@ func interact(who: String = "") -> void:
 			ask("pick_up", [act["arg"]], who)
 		"give":
 			ask("give", [act["arg"]], who)
-		"forage", "take_sapling", "plant":
+		"forage", "take_sapling", "plant", "pick_bundle":
 			ask(act["what"], [act["arg"]], who)
+		"deposit":
+			ask("deposit", [], who)
+		"bench":
+			open_bench(who)
 		"fish", "cook", "chop":
 			_start_busy(who, act["what"], act.get("arg") if act["what"] == "chop" else null)
 
@@ -812,9 +870,9 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 	elif what == "sleep" and args.size() == 1 and args[0] is bool:
 		why = state.day.vote(profile_id, args[0])
 	elif what == "fish" and args.is_empty():
-		why = state.pockets.fish(profile_id)
+		why = state.pack.fish(profile_id)
 	elif what == "cook" and args.is_empty():
-		why = state.pockets.cook(profile_id)
+		why = state.pack.cook(profile_id)
 	elif what == "give" and args.size() == 1 and args[0] is String:
 		why = state.guests.give(profile_id, args[0])
 	elif what == "booking" and args.size() == 2 and args[0] is String and args[1] is String:
@@ -827,6 +885,14 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		why = state.gather.take_sapling(profile_id, args[0])
 	elif what == "plant" and args.size() == 1 and args[0] is int:
 		why = state.gather.plant(profile_id, args[0])
+	elif what == "drop" and args.size() == 1 and args[0] is int:
+		why = state.pack.drop(profile_id, args[0])
+	elif what == "pick_bundle" and args.size() == 1 and args[0] is String:
+		why = state.pack.pick_bundle(profile_id, args[0])
+	elif what == "deposit" and args.is_empty():
+		why = "" if state.pack.deposit(profile_id) > 0 else "deny.nothing_to_box"
+	elif what == "craft" and args.size() == 1 and args[0] is String:
+		why = state.build.craft(profile_id, args[0])
 	elif what == "spot" and args.size() == 1 and args[0] is String:
 		why = "" if Wildlife.kinds().has(args[0]) else "deny.not_movable"
 	if why != "":
@@ -835,13 +901,14 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		else:
 			_denied.rpc_id(peer, why)
 		return
-	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "forage", "spot", "take_sapling", "plant"]:
+	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "forage", "spot", "take_sapling", "plant", "drop",
+			"pick_bundle", "deposit", "craft"]:
 		match what:
 			"fish":
-				_say(peer, "toast.caught", [Tuning.text("items." + state.pockets.last_item)])
+				_say(peer, "toast.caught", [Tuning.text("items." + state.pack.last_item)])
 				_progress("fish")
 			"cook":
-				_say(peer, "toast.grilled", [Tuning.text("items." + state.pockets.last_item)])
+				_say(peer, "toast.grilled", [Tuning.text("items." + state.pack.last_item)])
 				_progress("cook")
 			"give":
 				_say_all("toast.thanks", [state.camp["stays"][args[0]]["name"], state.guests.last_tip])
@@ -852,7 +919,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 					_say_all("toast.felled", [])
 					_sync_trees()
 				else:
-					_say(peer, "toast.chopped", [int(state.camp["wood"])])
+					_say(peer, "toast.chopped", [state.pack.count(profile_id, str(Tuning.value("gather", "wood_item")))])
 				_progress("chop")
 			"take_sapling":
 				_say(peer, "toast.found", [Tuning.text("items.sapling")])
@@ -861,6 +928,17 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 				_say_all("toast.planted", [])
 				_sync_trees()
 				_progress("plant")
+			"drop":
+				_say(peer, "toast.dropped", [Tuning.text("items." + state.pack.last_item)])
+				_sync_bundles()
+			"pick_bundle":
+				_say(peer, "toast.found", [Tuning.text("items." + state.pack.last_item)])
+				_sync_bundles()
+			"deposit":
+				_say(peer, "toast.deposited", [])
+			"craft":
+				_say_all("toast.crafted", [state.camp["profiles"][profile_id]["name"], Tuning.text("build." + args[0])])
+				_progress("craft:" + str(args[0]))
 			"forage":
 				_say(peer, "toast.found", [Tuning.text("items." + state.gather.last_item)])
 				_sync_forage()
@@ -1107,32 +1185,20 @@ static func time_text(hour: float) -> String:
 	return Tuning.text("clock.time") % [12 if h == 0 else h, m, Tuning.text("clock.pm" if pm else "clock.am")]
 
 
-## The top-right line: season, day, time, coins and wood.
+## The top-right line: season, day, time and coins.
 func clock_line() -> String:
 	var cal: Dictionary = state.camp["calendar"]
 	return Tuning.text("clock.line") % [Tuning.text("clock.season." + str(cal.get("season", "spring"))),
-			int(cal.get("day", 1)), time_text(state.day.hour()), int(state.camp.get("coins", 0)),
-			int(state.camp.get("wood", 0))]
+			int(cal.get("day", 1)), time_text(state.day.hour()), int(state.camp.get("coins", 0))]
 
 
-## Under the pockets: the Today list, one task a line.
+## Under the clock: the first few Today tasks with their live counts (data/tuning.json hud.today_max; the
+## clipboard has them all).
 func today_lines() -> String:
 	var out := "\n" + Tuning.text("hud.today")
-	for row: Dictionary in state.tasks.active():
+	var rows: Array = state.tasks.active()
+	for row: Dictionary in rows.slice(0, int(Tuning.num("tuning", "hud.today_max", 3))):
 		out += "\n" + CampTasks.line(row, true)
-	return out
-
-
-## Under the clock: what each local player carries in their pockets, or "" when they are empty.
-func pockets_lines() -> String:
-	var out := ""
-	for id in local_ids():
-		var names: PackedStringArray = []
-		for item in (state.pockets.pockets(id) if state.camp["profiles"].has(id) else []):
-			names.append(Tuning.text("items." + str(item)))
-		if not names.is_empty():
-			out += "\n" + (Tuning.text("prompt.pockets_for") % [state.camp["profiles"][id]["name"], ", ".join(names)]
-					if couch_id != "" else Tuning.text("prompt.pockets") % ", ".join(names))
 	return out
 
 
@@ -1326,6 +1392,7 @@ func _send_home(id: String) -> void:
 func _share() -> void:
 	for guest: int in _guests:
 		_shared.rpc_id(guest, state.shared())
+	_refresh_boards()
 
 
 ## The host's shared day: coins, the calendar, the guests and who is ready for bed.
@@ -1336,6 +1403,8 @@ func _shared(data: Dictionary) -> void:
 		_sync_stays(true)
 		_sync_forage()
 		_sync_trees()
+		_sync_bundles()
+		_refresh_boards()
 
 
 @rpc("authority", "call_remote", "unreliable_ordered")
@@ -1392,11 +1461,11 @@ func toggle_build(who: String, kind: String = "") -> void:
 	_place_ghost(who)
 
 
-## Build mode on the next kind of building (data/build.json kinds, in order), keeping the turn.
+## Build mode on the next kind of building the kit holds (data/build.json kinds, in order), keeping the turn.
 func next_kind(who: String) -> void:
 	if not _building.has(who):
 		return
-	var kinds := CampBuild.kinds().keys()
+	var kinds := state.build.available()
 	var kind := str(kinds[(kinds.find(_building[who]["kind"]) + 1) % kinds.size()])
 	var yaw := float(_building[who]["yaw"])
 	toggle_build(who)
@@ -1438,10 +1507,10 @@ func _build_prompt(who: String) -> String:
 	var kind_name := Tuning.text("build." + str(b["kind"]))
 	if existing != "":
 		return Tuning.text("prompt.pack_here") % [Tuning.text("build." + CampBuild.kind_of(state, existing)),
-				CampBuild.cost_text(CampBuild.kind_of(state, existing))]
+				CampBuild.refund_text(CampBuild.kind_of(state, existing))]
 	if why != "":
 		return Tuning.text("prompt.build_blocked") % Tuning.text(why)
-	return Tuning.text("prompt.build_here") % [kind_name, CampBuild.cost_text(b["kind"])]
+	return Tuning.text("prompt.build_here") % [kind_name, state.build.cost_text(b["kind"])]
 
 
 ## Interact in build mode: pack away the building under the ghost, or build there.
@@ -1557,6 +1626,8 @@ func toggle_clipboard(who: String) -> void:
 
 func _refresh_boards() -> void:
 	_board_clock = Tuning.num("tuning", "clipboard.refresh_s", 0.25)
+	_refresh_bars()
+	_refresh_bench()
 	for who: String in _boards.keys():
 		if state == null or not local_ids().has(who):
 			toggle_clipboard(who)
@@ -1567,7 +1638,8 @@ func _refresh_boards() -> void:
 
 
 ## A clipboard tab's text for a player: "today" (the task list with places, goals and tomorrow), "bookings" (the
-## board and the guests staying now) or "supplies" (the wood pile, coins, everyone's pockets and the animals seen).
+## board and the guests staying now) or "supplies" (coins, the camp box, the build kit, everyone's Pack and the
+## animals seen).
 func clipboard_text(who: String, tab: String) -> String:
 	var lines: Array[String] = []
 	match tab:
@@ -1593,13 +1665,22 @@ func clipboard_text(who: String, tab: String) -> String:
 						Tuning.text("build." + CampBuild.kind_of(state, str(stay["pitch"]))),
 						Tuning.text("request.want." + want) if want != "" else Tuning.text("clipboard.content")])
 		"supplies":
-			lines.append(Tuning.text("clipboard.stock") % [int(state.camp.get("wood", 0)), int(state.camp.get("coins", 0))])
+			lines.append(Tuning.text("clipboard.coins") % int(state.camp.get("coins", 0)))
+			var boxed: PackedStringArray = []
+			for item: String in state.camp["box"]:
+				boxed.append(Tuning.text("pack.slot") % [Tuning.text("items." + item), state.pack.box_count(item)])
+			lines.append(Tuning.text("clipboard.box") % (", ".join(boxed) if not boxed.is_empty() else Tuning.text("clipboard.empty")))
+			var kit: PackedStringArray = []
+			for kind in state.build.available():
+				if not CampBuild.is_free(kind):
+					kit.append(Tuning.text("pack.slot") % [Tuning.text("build." + kind), state.build.in_kit(kind)])
+			lines.append(Tuning.text("clipboard.kit") % (", ".join(kit) if not kit.is_empty() else Tuning.text("clipboard.empty")))
 			lines.append("")
 			for id: String in state.online:
 				var names: PackedStringArray = []
-				for item in state.pockets.pockets(id):
-					names.append(Tuning.text("items." + str(item)))
-				lines.append(Tuning.text("clipboard.pockets") % [state.camp["profiles"][id]["name"],
+				for st: Dictionary in state.pack.slots(id):
+					names.append(Tuning.text("pack.slot") % [Tuning.text("items." + str(st["item"])), int(st["n"])])
+				lines.append(Tuning.text("clipboard.pack") % [state.camp["profiles"][id]["name"],
 						", ".join(names) if not names.is_empty() else Tuning.text("clipboard.empty")])
 			lines.append("")
 			var seen: PackedStringArray = []
@@ -1608,3 +1689,100 @@ func clipboard_text(who: String, tab: String) -> String:
 			lines.append(Tuning.text("clipboard.animals") % [seen.size(), Wildlife.kinds().size(),
 					", ".join(seen) if not seen.is_empty() else Tuning.text("clipboard.none_yet")])
 	return "\n".join(lines)
+
+
+# --- Round 3: the Pack bar, dropped bundles and the workbench ------------------------------------------------------
+
+## Keeps a Pack bar for each player on this PC: player one's bottom centre (bottom left with a couch player), the
+## couch player's bottom right.
+func _refresh_bars() -> void:
+	var mine := local_ids() if state != null else ([] as Array[String])
+	for who: String in _bars.keys():
+		if not mine.has(who):
+			_bars[who].queue_free()
+			_bars.erase(who)
+	for who in mine:
+		if not campers.has(who) or not state.camp["profiles"].has(who):
+			continue
+		if not _bars.has(who):
+			var bar := PackBar.new()
+			bar.name = "Pack_" + who
+			$Hud.add_child(bar)
+			_bars[who] = bar
+		var bar: PackBar = _bars[who]
+		bar.dock("right" if who == couch_id else ("left" if couch_id != "" else "centre"))
+		var stacks := state.pack.slots(who)
+		_picked[who] = clampi(int(_picked.get(who, 0)), 0, maxi(stacks.size() - 1, 0))
+		bar.show_pack(stacks, int(_picked[who]), Prompts.fill(Tuning.text("pack.hint"), _pad if who == profile["id"] else true))
+
+
+## Dropped bundles on screen follow the camp's.
+func _sync_bundles() -> void:
+	if state == null:
+		return
+	var bundles: Dictionary = state.camp["bundles"]
+	for id: String in _bundle_nodes.keys():
+		if not bundles.has(id):
+			_bundle_nodes[id].queue_free()
+			_bundle_nodes.erase(id)
+	for id: String in bundles:
+		if not _bundle_nodes.has(id):
+			var p: Vector2 = CampPack.bundle_pos(bundles[id])
+			_bundle_nodes[id] = clearing.place({"model": str(Tuning.value("items", "bundle.model", "bundle")),
+					"pos": [p.x, p.y], "yaw": hash(id) % 360})
+
+
+## Opens the workbench panel for a player on this PC: the recipes, what each needs and what they have; the camper
+## stands still while it is open.
+func open_bench(who: String) -> void:
+	if _bench.has(who) or not campers.has(who):
+		return
+	var panel := Clipboard.new()
+	panel.name = "Bench_" + who
+	panel.heading = Tuning.text("bench.title")
+	$Hud.add_child(panel)
+	panel.dock(who == couch_id)
+	_bench[who] = {"panel": panel, "pick": 0}
+	campers[who].controlled = false
+	campers[who].velocity = Vector3.ZERO
+	_refresh_bench()
+
+
+func close_bench(who: String) -> void:
+	if not _bench.has(who):
+		return
+	var panel: Clipboard = _bench[who]["panel"]
+	_bench.erase(who)
+	panel.get_parent().remove_child(panel)
+	panel.queue_free()
+	if campers.has(who) and _menu_for != who:
+		campers[who].controlled = true
+
+
+## The workbench panel's text for a player: each recipe (the picked one marked) with its needs as have/need.
+func bench_text(who: String, pick: int) -> String:
+	var lines: Array[String] = []
+	var recipes := CampBuild.recipes()
+	for i in recipes.size():
+		var r: Dictionary = recipes[i]
+		var needs: PackedStringArray = []
+		if int(r.get("coins", 0)) > 0:
+			needs.append(Tuning.text("bench.coins") % [int(state.camp.get("coins", 0)), int(r["coins"])])
+		for item: String in r.get("items", {}):
+			needs.append(Tuning.text("bench.need") % [Tuning.text("items." + item), state.pack.have(who, item),
+					int(r["items"][item])])
+		var ready := state.build.can_craft(who, str(r["kind"])) == ""
+		lines.append(Tuning.text("bench.row_picked" if i == pick else "bench.row") % [Tuning.text("build." + str(r["kind"])),
+				", ".join(needs), Tuning.text("bench.ready" if ready else "bench.short"),
+				maxi(state.build.in_kit(str(r["kind"])), 0)])
+	return "\n".join(lines)
+
+
+func _refresh_bench() -> void:
+	for who: String in _bench.keys():
+		if state == null or not local_ids().has(who):
+			close_bench(who)
+			continue
+		var panel: Clipboard = _bench[who]["panel"]
+		panel.show_text(bench_text(who, int(_bench[who]["pick"])), Prompts.fill(Tuning.text("bench.hint"),
+				_pad if who == profile["id"] else true))

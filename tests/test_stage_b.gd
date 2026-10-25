@@ -133,10 +133,10 @@ func test_three_days_of_play_from_the_buttons() -> String:
 		await _tree().process_frame
 		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.fish"), false)):
 			why = "by the pond the prompt should offer to fish, got " + camp.get_node("Hud/Prompt").text
-		elif not await _use(camp, "p_host") or s.pockets.first_of("p_host", "fish") == "":
+		elif not await _use(camp, "p_host") or s.pack.first_of("p_host", "fish") == "":
 			why = "interact by the pond should cast and catch a fish"
-		elif not camp.get_node("Hud/Clock").text.contains(Tuning.text("items." + s.pockets.first_of("p_host", "fish"))):
-			why = "the HUD should list what's in the pockets"
+		elif not camp._bars["p_host"].slot_text(0).contains(Tuning.text("items." + s.pack.first_of("p_host", "fish"))):
+			why = "the Pack bar should show the catch"
 	# Chop a tree for the fire's wood.
 	if why == "":
 		var tree: Dictionary = CampGather.trees()[0]
@@ -144,13 +144,13 @@ func test_three_days_of_play_from_the_buttons() -> String:
 		await _tree().process_frame
 		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.chop") % 3, false)):
 			why = "by a tree the prompt should offer to chop, got " + camp.get_node("Hud/Prompt").text
-		elif not await _use(camp, "p_host") or int(s.camp["wood"]) != 1:
-			why = "interact by a tree should chop one wood onto the pile"
+		elif not await _use(camp, "p_host") or s.pack.count("p_host", "wood") != 1:
+			why = "interact by a tree should chop one wood into the Pack"
 		elif not camp.get_node("Hud/Clock").text.contains(CampTasks.line({"id": "first_bench", "have": 0}, true)):
 			why = "the HUD's Today list should move on from the first chop, got " + camp.get_node("Hud/Clock").text
 	if why == "":
 		_stand(camp, "p_host", Vector2(1.3, 0.3))
-		if not await _use(camp, "p_host") or s.pockets.first_of("p_host", "meal") == "":
+		if not await _use(camp, "p_host") or s.pack.first_of("p_host", "meal") == "":
 			why = "interact by the fire with a fish should grill it"
 	if why == "":
 		_stand(camp, "p_host", s.day.stand_point(stay) + Vector2(0.8, 0))
@@ -160,7 +160,27 @@ func test_three_days_of_play_from_the_buttons() -> String:
 			why = "interact by the guest should hand over the meal and get the tip"
 		elif camp.visitors[stay].get_node("Name").text.contains("\n"):
 			why = "a met request should leave the guest's label"
-	# A second kind of building: the next-kind button.
+	# Craft a water point at the workbench, then the next-kind button finds it in build mode.
+	if why == "":
+		s.camp["coins"] = int(s.camp["coins"]) + 50
+		s.pack.add_to_box("wood", 10)
+		_stand(camp, "p_host", CampBuild.bench_pos() + Vector2(0.0, -1.2))
+		await _tree().process_frame
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.bench"), false)):
+			why = "by the workbench the prompt should offer it, got " + camp.get_node("Hud/Prompt").text
+		camp._unhandled_input(_key("interact"))
+		if why == "" and not camp._bench.has("p_host"):
+			why = "interact by the workbench should open its panel"
+		if why == "":
+			var pick := CampBuild.recipes().map(func(r: Dictionary) -> String: return r["kind"]).find("water_point")
+			for i in pick:
+				camp._unhandled_input(_key("next_kind"))
+			camp._unhandled_input(_key("interact"))
+			if s.build.in_kit("water_point") != 1:
+				why = "interact on the picked recipe should craft a water point into the kit"
+			camp._unhandled_input(_key("cancel"))
+			if camp._bench.has("p_host") or not camp.campers["p_host"].controlled:
+				why = "cancel should close the workbench and free the camper"
 	if why == "":
 		camp._unhandled_input(_key("build"))
 		camp._unhandled_input(_key("next_kind"))
@@ -224,9 +244,9 @@ func test_the_guest_pc_fishes_gives_and_books_through_the_host() -> String:
 		await _until(func() -> bool: return host.state.player_pos("p_guest").distance_to(_shore()) < 0.05)
 		guest.interact("p_guest")
 		guest._busy["p_guest"]["left"] = 0.0
-		if not await _until(func() -> bool: return guest.state.pockets.first_of("p_guest", "fish") != ""):
+		if not await _until(func() -> bool: return guest.state.pack.first_of("p_guest", "fish") != ""):
 			why = "the guest PC's catch should come back from the host"
-		elif host.state.pockets.first_of("p_guest", "fish") == "":
+		elif host.state.pack.first_of("p_guest", "fish") == "":
 			why = "the host should keep the guest's catch"
 	if why == "":
 		var stay: String = host.state.camp["stays"].keys()[0]
@@ -277,12 +297,12 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 		why = "the felled tree should hide, leaving a stump and a sapling beside it"
 	if why == "":
 		camp._unhandled_input(_key("interact"))
-		if s.pockets.first_of("p_host", "plant") != "sapling":
+		if s.pack.first_of("p_host", "plant") != "sapling":
 			why = "interact by the stump should pick up the sapling"
 	if why == "":
 		await _tree().process_frame
 		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.plant"), false)):
-			why = "with a sapling in the pockets the stump should offer to plant, got " + camp.get_node("Hud/Prompt").text
+			why = "with a sapling in the Pack the stump should offer to plant, got " + camp.get_node("Hud/Prompt").text
 		camp._unhandled_input(_key("interact"))
 		if s.gather.tree(index)["stage"] != "sapling" or (camp._tree_props.get(index, []) as Array).size() != 1:
 			why = "interact should plant the sapling at the stump, and show it"
@@ -300,7 +320,7 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 				why = "the next tab should show the bookings, got " + board.text()
 			camp._unhandled_input(_key("camera_right"))
 			if why == "" and (board.tab_name() != "supplies" or not board.text().contains(
-					Tuning.text("clipboard.stock") % [int(s.camp["wood"]), int(s.camp["coins"])])):
+					Tuning.text("clipboard.coins") % int(s.camp["coins"]))):
 				why = "the third tab should show the supplies, got " + board.text()
 			camp._unhandled_input(_key("clipboard"))
 			if why == "" and (camp._boards.has("p_host") or camp.camera.hold_turn):
@@ -315,14 +335,68 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 		camp._unhandled_input(_key("interact"))
 		await _tree().physics_frame
 		await _tree().physics_frame
-		var wood := int(s.camp["wood"])
+		var wood := s.pack.box_count("wood")
 		if s.carried_by("p_host") != log_id or camp.campers["p_host"].speed_scale >= 1.0:
 			why = "the long log should be picked up and go slowly alone"
 		else:
 			_stand(camp, "p_host", Vector2(0.0, 2.6))
 			camp.campers["p_host"].rotation.y = 0.0
 			camp._unhandled_input(_key("interact"))
-			if s.camp["objects"].has(log_id) or int(s.camp["wood"]) <= wood:
+			if s.camp["objects"].has(log_id) or s.pack.box_count("wood") <= wood:
 				why = "set down by the fire the log should split into wood"
+	await _done()
+	return why
+
+
+## Round 3 from the buttons: pick a Pack slot, drop it as a bundle, pick it back up, fill the camp box; and with a
+## full Pack, long words and a busy screen every HUD piece stays inside the view (the owner saw the top line run off).
+func test_dropping_the_camp_box_and_a_hud_that_stays_on_screen() -> String:
+	_fresh()
+	var camp := _camp("RoundThree", "p_host", "Hana")
+	camp.start_solo(1)
+	var s: CampState = camp.state
+	var why := ""
+	s.pack.add("p_host", "berries", 2)
+	s.pack.add("p_host", "stick", 5)
+	_stand(camp, "p_host", Vector2(-3.0, 6.0))
+	camp._unhandled_input(_key("next_kind"))
+	if int(camp._picked.get("p_host", 0)) != 1:
+		why = "next kind outside build mode should pick the next Pack slot"
+	if why == "":
+		camp._unhandled_input(_key("drop"))
+		if s.pack.count("p_host", "stick") != 0 or s.camp["bundles"].size() != 1 or camp._bundle_nodes.size() != 1:
+			why = "the drop button should set the picked stack down as a bundle you can see"
+	if why == "":
+		await _tree().process_frame
+		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.pick_bundle")
+				% [Tuning.text("items.stick"), 5], false)):
+			why = "by a bundle the prompt should offer to pick it up, got " + camp.get_node("Hud/Prompt").text
+		camp._unhandled_input(_key("interact"))
+		if s.pack.count("p_host", "stick") != 5 or not s.camp["bundles"].is_empty() or not camp._bundle_nodes.is_empty():
+			why = "interact should pick the whole bundle back up"
+	if why == "":
+		_stand(camp, "p_host", CampPack.box_pos() + Vector2(0.9, -0.4))
+		await _tree().process_frame
+		camp._unhandled_input(_key("interact"))
+		if s.pack.box_count("stick") != 5 or s.pack.count("p_host", "berries") != 2:
+			why = "interact by the camp box should put the sticks in and keep the berries"
+	if why == "":
+		var cap := int(Tuning.num("items", "stack_max"))
+		s.camp["profiles"]["p_host"]["pack"] = []
+		for item in ["grilled_sunfish", "grilled_perch", "grilled_trout", "berries", "sapling", "stick", "wood", "sunfish"]:
+			s.pack.add("p_host", item, cap)
+		for i in 4:
+			camp._toast(Tuning.text("toast.crafted") % ["Hana", Tuning.text("build.lantern_post")])
+		camp._unhandled_input(_key("clipboard"))
+		for f in 3:
+			await _tree().process_frame
+		var view: Rect2 = camp.get_viewport().get_visible_rect()
+		var pieces: Array[Control] = [camp.get_node("Hud/Clock"), camp.get_node("Hud/Hint"), camp.get_node("Hud/Toast"),
+				camp.get_node("Hud/Prompt"), camp._bars["p_host"], camp._boards["p_host"]]
+		for c in pieces:
+			var r := c.get_global_rect()
+			if not view.encloses(r):
+				why = "%s should stay inside the view %s, got %s" % [c.name, view, r]
+				break
 	await _done()
 	return why

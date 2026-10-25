@@ -18,7 +18,7 @@ func _done() -> void:
 func test_new_camp_has_room_for_the_whole_year() -> String:
 	var camp := CampSave.new_camp()
 	var missing: PackedStringArray = []
-	for key in ["version", "calendar", "coins", "wood", "ledger", "reservations", "areas", "staff", "visitors",
+	for key in ["version", "calendar", "coins", "box", "kit", "bundles", "ledger", "reservations", "areas", "staff", "visitors",
 			"rating", "journal", "mailbox", "objects", "next_object_id", "profiles"]:
 		if not camp.has(key):
 			missing.append(key)
@@ -29,7 +29,7 @@ func test_new_camp_has_room_for_the_whole_year() -> String:
 	if camp["areas"].size() != 5 or camp["staff"].size() != 3:
 		return "the plan has five areas and three staff roles, got %d and %d" % [camp["areas"].size(), camp["staff"].size()]
 	var who := CampSave.new_profile("Hana", "camper_a")
-	for key in ["name", "look", "outfit", "outfits", "pet", "pockets", "pos", "link_code"]:
+	for key in ["name", "look", "outfit", "outfits", "pet", "pack", "pos", "link_code"]:
 		if not who.has(key):
 			return "a new profile is missing " + key
 	if not camp["objects"].has("chair_teal_1"):

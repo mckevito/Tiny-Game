@@ -18,9 +18,9 @@
     "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {clipboard} clipboard · {menu} for the menu",
     "drop_in": "A friend can drop in: {menu} on a second controller",
     "for_player": "%s: %s",
-    "build_here": "{interact} Make a %s here (%s) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
+    "build_here": "{interact} Put a %s here (%s) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
     "build_blocked": "%s · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
-    "pack_here": "{interact} Pack away this %s (+%s back) · {undo} undo · {build} done",
+    "pack_here": "{interact} Pack away this %s (%s back) · {undo} undo · {build} done",
     "sleep_wait": "Ready for bed: %s (%d of %d). {menu} for the menu to join in.",
     "bed_open": "The evening is here. When you are ready, {menu} and choose Ready for bed.",
     "fish": "{interact} Fish",
@@ -28,15 +28,16 @@
     "cook": "{interact} Grill your %s",
     "cooking": "Grilling…",
     "give": "{interact} Give %s your %s",
-    "pockets": "Pockets: %s",
-    "pockets_for": "%s's pockets: %s",
     "report_close": "{interact} Start the day",
     "chop": "{interact} Chop wood (%d left in this tree)",
     "chopping": "Chopping…",
     "forage": "{interact} Pick up the %s",
     "take_sapling": "{interact} Pick up the sapling",
     "plant": "{interact} Plant a sapling here",
-    "log_alone": "Heavy! It goes faster with a friend beside you."
+    "log_alone": "Heavy! It goes faster with a friend beside you.",
+    "pick_bundle": "{interact} Pick up the %s (%d)",
+    "bench": "{interact} Use the workbench",
+    "deposit": "{interact} Put your wood and sticks in the camp box"
   },
   "menu": {
     "title": "Our Little Campground",
@@ -99,19 +100,22 @@
     "not_here": "You are not in the camp.",
     "building": "Put the build tools away first.",
     "not_buildable": "That can't be built here.",
-    "pockets_full": "Your pockets are full. Give something away first.",
     "no_water": "Find the water's edge to fish.",
     "no_fire": "Grilling needs the campfire.",
     "no_fish": "You need a fish to grill.",
     "nothing_to_give": "You have nothing they asked for.",
     "no_request": "They don't need anything right now.",
     "no_booking": "That booking isn't on the board any more.",
-    "wood": "Not quite enough wood for that yet. The trees will give you some.",
     "nothing_here": "There's nothing left here today.",
-    "no_wood": "The fire needs a piece of wood first. Chop a tree or pick up sticks.",
+    "no_wood": "The fire needs a stick or a piece of wood. Gather some, or put some in the camp box.",
     "no_tree": "This tree is down. Plant a sapling at its stump and it will grow back.",
     "no_stump": "Saplings go in a bare stump.",
-    "no_sapling": "You need a sapling for that. A fallen tree drops one."
+    "no_sapling": "You need a sapling for that. A fallen tree drops one.",
+    "pack_full": "Your Pack is full. Drop something ({drop}) or put materials in the camp box.",
+    "not_in_kit": "None in the kit yet. Craft one at the workbench.",
+    "materials": "Not quite enough materials for that yet.",
+    "nothing_to_drop": "Nothing in that slot.",
+    "nothing_to_box": "Only wood and sticks go in the camp box."
   },
   "toast": {
     "joined": "%s joined the camp.",
@@ -130,13 +134,16 @@
     "booking_declined": "You let %s know there's no room this time. No hard feelings.",
     "booking_arrived": "%s have arrived!",
     "booking_offer": "A new booking is on the board: %s.",
-    "chopped": "Chop! The wood pile has %d.",
+    "chopped": "Chop! +1 wood (%d in your Pack).",
     "found": "You picked up the %s.",
     "spotted_new": "You spotted a %s! It is in the journal now.",
     "task_done": "Done: %s! +%d coins.",
     "felled": "Timber! The tree fell and dropped a sapling by its stump.",
     "planted": "Planted! It will be a tree again in a couple of mornings.",
-    "log_split": "The long log splits into %d wood for the pile!"
+    "log_split": "The long log splits into %d wood for the camp box!",
+    "dropped": "You set down the %s.",
+    "deposited": "Into the camp box it goes.",
+    "crafted": "%s made a %s! It is in the build kit now."
   },
   "build": {
     "pitch": "tent pitch",
@@ -144,10 +151,11 @@
     "lantern_post": "lantern post",
     "log_bench": "log bench",
     "coins": "%d coins",
-    "wood": "%d wood"
+    "in_kit": "%d in the kit",
+    "to_kit": "into the kit"
   },
   "clock": {
-    "line": "%s, day %d · %s · %d coins · %d wood",
+    "line": "%s, day %d · %s · %d coins",
     "time": "%d:%02d %s",
     "am": "am",
     "pm": "pm",
@@ -190,7 +198,8 @@
     "grilled_sunfish": "grilled sunfish",
     "berries": "berries",
     "stick": "sticks",
-    "sapling": "sapling"
+    "sapling": "sapling",
+    "wood": "wood"
   },
   "request": {
     "say": {
@@ -287,7 +296,7 @@
     "hud_line": "%s  %d/%d",
     "first_sticks": "Pick up fallen sticks",
     "first_chop": "Chop a tree for wood",
-    "first_bench": "Build a log bench",
+    "first_bench": "Craft a log bench at the workbench and place it",
     "first_fish": "Catch a fish",
     "first_grill": "Grill a fish at the fire",
     "first_pitch": "Make a new tent pitch",
@@ -335,10 +344,26 @@
     "nobody": "Nobody yet. Guests come to a free pitch in the afternoon.",
     "stay": "%s at the %s: would like %s",
     "content": "nothing more, happy as can be",
-    "stock": "Wood pile: %d · Coins: %d",
-    "pockets": "%s's pockets: %s",
     "empty": "empty",
     "animals": "Animals spotted: %d of %d (%s)",
-    "none_yet": "none yet"
+    "none_yet": "none yet",
+    "coins": "Coins: %d",
+    "box": "Camp box: %s",
+    "kit": "Build kit: %s",
+    "pack": "%s's Pack: %s"
+  },
+  "pack": {
+    "slot": "%s ×%d",
+    "hint": "{next_kind} pick a slot · {drop} drop it"
+  },
+  "bench": {
+    "title": "Workbench",
+    "row": "   %s: %s (%s, %d in the kit)",
+    "row_picked": "▶ %s: %s (%s, %d in the kit)",
+    "need": "%s %d/%d",
+    "coins": "coins %d/%d",
+    "ready": "ready",
+    "short": "not yet",
+    "hint": "{tabs} or {next_kind} pick · {interact} craft · {cancel} done"
   }
 }

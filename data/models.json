@@ -285,6 +285,39 @@
       {"shape": "stitch", "from": [-1.1, 0.41, -0.02], "to": [1.1, 0.41, -0.02], "color": "honey_thread"}
     ]
   },
+  "workbench": {
+    "collide": {"box": [1.4, 0.8, 0.7], "offset": [0, 0.4, 0]},
+    "parts": [
+      {"shape": "box", "size": [1.4, 0.12, 0.7], "pos": [0, 0.72, 0], "round": 0.03, "color": "wood_felt"},
+      {"shape": "box", "size": [0.12, 0.66, 0.12], "pos": [-0.58, 0.33, -0.26], "color": "bark_brown"},
+      {"shape": "box", "size": [0.12, 0.66, 0.12], "pos": [0.58, 0.33, -0.26], "color": "bark_brown"},
+      {"shape": "box", "size": [0.12, 0.66, 0.12], "pos": [-0.58, 0.33, 0.26], "color": "bark_brown"},
+      {"shape": "box", "size": [0.12, 0.66, 0.12], "pos": [0.58, 0.33, 0.26], "color": "bark_brown"},
+      {"shape": "box", "size": [1.2, 0.06, 0.5], "pos": [0, 0.2, 0], "color": "bark_brown"},
+      {"shape": "cylinder", "size": [0.08, 0.3, 0.08], "pos": [0.35, 0.86, -0.1], "rot": [0, 0, 90], "color": "rust_canvas"},
+      {"shape": "box", "size": [0.12, 0.1, 0.08], "pos": [0.52, 0.86, -0.1], "color": "ink_brown"},
+      {"shape": "box", "size": [0.4, 0.04, 0.28], "pos": [-0.3, 0.8, 0.08], "rot": [0, 15, 0], "color": "sand_felt"},
+      {"shape": "stitch", "from": [-0.66, 0.79, -0.33], "to": [0.66, 0.79, -0.33], "color": "honey_thread"}
+    ]
+  },
+  "camp_box": {
+    "collide": {"box": [1.0, 0.6, 0.6], "offset": [0, 0.3, 0]},
+    "parts": [
+      {"shape": "box", "size": [1.0, 0.5, 0.6], "pos": [0, 0.25, 0], "round": 0.04, "color": "wood_felt"},
+      {"shape": "box", "size": [1.06, 0.12, 0.66], "pos": [0, 0.56, 0], "round": 0.04, "color": "bark_brown"},
+      {"shape": "box", "size": [0.16, 0.14, 0.04], "pos": [0, 0.44, -0.31], "color": "honey_thread"},
+      {"shape": "stitch", "from": [-0.46, 0.08, -0.31], "to": [0.46, 0.08, -0.31], "color": "warm_cream"},
+      {"shape": "stitch", "from": [-0.46, 0.42, -0.31], "to": [0.46, 0.42, -0.31], "color": "warm_cream"}
+    ]
+  },
+  "bundle": {
+    "parts": [
+      {"shape": "sphere", "size": [0.42, 0.3, 0.42], "pos": [0, 0.15, 0], "color": "sand_felt"},
+      {"shape": "sphere", "size": [0.16, 0.14, 0.16], "pos": [0, 0.32, 0], "color": "sand_felt"},
+      {"shape": "ring", "size": [0.2, 0.0, 0.2], "pos": [0, 0.27, 0], "color": "rust_canvas"},
+      {"shape": "seam", "size": [0.43, 0.31, 0.43], "pos": [0, 0.15, 0], "count": 4, "from_lat": -40, "to_lat": 60, "color": "warm_cream"}
+    ]
+  },
   "fire_pit": {
     "collide": {"radius": 0.6, "height": 0.4},
     "light": {"pos": [0, 0.7, 0]},

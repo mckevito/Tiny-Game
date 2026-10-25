@@ -7,6 +7,8 @@ extends PanelContainer
 
 ## The tab showing now: an index into data/tuning.json clipboard.tabs.
 var tab := 0
+## A title shown instead of the tab row (the workbench panel uses the clipboard's look), or "".
+var heading := ""
 var _head := Label.new()
 var _body := Label.new()
 var _hint := Label.new()
@@ -67,6 +69,11 @@ func tab_name() -> String:
 
 ## Shows a tab's text: the tab row with the open one marked, the body, and the hint line.
 func show_text(body: String, hint: String) -> void:
+	if heading != "":
+		_head.text = heading
+		_body.text = body
+		_hint.text = hint
+		return
 	var names: PackedStringArray = []
 	for i in tabs().size():
 		var label := Tuning.text("clipboard.tab." + str(tabs()[i]))

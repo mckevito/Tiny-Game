@@ -1,6 +1,5 @@
 {
-  "_about": "Stage B's fishing and cooking (scripts/camp/camp_pockets.gd). A player fishes within the radius (metres) of a water model's centre in data/clearing.json and grills at a fire model's; each takes cast_s or cook_s of real time and never fails. A catch is picked by weight. Grilling turns the first raw fish in your pockets into its recipe. Pockets hold pockets_max items; nothing is ever lost (a full pocket just can't take more). items: each item's kind (fish or meal), which requests ask for (data/guests.json). The bobber shows where the line is while fishing, cast_m ahead of the player.",
-  "pockets_max": 6,
+  "_about": "Stage B's fishing and cooking (scripts/camp/camp_pack.gd). A player fishes within the radius (metres) of a water model's centre in data/clearing.json and grills at a fire model's; each takes cast_s or cook_s of real time and never fails. A catch is picked by weight. Grilling turns the first raw fish in your Pack into its recipe. Catches and meals go into the Pack (data/items.json), and grilling burns fuel from there. The bobber shows where the line is while fishing, cast_m ahead of the player.",
   "waters": {"pond": 4.4},
   "fires": {"fire_pit": 2.0},
   "cast_s": 2.5,
@@ -11,15 +10,5 @@
     {"item": "trout", "weight": 3},
     {"item": "sunfish", "weight": 2}
   ],
-  "recipes": {"perch": "grilled_perch", "trout": "grilled_trout", "sunfish": "grilled_sunfish"},
-  "items": {
-    "perch": {"kind": "fish"},
-    "trout": {"kind": "fish"},
-    "sunfish": {"kind": "fish"},
-    "grilled_perch": {"kind": "meal"},
-    "grilled_trout": {"kind": "meal"},
-    "grilled_sunfish": {"kind": "meal"},
-    "berries": {"kind": "fruit"},
-    "sapling": {"kind": "plant"}
-  }
+  "recipes": {"perch": "grilled_perch", "trout": "grilled_trout", "sunfish": "grilled_sunfish"}
 }

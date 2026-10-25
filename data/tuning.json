@@ -66,7 +66,8 @@
     "report_ink_swatch": "ink_brown",
     "title_font_px": 40,
     "menu_width_px": 560,
-    "menu_font_px": 28
+    "menu_font_px": 28,
+    "today_max": 3
   },
   "clipboard": {
     "_about": "The clipboard (scripts/camp/clipboard.gd): tabs in order (text: clipboard.tab.<name>), the panel width, font, gap from the screen edge and from the top, the margin, the edge and the thicker top edge (the clip), the felt swatches, and how often its text refreshes.",
@@ -78,12 +79,27 @@
     "width_px": 560,
     "font_px": 22,
     "gap_px": 24,
-    "top_px": 110,
+    "top_px": 150,
     "margin_px": 22,
     "edge_px": 6,
     "clip_px": 18,
     "swatch": "warm_cream",
     "edge_swatch": "honey_thread",
     "refresh_s": 0.25
+  },
+  "pack_bar": {
+    "_about": "The Pack bar (scripts/camp/pack_bar.gd): each slot is slot_px wide, gap_px apart, with margin_px inside, corner_px corners and an edge_px edge (picked: picked_px, picked_swatch); font_px text; bottom_px above the screen edge; the hint line has a hint_outline_px outline.",
+    "slot_px": 104,
+    "gap_px": 6,
+    "margin_px": 6,
+    "corner_px": 10,
+    "edge_px": 3,
+    "picked_px": 6,
+    "swatch": "warm_cream",
+    "edge_swatch": "honey_thread",
+    "picked_swatch": "rust_canvas",
+    "font_px": 19,
+    "bottom_px": 12,
+    "hint_outline_px": 6
   }
 }
