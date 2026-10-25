@@ -1,6 +1,6 @@
 class_name CampGather
 extends RefCounted
-## Gathering: chopping the clearing's trees for wood and picking up what the forage spots hold. A tree gives a few
+## Gathering: chopping the clearing's trees for wood (into the chopper's Pack) and picking up what the forage spots hold. A tree gives a few
 ## wood, then falls: a stump stays and a sapling drops beside it to pick up and plant back at a stump, where it grows
 ## into a tree again in a few mornings (like Animal Crossing). Forage spots refill each morning. Wood goes on the camp's
 ## shared wood pile. The host's copy decides; every rule takes a profile ID and returns "" or a text key.
@@ -94,7 +94,7 @@ func _check_tree(profile_id: String, index: int) -> String:
 	return ""
 
 
-## A chop: one wood from the tree onto the camp's pile. The last chop fells it: a stump stays and a sapling drops
+## A chop: one wood from the tree into the chopper's Pack (it stays in the tree while the Pack is full). The last chop fells it: a stump stays and a sapling drops
 ## beside it. `felled` says whether this chop did.
 var felled := false
 
@@ -106,33 +106,35 @@ func chop(profile_id: String, index: int) -> String:
 		return why
 	if wood_left(index) <= 0:
 		return "deny.no_tree"
+	var wood := str(_v("wood_item", "wood"))
+	if state.pack.room_for(profile_id, wood) <= 0:
+		return "deny.pack_full"
 	var row := tree(index).duplicate()
 	row["chops"] = int(row["chops"]) + 1
 	if int(row["chops"]) >= int(_v("trees.wood_per_tree", 3)):
 		row = {"chops": 0, "stage": "stump", "sapling_out": true, "planted": 0}
 		felled = true
 	_set_tree(index, row)
-	state.camp["wood"] = int(state.camp.get("wood", 0)) + 1
+	state.pack.add(profile_id, wood)
 	return ""
 
 
-## Picks up the sapling lying by a fallen tree's stump into the pockets (it waits there while they are full).
+## Picks up the sapling lying by a fallen tree's stump into the Pack (it waits there while the Pack is full).
 func take_sapling(profile_id: String, index: int) -> String:
 	var why := _check_tree(profile_id, index)
 	if why != "":
 		return why
 	if not bool(tree(index)["sapling_out"]):
 		return "deny.nothing_here"
-	if state.pockets.pockets(profile_id).size() >= int(Tuning.num("fishing", "pockets_max", 6)):
-		return "deny.pockets_full"
+	if state.pack.add(profile_id, str(_v("trees.sapling_item", "sapling"))) <= 0:
+		return "deny.pack_full"
 	var row := tree(index).duplicate()
 	row["sapling_out"] = false
 	_set_tree(index, row)
-	state.pockets.pockets(profile_id).append(str(_v("trees.sapling_item", "sapling")))
 	return ""
 
 
-## Plants a sapling from the pockets at a bare stump. It grows back into the tree after grow_days mornings.
+## Plants a sapling from the Pack at a bare stump. It grows back into the tree after grow_days mornings.
 func plant(profile_id: String, index: int) -> String:
 	var why := _check_tree(profile_id, index)
 	if why != "":
@@ -140,9 +142,8 @@ func plant(profile_id: String, index: int) -> String:
 	if tree(index)["stage"] != "stump" or bool(tree(index)["sapling_out"]):
 		return "deny.no_stump"
 	var item := str(_v("trees.sapling_item", "sapling"))
-	if not state.pockets.pockets(profile_id).has(item):
+	if not state.pack.remove(profile_id, item):
 		return "deny.no_sapling"
-	state.pockets.pockets(profile_id).erase(item)
 	_set_tree(index, {"chops": 0, "stage": "sapling", "sapling_out": false, "planted": state.day.today()})
 	return ""
 
@@ -174,7 +175,7 @@ func spot_near(pos: Vector2) -> int:
 	return best
 
 
-## Picks up what a forage spot holds: wood items go on the pile, others into the pockets.
+## Picks up what a forage spot holds into the Pack (it stays on its spot while the Pack is full).
 func forage(profile_id: String, index: int) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
@@ -184,12 +185,8 @@ func forage(profile_id: String, index: int) -> String:
 			> float(_v("forage_reach_m", 1.3)) + Tuning.num("tuning", "carry.reach_slack_m"):
 		return "deny.too_far"
 	last_item = str(spots()[index]["item"])
-	if (_v("wood_items", []) as Array).has(last_item):
-		state.camp["wood"] = int(state.camp.get("wood", 0)) + 1
-	else:
-		if state.pockets.pockets(profile_id).size() >= int(Tuning.num("fishing", "pockets_max", 6)):
-			return "deny.pockets_full"
-		state.pockets.pockets(profile_id).append(last_item)
+	if state.pack.add(profile_id, last_item) <= 0:
+		return "deny.pack_full"
 	state.camp["forage"][str(index)] = true
 	return ""
 
@@ -221,11 +218,11 @@ static func log_by_fire(model: String, pos: Vector2) -> bool:
 	return false
 
 
-## Splits a long log by the fire into wood on the pile; the log is gone until the next morning lays another.
+## Splits a long log by the fire into wood in the camp box; the log is gone until the next morning lays another.
 func split_log(id: String) -> int:
 	var wood := int(_v("long_log.wood", 6))
 	state.camp["objects"].erase(id)
-	state.camp["wood"] = int(state.camp.get("wood", 0)) + wood
+	state.pack.add_to_box(str(_v("wood_item", "wood")), wood)
 	return wood
 
 

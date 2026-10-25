@@ -174,7 +174,7 @@ found days 1 to 3 blank (decision log), so round 2 below fills them; sign-off wa
 
 | Proof | Test | Result |
 |---|---|---|
-| Fishing at the pond always catches one of three fish by weight; grilling at the fire turns a raw fish into a meal; pockets hold a few items and a full pocket refuses more without losing anything | `test_guests.test_fishing_and_grilling_fill_the_pockets_and_never_fail` | Passing |
+| Fishing at the pond always catches one of three fish by weight; grilling at the fire turns a raw fish into a meal; pockets hold a few items and a full pocket refuses more without losing anything | `test_guests.test_fishing_and_grilling_fill_the_pack_and_never_fail` | Passing |
 | Each guest brings one small request (a fish, a grilled fish, a chair by their tent), shown over their head; handing the item over or setting a chair by the tent meets it and tips at once | `test_guests.test_a_request_is_met_by_a_gift_or_a_chair_and_tips_at_once` | Passing |
 | One improvement choice: a water point (comfort) or a lantern post (atmosphere), built from build mode with the next-kind button | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_guests.test_each_stay_is_scored_once_with_a_line_that_names_its_cause` | Passing |
 | Satisfaction: each stay is scored once when it ends (comfort, things to do, atmosphere); the guest tips by points and leaves a line naming what they loved and what they wished for | `test_guests.test_each_stay_is_scored_once_with_a_line_that_names_its_cause` | Passing |
@@ -195,7 +195,7 @@ From the owner's feedback and the research report (Cozy first days and clipboard
 |---|---|---|
 | A tree gives a few wood, then falls: a stump stays and a sapling drops beside it (it waits there while pockets are full); planted at a bare stump it grows back in a couple of mornings | `test_gather.test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted` | Passing |
 | Forage spots refill each morning: sticks go onto the wood pile, berries into the pockets from day 2 | `test_gather.test_forage_spots_refill_each_morning_and_berries_wait_for_day_two` | Passing |
-| Wood is spent: the log bench costs wood (packing gives it back) and grilling burns one | `test_gather.test_the_log_bench_costs_wood_and_packing_gives_it_back`, `test_guests.test_fishing_and_grilling_fill_the_pockets_and_never_fail` | Passing |
+| Wood is spent: the log bench costs wood (packing gives it back) and grilling burns one | `test_gather.test_crafted_things_go_into_the_kit_and_build_mode_places_them` (round 3: the bench is crafted), `test_guests.test_fishing_and_grilling_fill_the_pack_and_never_fail` | Passing |
 | The Today list: the firsts teach day 1 in order (sticks, chop, bench, fish, grill, pitch, plant), each pays a bonus, then daily tasks cycle; either player's step counts | `test_gather.test_the_today_list_teaches_with_firsts_then_cycles_daily_tasks` | Passing |
 | Felt animals: rabbits and squirrels by day, deer at dawn and dusk from day 2, a bear who sits by the fire in the evening from day 3; they hop away from players, never threaten, are capped for the laptop, and spotting one goes in the journal | `test_gather.test_animals_keep_their_hours_and_days` | Passing |
 | The long log: one lies at the woods' edge each morning; carried alone it is slow, with a friend beside it full pace; set down by the fire it splits into wood | `test_gather.test_the_long_log_goes_faster_together_and_splits_by_the_fire` | Passing |
@@ -208,6 +208,29 @@ by its trunk; three chops fell it), pick up its sapling and plant it at the stum
 pick it), fish and grill. J (Touchpad) opens your clipboard; Q and R (L1 and R1) turn its pages; J again puts it
 away. The long log lies at the west edge: carry it to the fire, faster with your friend beside you. Look for the
 rabbits and squirrels, the deer at dawn and dusk from day 2, and the bear by the fire after 6 pm from day 3.
+
+### Round 3: Pack, crafting and the camp box (25 Oct 2026)
+From the owner's feedback on round 2 (the top-right HUD ran off the screen, the clipboard should tick off tasks as
+things are gathered, and an inventory, dropping and a hybrid craft-then-cycle build system were missing) and the
+research report (Cozy inventory and crafting, in the project files). Scope "items 1-4 now, rest next" (owner's pick).
+
+| Proof | Test | Result |
+|---|---|---|
+| The top-right HUD wraps inside the screen at 16:9, 16:10 and 4:3, the Today list there is short (the clipboard has all of it), and toasts and prompts wrap instead of running off | `test_stage_b.test_dropping_the_camp_box_and_a_hud_that_stays_on_screen` | Passing (checked by breaking the toast width on purpose) |
+| Each player has a Pack of 8 slots, each a stack of one item; a full Pack refuses more and nothing is lost | `test_guests.test_the_pack_stacks_drops_bundles_and_never_loses_anything`, `test_guests.test_fishing_and_grilling_fill_the_pack_and_never_fail` | Passing |
+| A picked stack drops at your feet as a bundle that never goes away; dropping next to the same item joins it; picking it up takes what fits and leaves the rest | `test_guests.test_the_pack_stacks_drops_bundles_and_never_loses_anything` | Passing |
+| The camp box takes every material in your Pack at once; crafting and grilling use your Pack first, then the box | `test_guests.test_the_camp_box_takes_materials_and_pays_for_crafts` | Passing |
+| The workbench crafts a log bench, lantern post or water point into the shared build kit; build mode cycles what is in the kit (the tent pitch is always there, paid in coins); packing a crafted piece puts it back in the kit | `test_gather.test_crafted_things_go_into_the_kit_and_build_mode_places_them` | Passing |
+| From the buttons: pick a slot, drop it, pick the bundle up, put wood in the camp box, craft at the bench and place it; the guest PC does the same through the host | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_stage_b.test_dropping_the_camp_box_and_a_hud_that_stays_on_screen`, `test_stage_b.test_the_guest_pc_fishes_gives_and_books_through_the_host` | Passing |
+| Saves keep the Pack, the camp box, the kit and bundles; a round 2 save (version 4) upgrades: pockets become Pack stacks and the wood pile goes into the box | `test_guests.test_stage_b_survives_save_and_load` | Passing |
+| Review frame: the workbench panel, the Pack bar and a dropped bundle | `tools/capture.gd --stage-b` (bench_pack.png) | Looked at |
+| Gathering, crafting and placing feel good, and days 1 to 3 feel full | Owner's play | Waiting on the owner |
+
+How to try round 3 (a new slot is best; an old one upgrades): your Pack is the bar along the bottom. C (D-pad right)
+picks a slot and G (D-pad left) drops it; walk onto a bundle and press E to pick it up. Chop and gather, then press E
+at the camp box (by the workbench, west of the fire) to put your wood and sticks in. Press E at the workbench, pick a
+recipe with C or Q and R (L1 and R1), and E crafts it into the build kit. B then C cycles the kit; the tent pitch is
+always there.
 
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
@@ -235,6 +258,12 @@ rabbits and squirrels, the deer at dawn and dusk from day 2, and the bear by the
   and full pace with a friend within 2.2 m; up to 4 Today tasks, bonuses 3 to 5 coins; at most 10 animals, spotted
   within 5 m; the clipboard is J or the Touchpad. A new berries request (tip 4) opens on day 2.
 - Guests still walk in a straight line. The clipboard's map tab with plan marks is the next round.
+- **Proposed** round 3 numbers (data/items.json, data/craft.json, data/build.json, data/tuning.json): the Pack has 8
+  slots of up to 99; a log bench takes 4 wood and 2 sticks, a lantern post 2 wood, 3 sticks and 10 coins, a water
+  point 5 wood and 15 coins (crafted pieces cost no coins to place); the tent pitch stays 25 coins and is always in
+  the kit; the build kit is shared by both players; drop is G or D-pad left (undo keeps D-pad left in build mode);
+  the HUD shows 3 Today lines; bench and box reach 1.6 m and 1.4 m.
+- Next round (owner's pick): a sell crate, camp projects, a field guide and the star rating, then the clipboard's map.
 - Frame rate on the weakest laptop is still unmeasured; round 2 adds up to 10 animals (no lights or physics), stump,
   sapling, stick and berry models, and the clipboard panel.
 

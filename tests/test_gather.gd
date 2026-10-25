@@ -26,25 +26,28 @@ func test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted() -> S
 	for i in per_tree:
 		if state.gather.chop("p_host", index) != "" or state.gather.felled != (i == per_tree - 1):
 			return "chop %d should be allowed, and only the last should fell the tree" % (i + 1)
-	if int(state.camp["wood"]) != per_tree:
-		return "each chop should add one wood, got %d" % int(state.camp["wood"])
+	if state.pack.count("p_host", "wood") != per_tree:
+		return "each chop should put one wood in the Pack, got %d" % state.pack.count("p_host", "wood")
 	if state.gather.chop("p_host", index) != "deny.no_tree" or state.gather.tree_near(at) == index:
 		return "a fallen tree should not be offered for chopping"
 	if state.gather.chop("p_host", 0) != "deny.not_movable":
 		return "the ground is not a tree"
 	if state.gather.sapling_near(at) != index or state.gather.stump_near(at) >= 0:
 		return "the fallen tree should leave a sapling to pick up by its stump"
-	state.camp["profiles"]["p_host"]["pockets"] = ["perch", "perch", "perch", "perch", "perch", "perch"]
-	if state.gather.take_sapling("p_host", index) != "deny.pockets_full" or state.gather.sapling_near(at) != index:
-		return "with full pockets the sapling should wait by the stump, never lost"
-	state.camp["profiles"]["p_host"]["pockets"] = []
+	for i in int(Tuning.num("items", "pack_slots")):
+		state.pack.add("p_host", "item_%d" % i, int(Tuning.num("items", "stack_max")))
+	if state.gather.take_sapling("p_host", index) != "deny.pack_full" or state.gather.sapling_near(at) != index:
+		return "with a full Pack the sapling should wait by the stump, never lost"
+	if state.gather.chop("p_host", int(CampGather.trees()[1]["index"])) not in ["deny.pack_full", "deny.too_far"]:
+		return "a full Pack should leave the wood in the tree"
+	state.camp["profiles"]["p_host"]["pack"] = []
 	if state.gather.plant("p_host", index) != "deny.no_stump":
 		return "planting needs a bare stump first"
-	if state.gather.take_sapling("p_host", index) != "" or state.pockets.first_of("p_host", "plant") != "sapling":
-		return "the sapling should go into the pockets"
+	if state.gather.take_sapling("p_host", index) != "" or state.pack.first_of("p_host", "plant") != "sapling":
+		return "the sapling should go into the Pack"
 	if state.gather.plant("p_guest", index) != "deny.no_sapling" and state.player_pos("p_guest").distance_to(at) < 2.0:
 		return "planting needs a sapling"
-	if state.gather.plant("p_host", index) != "" or not state.pockets.pockets("p_host").is_empty() \
+	if state.gather.plant("p_host", index) != "" or not state.pack.slots("p_host").is_empty() \
 			or state.gather.tree(index)["stage"] != "sapling":
 		return "a sapling should be planted at the bare stump"
 	for d in int(Tuning.num("gather", "trees.grow_days")) - 1:
@@ -70,9 +73,8 @@ func test_forage_spots_refill_each_morning_and_berries_wait_for_day_two() -> Str
 		elif item == "berries" and berry < 0:
 			berry = i
 	state.set_player_pos("p_host", CampGather.spot_pos(stick), 0.0)
-	if state.gather.forage("p_host", stick) != "" or int(state.camp["wood"]) != 1 \
-			or not state.pockets.pockets("p_host").is_empty():
-		return "sticks should go straight onto the wood pile"
+	if state.gather.forage("p_host", stick) != "" or state.pack.count("p_host", "stick") != 1:
+		return "sticks should go into the Pack"
 	if state.gather.forage("p_host", stick) != "deny.nothing_here" or state.gather.spot_near(CampGather.spot_pos(stick)) >= 0:
 		return "a picked spot should be empty until morning"
 	state.set_player_pos("p_host", CampGather.spot_pos(berry), 0.0)
@@ -81,24 +83,38 @@ func test_forage_spots_refill_each_morning_and_berries_wait_for_day_two() -> Str
 	state.camp["calendar"]["day"] = 2
 	state.gather.new_day()
 	if not state.gather.spot_ready(stick) or state.gather.forage("p_host", berry) != "" \
-			or state.pockets.first_of("p_host", "fruit") != "berries":
-		return "on day 2 the sticks should be back and berries should go into the pockets"
+			or state.pack.first_of("p_host", "fruit") != "berries":
+		return "on day 2 the sticks should be back and berries should go into the Pack"
 	return ""
 
 
-func test_the_log_bench_costs_wood_and_packing_gives_it_back() -> String:
+func test_crafted_things_go_into_the_kit_and_build_mode_places_them() -> String:
 	var state := _camp()
 	var at := Vector2(-3.2, 7.9)
-	if state.build.build("p_host", "log_bench", at, 0.0) != "deny.wood":
-		return "a log bench with an empty wood pile should ask for wood"
-	var need := CampBuild.wood_cost("log_bench")
-	state.camp["wood"] = need
+	if Array(state.build.available()) != ["pitch"]:
+		return "a new camp's kit should hold only the free tent pitch, got %s" % [state.build.available()]
+	if state.build.build("p_host", "log_bench", at, 0.0) != "deny.not_in_kit":
+		return "a log bench not crafted yet should say so"
+	state.set_player_pos("p_host", CampBuild.bench_pos() + Vector2(0.0, 1.2), 0.0)
+	if state.build.craft("p_host", "log_bench") != "deny.materials":
+		return "crafting with an empty Pack and box should say what is missing"
+	var r := CampBuild.recipe("log_bench")
+	for item: String in r["items"]:
+		state.pack.add("p_host", item, int(r["items"][item]))
 	var coins := int(state.camp["coins"])
-	if state.build.build("p_host", "log_bench", at, 0.0) != "" or int(state.camp["wood"]) != 0 \
-			or int(state.camp["coins"]) != coins - CampBuild.cost("log_bench"):
-		return "the log bench should be built from wood"
-	if state.build.pack("p_host", state.build.last_id) != "" or int(state.camp["wood"]) != need:
-		return "packing the bench away should put its wood back on the pile"
+	if state.build.craft("p_host", "log_bench") != "" or state.build.in_kit("log_bench") != 1 \
+			or not state.pack.slots("p_host").is_empty() or int(state.camp["coins"]) != coins - int(r.get("coins", 0)):
+		return "crafting should use the Pack's materials and put a bench in the kit"
+	if not state.build.available().has("log_bench"):
+		return "build mode should offer what the kit holds"
+	if state.build.build("p_host", "log_bench", at, 0.0) != "" or state.build.in_kit("log_bench") != 0:
+		return "putting the bench down should take it from the kit"
+	if state.build.pack("p_host", state.build.last_id) != "" or state.build.in_kit("log_bench") != 1:
+		return "packing the bench away should put it back in the kit, not back into wood"
+	coins = int(state.camp["coins"])
+	if state.build.build("p_host", "pitch", Vector2(3, 5), 0.0) != "" or state.build.in_kit("pitch") != -1 \
+			or int(state.camp["coins"]) != coins - CampBuild.cost("pitch"):
+		return "the tent pitch should always be in the kit, for its coins"
 	return ""
 
 
@@ -189,10 +205,9 @@ func test_the_long_log_goes_faster_together_and_splits_by_the_fire() -> String:
 	if CampGather.log_by_fire(model, Vector2(-9, 3.6)) or not CampGather.log_by_fire(model, Vector2(1.5, 1.0)) \
 			or CampGather.log_by_fire("chair", Vector2(1.5, 1.0)):
 		return "only a long log set down by the fire should split"
-	var wood := int(state.camp["wood"])
 	var got := state.gather.split_log(id)
-	if state.camp["objects"].has(id) or int(state.camp["wood"]) != wood + got or got <= 0:
-		return "splitting should turn the log into wood on the pile"
+	if state.camp["objects"].has(id) or state.pack.box_count("wood") != got or got <= 0:
+		return "splitting should turn the log into wood in the camp box"
 	if state.gather.lay_log() == "":
 		return "the next morning should lay a new log"
 	return ""

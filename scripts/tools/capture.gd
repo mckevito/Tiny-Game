@@ -11,7 +11,7 @@ extends SceneTree
 ## report after a night). Round 2 adds welcome.png (the first morning's Today list), a log bench by the fire, the
 ## animals in the day and dusk shots (day 3: rabbits, squirrels, deer, the bear by the fire), chop.png, and
 ## stump_log_clipboard.png (a felled tree's stump and sapling, a planted sapling, the long log carried and the
-## clipboard open on Supplies).
+## clipboard open on Supplies). Round 3 adds bench_pack.png: the workbench panel, the Pack bar and a dropped bundle.
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
@@ -207,7 +207,9 @@ func _stage_b(out: String) -> void:
 	_save(out + "/welcome.png")
 	camp.report.visible = false
 	s.camp["coins"] = 200
-	s.camp["wood"] = 20
+	s.pack.add_to_box("wood", 20)
+	for kind in ["water_point", "lantern_post", "log_bench"]:
+		s.camp["kit"][kind] = 1
 	for row in [["pitch", Vector2(3, 5)], ["pitch", Vector2(-4, 7)], ["pitch", Vector2(-7.5, 5)],
 			["water_point", Vector2(0, 8)], ["lantern_post", Vector2(1, 3)], ["log_bench", Vector2(-2, -2)]]:
 		var why: String = s.build.build("p_capture_one", row[0], row[1], 0.0)
@@ -225,7 +227,10 @@ func _stage_b(out: String) -> void:
 	var me: Camper = camp.campers["p_capture_one"]
 	me.position = Vector3(-1.5, 0, 10.0)
 	me.rotation.y = 0.0
-	s.camp["profiles"]["p_capture_one"]["pockets"] = ["perch", "grilled_trout"]
+	s.pack.add("p_capture_one", "perch", 2)
+	s.pack.add("p_capture_one", "grilled_trout", 1)
+	s.pack.add("p_capture_one", "stick", 7)
+	s.pack.add("p_capture_one", "berries", 3)
 	camp.camera._want_distance = Tuning.num("tuning", "camera.max_distance_m")
 	for hour in [11.0, 19.0]:
 		s.camp["calendar"]["minute"] = (hour - start) * 60.0
@@ -266,6 +271,19 @@ func _stage_b(out: String) -> void:
 	camp.toggle_clipboard("p_capture_one")
 	s.carriers.erase(log_id)
 	camp._apply_object(log_id)
+	var bench := CampBuild.bench_pos()
+	me.position = Vector3(bench.x + 0.2, 0, bench.y - 1.3)
+	s.set_player_pos("p_capture_one", Vector2(me.position.x, me.position.z), 0.0)
+	s.camp["bundles"]["bundle_cap"] = {"item": "stick", "n": 4, "pos": [bench.x + 1.4, bench.y - 1.6]}
+	camp._sync_bundles()
+	camp._picked["p_capture_one"] = 2
+	camp.camera.yaw = 0.0
+	camp.open_bench("p_capture_one")
+	camp._bench["p_capture_one"]["pick"] = 1
+	camp._refresh_boards()
+	await _settle()
+	_save(out + "/bench_pack.png")
+	camp.close_bench("p_capture_one")
 	me.position = Vector3(2.4, 0, -3.6)
 	me.rotation.y = deg_to_rad(-90.0)
 	s.set_player_pos("p_capture_one", Vector2(2.4, -3.6), -90.0)

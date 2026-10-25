@@ -94,6 +94,16 @@ Build owns how the game loads them.
   row lights up on focus); a toggle stretched into a long bar (why: CheckButton fills its width; stops it: toggles
   are On/Off buttons like the choices); the first capture fell back to OpenGL (mesa-vulkan-drivers missing; HANDOFF
   trap).
+- 25 Oct 2026: Stage B round 3 (owner: the HUD ran off the screen, no inventory or dropping, wanted craft-then-place):
+  a Pack bar with stacks and dropping, a camp box, a workbench that crafts into a shared build kit, and a HUD that
+  wraps. Faults found: the top-right text ran off the screen (why: one Label growing right from a right anchor, and a
+  fixed 16:9 stretch; stops it: grow left with autowrap, aspect `expand`, a scene test that checks every HUD label's
+  rect is inside the viewport, proved by breaking the toast width); chair pickups failed in the couch and net tests
+  (why: the new bench prompt was nearer and won; stops it: the bench moved away and pick_up comes first, HANDOFF
+  trap). A `git stash` in the middle of a merge threw away the merge state; the resolved files were safe in the stash,
+  but never stash during a merge. Lesson: wrote the code while the title-screen PR was open and merged main after;
+  only two conflicts, both doc-comment or text-table lines.
+
 - 25 Oct 2026: Fix: Play alone and Host crashed on main after the title screen merged. Why: rewriting `camp_menu.gd`
   dropped `slot()`, and no test pressed the real start buttons (tests called `start_solo` directly). Stops it: a test
   presses Play alone and Host on the start page; when rewriting a file, list every method other scripts call on it

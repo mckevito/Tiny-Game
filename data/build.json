@@ -1,18 +1,19 @@
 {
-  "_about": "Grid placement (scripts/camp/camp_build.gd). Things are built on a grid of grid_m metres, ahead_m in front of the builder, turned in quarter turns. kinds: what can be built (the next-kind button cycles them in this order), its model (data/models.json), its footprint size [x, z] in metres before turning, its cost in coins and in wood (wood, from the camp's wood pile, data/gather.json); an improvement (Stage B) is what the day's dream goal saves up for and raises guests' satisfaction (data/guests.json); packing it away refunds the full cost (the cozy contract). Nothing is built over another building, within object_gap_m of a movable thing, over scenery (blockers: model -> radius in metres), or past the camp edge (data/tuning.json carry.camp_radius_m). Each player can undo their own last undo_depth building steps; the list is cleared each night. ghost is the preview: the model dithered by fade, over a thin tile (thick_m, lifted lift_m above the ground so it shows over the model) tinted ok or blocked (palette swatches) at alpha.",
+  "_about": "Grid placement (scripts/camp/camp_build.gd). Things are built on a grid of grid_m metres, ahead_m in front of the builder, turned in quarter turns. kinds: what can be built (the next-kind button cycles the ones in the build kit, in this order), its model (data/models.json) and its footprint size [x, z] in metres before turning. A free kind (the tent pitch) is always in the kit and costs coins to put down (cost); packing it away refunds them (the cozy contract). Every other kind is crafted at the workbench (data/craft.json) into the camp's build kit; putting one down takes it from the kit and packing it away puts it back. An improvement (Stage B) is what the day's dream goal saves up for and raises guests' satisfaction (data/guests.json). Nothing is built over another building, within object_gap_m of a movable thing, over scenery (blockers: model -> radius in metres), or past the camp edge (data/tuning.json carry.camp_radius_m). Each player can undo their own last undo_depth building steps; the list is cleared each night. ghost is the preview: the model dithered by fade, over a thin tile (thick_m, lifted lift_m above the ground so it shows over the model) tinted ok or blocked (palette swatches) at alpha.",
   "grid_m": 1.0,
   "ahead_m": 2.6,
   "undo_depth": 20,
   "object_gap_m": 0.5,
   "kinds": {
-    "pitch": {"model": "pitch", "size": [3.0, 3.0], "cost": 25},
-    "water_point": {"model": "water_point", "size": [1.0, 1.0], "cost": 30, "improvement": true},
-    "lantern_post": {"model": "lantern_post", "size": [1.0, 1.0], "cost": 20, "improvement": true},
-    "log_bench": {"model": "log_bench", "size": [2.0, 1.0], "cost": 0, "wood": 5}
+    "pitch": {"model": "pitch", "size": [3.0, 3.0], "cost": 25, "free": true},
+    "water_point": {"model": "water_point", "size": [1.0, 1.0], "improvement": true},
+    "lantern_post": {"model": "lantern_post", "size": [1.0, 1.0], "improvement": true},
+    "log_bench": {"model": "log_bench", "size": [2.0, 1.0]}
   },
   "blockers": {
     "tent": 1.4, "fire_pit": 1.0, "picnic_table": 1.1, "tree_pine": 0.7, "tree_round": 0.7, "tree_puff": 0.7,
-    "rock": 0.5, "bush": 0.5, "pond": 2.6
+    "rock": 0.5, "bush": 0.5, "pond": 2.6,
+    "workbench": 1.0, "camp_box": 0.7
   },
   "ghost": {"fade": 0.35, "ok": "moss_felt", "blocked": "rust_canvas", "alpha": 0.65, "lift_m": 0.07, "thick_m": 0.02}
 }

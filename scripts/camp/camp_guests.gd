@@ -62,7 +62,7 @@ func guest_near(profile_id: String) -> String:
 	return ""
 
 
-## Hands a guest what they asked for from the player's pockets; their tip is paid at once.
+## Hands a guest what they asked for from the player's Pack; their tip is paid at once.
 func give(profile_id: String, stay_id: String) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
@@ -72,7 +72,7 @@ func give(profile_id: String, stay_id: String) -> String:
 	if state.day.stand_point(stay_id).distance_to(state.player_pos(profile_id)) \
 			> float(_v("talk_reach_m", 2.0)) + Tuning.num("tuning", "carry.reach_slack_m"):
 		return "deny.too_far"
-	if state.pockets.take(profile_id, want) == "":
+	if state.pack.take(profile_id, want) == "":
 		return "deny.nothing_to_give"
 	_met(stay_id)
 	return ""

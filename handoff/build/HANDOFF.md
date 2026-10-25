@@ -1,4 +1,4 @@
-# Build hand-off, 25 Oct 2026 (Stage B round 2 built, waiting on the owner's play)
+# Build hand-off, 25 Oct 2026 (Stage B round 3 built, waiting on the owner's play)
 
 1. **Owns:** game code (`scripts/`), scenes (`scenes/`), tests (`tests/`), data tables (`data/`), CI
    (`.github/workflows/`), the start-up script, `docs/STATUS.md`. Proposes changes to `docs/PLAN.md` for the owner.
@@ -7,7 +7,20 @@
    25 Oct 2026). Four Milestone 3 checks were not confirmed by name (`docs/STATUS.md`, "Still open"). Stage A (core
    proof) is merged (PR #10) and signed off by the owner, 25 Oct 2026. Stage B (three-day fun test) is merged (PR #13)
    but NOT signed off: days 1 to 3 felt blank. Round 2 (owner's pick "items 1-6, map later", plus felling and
-   replanting) is built on branch `claude/project-thread-s2hpsz` and waits on the owner's play and sign-off.
+   replanting) is merged (PR #14). Round 3 (owner's pick "items 1-4 now, rest next") is built on branch
+   `claude/project-thread-s2hpsz` and waits on the owner's play and sign-off.
+   - Round 3: `scripts/camp/camp_pack.gd` (CampPack, was CampPockets; `state.pack`): each profile's `pack` is
+     [{item, n}] (`add` returns how many fit, `remove`, `take(kind)`, `room_for`); the camp `box` (`have` and `spend`
+     use the Pack first, then the box; `deposit`); dropped `bundles` in the save (`drop(pid, slot)` joins a nearby
+     bundle of the same item; `pick_bundle` takes what fits); fishing and grilling. Items and fuel are in
+     `data/items.json`. `CampBuild` now has the build kit (`kit` in the save, shared by both players): `available()`
+     is what build mode cycles, kinds marked `free` in `data/build.json` (the pitch) are always there and paid in
+     coins, the rest come from the kit and pack back into it; `craft(pid, kind)` at the workbench uses
+     `data/craft.json`. `scripts/camp/pack_bar.gd` (PackBar) is each local player's bottom bar in `_bars`; `_picked`
+     holds the picked slot. The workbench panel reuses `Clipboard` with `heading` set (`open_bench`, `bench_text`,
+     `_bench`). New `_request` kinds: "drop", "pick_bundle", "deposit", "craft". The top-right Clock grows left and
+     wraps; `project.godot` stretch aspect is `expand`. Save version 5 (pockets -> pack, wood -> box.wood),
+     protocol 5.
    - Round 2: `scripts/camp/camp_gather.gd` (CampGather: trees by clearing placement index, chop, fall to a stump
      with a sapling, take_sapling, plant, regrow in `new_day`; forage spots; the long log: `lay_log`, `log_by_fire`,
      `split_log`, `carry_speed`) and `scripts/camp/camp_tasks.gd` (CampTasks: the Today list; `note(event)` counts a
@@ -64,9 +77,10 @@
      `PlayerInput` (couch) and `Prompts` (glyphs) read, so read bindings through it, never from data/input.json
      directly. `UiLook` (`scripts/ui/ui_look.gd`) is the shared menu theme with the focus ring.
 3. **Open work, in order:**
-   1. Stage B round 2: the owner plays days 1 to 3 and signs off (or asks for changes); approve the Proposed numbers
+   1. Stage B round 3: the owner plays days 1 to 3 and signs off (or asks for changes); approve the Proposed numbers
       in `docs/STATUS.md`. Record the sign-off in the next build PR (no sign-off PR).
-   2. Next round (owner): the clipboard's map tab with plan marks both players see.
+   2. Next round (owner's pick, 25 Oct): a sell crate, camp projects, a field guide and the star rating (the research
+      report "Cozy inventory and crafting" in the project files has the ranked list), then the clipboard's map tab.
    3. Still unconfirmed from Milestone 3: two-DualSense couch, a link code, a Tailscale join, and the fps on the
       weakest laptop (tune `data/graphics.json` from that). Ask at Stage B's sign-off.
    4. Stage C (autumn chapter) when the owner says go.
@@ -124,6 +138,9 @@
      (-1, 6)). Known good: (3, 5) near the fire, (-3.2, 7.9), (-4, 7); water point at (4, 8) or (0, 8). (-7.5, 5)
      is too close to the long log's morning spot since round 2.
    - Numbers read from JSON are floats: `[2, 3].has(3)` on a table array is false. Compare with `int(x) == n`.
+   - The workbench sits by the folding chair's spot: a prompt near both chose the bench and chair pickups failed in
+     the couch and net tests. `action_for` checks pick_up before bench and deposit, and the bench is at (-3.8, 1.4).
+   - D-pad left is both undo (build mode only) and drop (outside build mode); keep them in different modes.
    - `action_for` returns an `arg` for most actions; pass it on only where the request takes one (the busy chop
      did, grilling did not, and grilling silently failed).
 7. **How to check things:**
@@ -141,5 +158,5 @@
    `day_11/18/21.png`: a pitch, its guest and tent, and a build ghost at three hours of the day. `--menus` saves the title, the start page, each
    Options tab and Options from the in-camp menu. `--stage-b` saves
    `camp_day.png`, `camp_dusk.png` (three pitches, guests with requests, water point, lantern), `fishing.png` and
-   `report.png`, plus `welcome.png`, `chop.png` and `stump_log_clipboard.png` (round 2). It uses Forward+
+   `report.png`, plus `welcome.png`, `chop.png` and `stump_log_clipboard.png` (round 2) and `bench_pack.png` (round 3). It uses Forward+
    on software Vulkan (lavapipe, installed by the start-up script), so frames match the owner's renderer.

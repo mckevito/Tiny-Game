@@ -129,7 +129,8 @@ together actions. Never cut both input methods, two-player reliability, decorati
 save recovery.
 
 ## Later (not in v1)
-The clipboard's map tab with plan marks both players see (next round, owner). A free photo mode, text chat, separate remaps for each couch player, a credits page, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
+Next round (owner, 25 Oct 2026): a sell crate, camp projects, a field guide and the camp's star rating; then the
+clipboard's map tab with plan marks both players see. A free photo mode, text chat, separate remaps for each couch player, a credits page, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
 two players, a public release (itch.io or Steam), Steam's relay, consoles, voice acting.
 
 ## Decision log
@@ -183,3 +184,10 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   (the existing presets), window, vsync, frame limit, four volumes, remapping on both devices, stick deadzone, camera
   turn speed, interface size and still trees; settings stay on each PC and are never synced. This brings remapping
   and the accessibility basics forward from Stage E.
+- 25 Oct 2026, owner (round 2 play): the top-right HUD ran off the screen; the clipboard should tick off tasks as
+  things are collected; an inventory and dropping were missing; a hybrid build system: craft benches, lanterns and the
+  like at a table into a build inventory and cycle it as now, with the tent plot always given; the rest of the
+  inventory holds gathered stacks such as sticks. Research for more rounding out (Cozy inventory and crafting, in the
+  project files). Owner's pick: items 1-4 now (HUD fix, a Pack with dropping, workbench and build kit, camp box), the
+  rest next. **Proposed** (built): an 8-slot Pack per player, dropped stacks lie as bundles that never vanish, a camp
+  box for shared materials, the build kit shared by both players, recipe costs in data/craft.json.

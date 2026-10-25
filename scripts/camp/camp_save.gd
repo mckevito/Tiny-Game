@@ -87,6 +87,24 @@ static func upgrade(camp: Dictionary) -> Dictionary:
 				# Stage A gives a new camp its starting coins; a camp that never earned or spent gets them too.
 				if int(camp.get("coins", 0)) == 0 and (camp.get("ledger", []) as Array).is_empty():
 					camp["coins"] = int(Tuning.value("save", "new_camp.coins", 0))
+			4:
+				# Round 3: pockets (one item each) become Pack stacks, and the wood pile goes into the camp box.
+				for id: String in camp.get("profiles", {}):
+					var p: Dictionary = camp["profiles"][id]
+					var pack: Array = []
+					for item in p.get("pockets", []):
+						var found := false
+						for s: Dictionary in pack:
+							if s["item"] == item:
+								s["n"] = int(s["n"]) + 1
+								found = true
+						if not found:
+							pack.append({"item": str(item), "n": 1})
+					p["pack"] = pack
+					p.erase("pockets")
+				if int(camp.get("wood", 0)) > 0:
+					camp["box"] = {"wood": int(camp["wood"])}
+				camp.erase("wood")
 		from += 1
 	_fill(camp, Tuning.value("save", "new_camp", {}))
 	for id: String in camp["profiles"]:

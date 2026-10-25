@@ -1,7 +1,8 @@
 class_name CampBuild
 extends RefCounted
 ## Grid placement: building things (Stage A: tent pitches) on the camp's grid, packing them away at a full refund,
-## and undoing a player's own last steps. The host's copy decides; every rule takes a profile ID and returns "" or a
+## and undoing a player's own last steps. Round 3: crafting at the workbench fills the camp's build kit, shared by
+## both players; build mode places from the kit (the tent pitch is free, always there) and packing puts it back. The host's copy decides; every rule takes a profile ID and returns "" or a
 ## text key ("deny.*" in data/text.json). Numbers: data/build.json.
 
 ## The camp state this belongs to, held weakly so the two don't keep each other alive.
@@ -38,27 +39,94 @@ static func cost(kind: String) -> int:
 	return int(kinds().get(kind, {}).get("cost", 0))
 
 
-## Wood from the camp's pile a building costs (data/build.json kinds.<kind>.wood).
-static func wood_cost(kind: String) -> int:
-	return int(kinds().get(kind, {}).get("wood", 0))
+## True for a kind that is always in the kit (the tent pitch) and costs coins to put down.
+static func is_free(kind: String) -> bool:
+	return bool(kinds().get(kind, {}).get("free", false))
 
 
-## A price as the player reads it: "25 coins", "5 wood" or "20 coins + 3 wood".
-static func cost_text(kind: String) -> String:
-	var parts: PackedStringArray = []
-	if cost(kind) > 0 or wood_cost(kind) == 0:
-		parts.append(Tuning.text("build.coins") % cost(kind))
-	if wood_cost(kind) > 0:
-		parts.append(Tuning.text("build.wood") % wood_cost(kind))
-	return " + ".join(parts)
+## How many of a kind the build kit holds now (-1 for a free kind: always one more).
+func in_kit(kind: String) -> int:
+	return -1 if is_free(kind) else int(state.camp["kit"].get(kind, 0))
 
 
-## "" when the camp can pay for `kind`, or the text key saying what it lacks.
+## The kinds build mode can put down now, in data/build.json order: the free ones and those in the kit.
+func available() -> Array[String]:
+	var out: Array[String] = []
+	for kind: String in kinds():
+		if in_kit(kind) != 0:
+			out.append(kind)
+	return out
+
+
+## What putting one down costs, as the player reads it: "25 coins" or "2 in the kit".
+func cost_text(kind: String) -> String:
+	return Tuning.text("build.coins") % cost(kind) if is_free(kind) else Tuning.text("build.in_kit") % in_kit(kind)
+
+
+## What packing one away gives back, as the player reads it.
+static func refund_text(kind: String) -> String:
+	return Tuning.text("build.coins") % cost(kind) if is_free(kind) else Tuning.text("build.to_kit")
+
+
+## "" when the camp can put down `kind`, or the text key saying what it lacks.
 func afford(kind: String) -> String:
-	if int(state.camp.get("coins", 0)) < cost(kind):
+	if is_free(kind):
+		return "deny.coins" if int(state.camp.get("coins", 0)) < cost(kind) else ""
+	return "" if in_kit(kind) > 0 else "deny.not_in_kit"
+
+
+# --- Crafting --------------------------------------------------------------------------------------------------------
+
+static func recipes() -> Array:
+	return Tuning.value("craft", "recipes", [])
+
+
+static func recipe(kind: String) -> Dictionary:
+	for r: Dictionary in recipes():
+		if r["kind"] == kind:
+			return r
+	return {}
+
+
+static func bench_pos() -> Vector2:
+	for row: Dictionary in Tuning.table("clearing").get("placements", []):
+		if str(row.get("model", "")) == str(Tuning.value("craft", "bench_model", "workbench")):
+			var o := Clearing.placement_transform(row).origin
+			return Vector2(o.x, o.z)
+	return Vector2(INF, INF)
+
+
+static func near_bench(pos: Vector2) -> bool:
+	return pos.distance_to(bench_pos()) <= Tuning.num("craft", "reach_m", 1.8)
+
+
+## "" when a player could craft `kind` now, or the text key saying what is missing.
+func can_craft(profile_id: String, kind: String) -> String:
+	var r := recipe(kind)
+	if r.is_empty():
+		return "deny.not_buildable"
+	if int(state.camp.get("coins", 0)) < int(r.get("coins", 0)):
 		return "deny.coins"
-	if int(state.camp.get("wood", 0)) < wood_cost(kind):
-		return "deny.wood"
+	for item: String in r.get("items", {}):
+		if state.pack.have(profile_id, item) < int(r["items"][item]):
+			return "deny.materials"
+	return ""
+
+
+## Crafts one `kind` at the workbench from the crafter's Pack and the camp box, into the build kit.
+func craft(profile_id: String, kind: String) -> String:
+	if not state.online.has(profile_id):
+		return "deny.not_here"
+	if not near_bench(state.player_pos(profile_id)):
+		return "deny.too_far"
+	var why := can_craft(profile_id, kind)
+	if why != "":
+		return why
+	var r := recipe(kind)
+	state.camp["coins"] = int(state.camp.get("coins", 0)) - int(r.get("coins", 0))
+	for item: String in r.get("items", {}):
+		state.pack.spend(profile_id, item, int(r["items"][item]))
+	state.camp["kit"][kind] = in_kit(kind) + 1
 	return ""
 
 
@@ -124,7 +192,7 @@ func check(kind: String, pos: Vector2, yaw_deg: float, ignore: String = "") -> S
 	return ""
 
 
-## Builds `kind` at the grid spot nearest `pos` for its cost in coins and wood. Returns "" or a text key.
+## Builds `kind` at the grid spot nearest `pos`, from the kit (or for coins, for a free kind). Returns "" or a text key.
 func build(profile_id: String, kind: String, pos: Vector2, yaw_deg: float) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
@@ -144,13 +212,15 @@ func build(profile_id: String, kind: String, pos: Vector2, yaw_deg: float) -> St
 
 
 func _put(id: String, kind: String, pos: Vector2, yaw_deg: float) -> void:
-	state.camp["coins"] = int(state.camp.get("coins", 0)) - cost(kind)
-	state.camp["wood"] = int(state.camp.get("wood", 0)) - wood_cost(kind)
+	if is_free(kind):
+		state.camp["coins"] = int(state.camp.get("coins", 0)) - cost(kind)
+	else:
+		state.camp["kit"][kind] = in_kit(kind) - 1
 	state.camp["objects"][id] = {"model": str(kinds()[kind]["model"]), "pos": [pos.x, pos.y], "yaw": yaw_deg}
 	last_id = id
 
 
-## Packs a building away at a full refund. A pitch with a guest stays until they leave. Returns "" or a text key.
+## Packs a building away: back into the kit, or its coins back for a free kind. A pitch with a guest stays until they leave. Returns "" or a text key.
 func pack(profile_id: String, id: String, remember: bool = true) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
@@ -161,8 +231,10 @@ func pack(profile_id: String, id: String, remember: bool = true) -> String:
 		return "deny.pitch_in_use"
 	var row: Dictionary = state.camp["objects"][id]
 	state.camp["objects"].erase(id)
-	state.camp["coins"] = int(state.camp.get("coins", 0)) + cost(kind)
-	state.camp["wood"] = int(state.camp.get("wood", 0)) + wood_cost(kind)
+	if is_free(kind):
+		state.camp["coins"] = int(state.camp.get("coins", 0)) + cost(kind)
+	else:
+		state.camp["kit"][kind] = in_kit(kind) + 1
 	last_id = id
 	if remember:
 		_remember(profile_id, {"op": "pack", "id": id, "row": row})

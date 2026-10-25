@@ -1,0 +1,21 @@
+{
+  "_about": "Everything a player can carry in their Pack (scripts/camp/camp_pack.gd), the Pack itself and dropped bundles. Each player has pack_slots slots; a slot holds a stack of one item, up to stack_max. Nothing is ever lost: a full Pack just can't take more, and what can't fit stays where it is. items: each item's kind (fish, meal, fruit, plant or material), which requests ask for (data/guests.json); box: true when the camp box takes it (materials). fuel lists the items the fire burns to grill, one per meal, from the Pack first and then the camp box. A dropped stack lies as a bundle (model) at the dropper's feet and never goes away; a stack dropped within merge_m of a bundle of the same item joins it. reach_m is how near a player picks a bundle up or reaches the camp box (box_model in data/clearing.json). Names: data/text.json items.<item>.",
+  "pack_slots": 8,
+  "stack_max": 99,
+  "items": {
+    "perch": {"kind": "fish"},
+    "trout": {"kind": "fish"},
+    "sunfish": {"kind": "fish"},
+    "grilled_perch": {"kind": "meal"},
+    "grilled_trout": {"kind": "meal"},
+    "grilled_sunfish": {"kind": "meal"},
+    "berries": {"kind": "fruit"},
+    "sapling": {"kind": "plant"},
+    "wood": {"kind": "material", "box": true},
+    "stick": {"kind": "material", "box": true}
+  },
+  "fuel": ["stick", "wood"],
+  "bundle": {"model": "bundle", "merge_m": 1.0},
+  "reach_m": 1.4,
+  "box_model": "camp_box"
+}
