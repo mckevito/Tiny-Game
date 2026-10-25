@@ -19,6 +19,7 @@
     "knit_scale": 24.0,
     "knit_depth": 0.5,
     "knit_bump": 0.008,
+    "knit_rib_dark": 0.45,
     "wood_scale": 9.0,
     "wood_strength": 0.3,
     "water_scale": 2.2,
@@ -60,7 +61,8 @@
     "knit": 1,
     "wood": 2,
     "water": 3,
-    "grass": 4
+    "grass": 4,
+    "knit_rows": 5
   },
   "shells": {
     "_about": "Fuzz shells: count extra passes, each shell_height metres further out, keeping shell_keep of the fibre cells (strand_scale per metre) on the first and less beyond. Off for the presets listed.",

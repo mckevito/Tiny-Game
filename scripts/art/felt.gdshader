@@ -1,8 +1,9 @@
 shader_type spatial;
 // The one shared wool material (docs/PLAN.md art direction). Colour comes from the vertex colour, which the builder
 // paints from data/palette.json; vertex alpha below 1 marks glowing parts (1 - alpha = glow). UV.x picks the weave a
-// part is made of (data/art.json "weaves": 0 felt, 1 knit, 2 wood, 3 water, 4 grass), so one material still draws
-// everything. Every value is set from data/art.json "felt" by FeltBuilder.
+// part is made of (data/art.json "weaves": 0 felt, 1 knit, 2 wood, 3 water, 4 grass, 5 knit_rows), so one material
+// still draws everything. knit_rows is knitting whose stitch column and row are in UV2 (models sculpted outside the
+// game, such as the knit camper), so the stitches follow its ribs and rows instead of facing the three axes. Every value is set from data/art.json "felt" by FeltBuilder.
 render_mode diffuse_lambert_wrap, specular_disabled;
 
 uniform float noise_scale = 3.5;
@@ -21,6 +22,8 @@ uniform float hair_edge = 0.0;
 uniform float knit_scale = 26.0;
 uniform float knit_depth = 0.45;
 uniform float knit_bump = 0.006;
+// knit_rows only: how dark the groove between two stitch columns (a rib's edge) is.
+uniform float knit_rib_dark = 0.0;
 // Wood: grain lines per metre along the part's length and how dark they are.
 uniform float wood_scale = 7.0;
 uniform float wood_strength = 0.35;
@@ -52,6 +55,7 @@ instance uniform float fade = 0.0;
 varying vec3 obj_pos;
 varying vec3 obj_normal;
 varying flat float weave;
+varying vec2 stitch_uv;
 
 float hash3(vec3 p) {
 	p = fract(p * 0.3183099 + 0.1);
@@ -93,6 +97,7 @@ void vertex() {
 	obj_pos = VERTEX;
 	obj_normal = NORMAL;
 	weave = UV.x;
+	stitch_uv = UV2;
 	if (sway_amount > 0.0) {
 		vec3 world = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 		float h = max(world.y - NODE_POSITION_WORLD.y, 0.0) / sway_height;
@@ -139,9 +144,12 @@ void fragment() {
 	float h = fibre + n * 0.5;
 	float bump = bump_strength * near;
 	vec3 tint = vec3(1.0);
-	if (kind == 1) {
-		float k = knit3(obj_pos * knit_scale, normalize(obj_normal));
+	if (kind == 1 || kind == 5) {
+		float k = kind == 1 ? knit3(obj_pos * knit_scale, normalize(obj_normal)) : knit2(stitch_uv);
 		shade *= mix(1.0 - knit_depth, 1.05, k);
+		if (kind == 5) {
+			shade *= 1.0 - knit_rib_dark * smoothstep(0.6, 1.0, abs(fract(stitch_uv.x) - 0.5) * 2.0);
+		}
 		h = k * (knit_bump / max(bump_strength, 0.0001)) + fibre * 0.5;
 	} else if (kind == 2) {
 		// Grain lines run along X (planks, benches and logs are laid along X): across Z on top, across Y on the sides.

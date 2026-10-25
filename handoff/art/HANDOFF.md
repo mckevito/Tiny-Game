@@ -37,6 +37,17 @@
      than the head with a folded cuff, separate sleeves, short trousers, boots); `--turn=knit_camper` renders front,
      right, back and left on a cream backdrop to compare with it. About 14k vertices (28k triangles) after the
      per-part `decimate` ratios were lowered; the ribs survive that, check a turnaround before lowering further.
+   - Camper from the turnaround, second build (PR "Proposed: knitted camper rebuilt from the turnaround", one of two
+     attempts the owner compares): the beanie, sweater and sleeves are no longer remeshed blobs but knitted tubes made
+     row by row from a profile (`knitted()`), so ribs are real grooves and every vertex has its stitch column and row
+     in a second UV map ("Stitch", glTF TEXCOORD_1, Godot UV2). Weave 5 `knit_rows` (data/art.json) draws the V
+     stitches from UV2 along the ribs, and `knit_rib_dark` darkens the groove between stitch columns; stitch columns
+     sit half a rib off (u + 0.5) so each V lands on a rib. The beanie tilts back 23 degrees with a slouching crown
+     and a lining inside (so frayed edges never show the background); the head is tucked in under the hat so it can't
+     poke through the fold. Curls are a mop of felt balls drawn with tiny stitches (`stitch_round`). Trousers have
+     rolled cuffs and running-stitch side seams; boots a stitched welt. `--tpose` builds arms out for the comparison
+     sheet only. New Proposed swatches (beanie_teal, cocoa_felt, boot_cocoa, curl_brown, rosy_peach) are picked so
+     the camper under the warm, contrasty day light reads like the sheet's neutral photo. About 18.5k vertices.
    - Trap: the fire's light sits above the flame tongues (`light.pos` y 1.1), or each tongue casts a long shadow and
      the fire circle shows a star.
    - Builder additions: the `lathe` shape (a profile of [radius, height] points turned round Y, with an optional

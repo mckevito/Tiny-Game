@@ -140,7 +140,7 @@ static func material(sway: bool) -> ShaderMaterial:
 	var felt: Dictionary = Tuning.table("art").get("felt", {})
 	for key in ["noise_scale", "noise_strength", "grain_scale", "grain_strength", "fuzz_strength", "rim", "rim_tint",
 			"glow_strength", "sway_speed", "fibre_scale", "fibre_strength", "bump_strength", "hair_edge", "knit_scale",
-			"knit_depth", "knit_bump", "wood_scale", "wood_strength", "water_scale", "water_strength", "grass_tint",
+			"knit_depth", "knit_bump", "knit_rib_dark", "wood_scale", "wood_strength", "water_scale", "water_strength", "grass_tint",
 			"fine_scale", "fine_strength"]:
 		mat.set_shader_parameter(key, float(felt.get(key, 0.0)))
 	for key in ["grass_light", "grass_dark"]:

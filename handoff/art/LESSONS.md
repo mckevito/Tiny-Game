@@ -39,3 +39,9 @@ All of `handoff/build/LESSONS.md` "Owner rules" apply. For art especially:
   comes from the camera and light as much as from the models: tilt-shift blur, soft shadows, deep occlusion and
   fuzz on every edge. Faults found by looking: the flame tongues cast a star of shadows over the fire circle (the
   fire light sat inside them; it now sits above).
+- 25 Oct 2026, camper from the turnaround (second build): match a reference by measuring it (heights, widths, the
+  hat's tilt in the side view) before modelling. Faults found by looking: the beanie tilted the wrong way and hid
+  the face (a rotation sign; check the front view first); ribs vanished under the flat day light until the stitch
+  pattern followed them and the grooves were darkened in the shader; the head showed through the hat's fold as
+  peach specks (tuck the head in, count skin-coloured pixels on the hat); the day light eats blue and crushes darks,
+  so swatches for a photo-matched model are lighter and greyer than the photo's colours.

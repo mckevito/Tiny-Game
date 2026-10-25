@@ -51,6 +51,9 @@ look knitted (wool weaves in the material, a ground of felt plants, every model 
 owner's verdict. The owner asked for the models to look like their original felt
 reference picture; the Art role's pilot covers the camper, the tent, the pine and the round broadleaf tree, felt
 fibres on the shared material, and a warmer day light and grass (all **Proposed**). Sizes and colliders are unchanged.
+A second Blender camper built to the owner's "Beanie Camper" turnaround (knitted beanie, sweater and sleeves with
+stitches along their ribs, weave `knit_rows`) is **Proposed** in its own PR, beside another attempt, for the owner
+to pick from.
 
 | Proof | Test | Result |
 |---|---|---|
