@@ -136,5 +136,5 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, owner: Milestone 2 is signed off after two-PC play on the home network.
 - 25 Oct 2026, **Proposed** (Milestone 2): each PC steers its own camper and tells the other where it is; the host
   decides every change to the camp (carrying, placing, everything saved). A third PC is told the camp is full.
-- 25 Oct 2026, **Proposed**: licence MIT for code and CC BY 4.0 for original art; three save slots; thank-you letters;
-  background wildlife; upkeep never below zero.
+- 25 Oct 2026, owner: licence MIT for code and CC BY 4.0 for original art.
+- 25 Oct 2026, **Proposed**: three save slots; thank-you letters; background wildlife; upkeep never below zero.
