@@ -2,7 +2,8 @@ class_name CampMenu
 extends PanelContainer
 ## Every menu page in one felt panel over the clearing: the title (start game, options, controls, quit), the start
 ## page (play alone, host, join, with an optional link code), the in-camp menu (back to camp, ready for bed, the
-## booking board (Stage B), options, leave, or hop off the couch for a couch player) and the one Options screen
+## booking board (Stage B), Players, options, leave, or hop off the couch for a couch player), the Players page (which
+## device each player on this PC uses, chosen by pressing a button on it) and the one Options screen
 ## (OptionsScreen), which the title and the in-camp menu both open. Works with the keyboard and mouse or a pad:
 ## buttons take focus (a clear ring shows it), so the D-pad or left stick moves between them, Cross presses and
 ## cancel goes back a page. Typing a name or an address needs a keyboard; both are remembered for next time.
@@ -21,6 +22,9 @@ var _tagline := Label.new()
 var _title := VBoxContainer.new()
 var _start := VBoxContainer.new()
 var _pause := VBoxContainer.new()
+var _players := VBoxContainer.new()
+var _first_players: Button
+var _players_couch: Array[Button] = []
 var _first_title: Button
 var _first_start: Button
 var _first_pause: Button
@@ -48,7 +52,7 @@ func _ready() -> void:
 	_tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tagline.add_theme_font_size_override("font_size", int(UiLook.num("tagline_font_px", 26)))
 	box.add_child(_tagline)
-	for page in [_title, _start, _pause, options]:
+	for page in [_title, _start, _pause, _players, options]:
 		box.add_child(page)
 	_first_title = _page_button(_title, "title.start", show_start.bind(""))
 	_page_button(_title, "title.options", show_options.bind("", "title"))
@@ -71,9 +75,15 @@ func _ready() -> void:
 	_sleep = _button(_pause, "sleep")
 	for choice in ["booking_accept", "booking_later", "booking_decline"]:
 		_booking.append(_button(_pause, choice))
+	_button(_pause, "players")
 	_page_button(_pause, "title.options", func() -> void: show_options("", "pause"))
 	_leave = _button(_pause, "leave")
 	_leave_couch = _button(_pause, "leave_couch")
+	_first_players = _button(_players, "players_p1")
+	_button(_players, "players_p2")
+	_players_couch.append(_button(_players, "players_swap"))
+	_players_couch.append(_button(_players, "players_nobody"))
+	_page_button(_players, "title.back", func() -> void: show_pause(_pause_couch, _pause_info))
 	options.closed.connect(_options_closed)
 	options.picture_changed.connect(func(_preset: String) -> void: chose.emit("picture"))
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -105,16 +115,17 @@ func slot() -> int:
 	return slot_pick.get_selected_id()
 
 
-## The page showing now: "title", "start", "pause" or "options".
+## The page showing now: "title", "start", "pause", "players" or "options".
 func page() -> String:
-	for p: Array in [[_title, "title"], [_start, "start"], [_pause, "pause"], [options, "options"]]:
+	for p: Array in [[_title, "title"], [_start, "start"], [_pause, "pause"], [_players, "players"],
+			[options, "options"]]:
 		if p[0].visible:
 			return p[1]
 	return ""
 
 
 func _show(which: Control, message: String, focus: Control) -> void:
-	for p in [_title, _start, _pause, options]:
+	for p in [_title, _start, _pause, _players, options]:
 		p.visible = p == which
 	var big := which == _title
 	_heading.add_theme_font_size_override("font_size", int(UiLook.num("title_font_px", 56)) if big
@@ -148,6 +159,14 @@ func show_pause(couch_player: bool = false, info: String = "") -> void:
 	_show(_pause, info, _first_pause)
 
 
+## The Players page: `info` says which device each player has; swap and "nobody" show only with a couch player.
+func show_players(info: String, couch_on: bool) -> void:
+	for b in _players_couch:
+		b.visible = couch_on
+	var keep := get_viewport().gui_get_focus_owner() if is_inside_tree() and _players.visible else null
+	_show(_players, info, keep if keep and keep.visible and _players.is_ancestor_of(keep) else _first_players)
+
+
 ## The Options screen at a tab ("" for the last one); back returns to `from` ("title" or "pause").
 func show_options(tab: String = "", from: String = "") -> void:
 	if from != "":
@@ -166,9 +185,13 @@ func _options_closed() -> void:
 
 ## Cancel on the start page goes back to the title (Options handles its own; the camp closes the in-camp menu).
 func _unhandled_input(event: InputEvent) -> void:
-	if visible and _start.visible and (event.is_action_pressed("cancel") or event.is_action_pressed("ui_cancel")):
+	if visible and (_start.visible or _players.visible) \
+			and (event.is_action_pressed("cancel") or event.is_action_pressed("ui_cancel")):
 		get_viewport().set_input_as_handled()
-		show_title()
+		if _players.visible:
+			show_pause(_pause_couch, _pause_info)
+		else:
+			show_title()
 
 
 ## The bed button: "Ready for bed", "Not ready for bed yet", or greyed out before the evening with `closed_text`.

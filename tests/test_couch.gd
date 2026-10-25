@@ -178,20 +178,33 @@ func test_keyboard_player_one_and_a_controller_share_the_couch() -> String:
 	var why := ""
 	camp._input(_key(KEY_W))
 	camp._input(_stick(0))
-	camp._input(_pad_button(0, 0))
+	camp._input(_pad_button(0, MENU_BUTTON))
 	var p1: Camper = camp.campers["p_host"]
-	if camp._p1_pads.has(0):
-		why = "a controller touched while player one is on the keyboard should not become player one's"
-	elif p1.input == null or p1.input.owns_event(_stick(0)) or not p1.input.owns_event(_key(KEY_W)):
-		why = "player one on the keyboard should not be steered by a free controller"
+	if camp.couch_id == "" or camp.couch_pad != 0 or camp.campers.size() != 2:
+		why = "a controller's menu button should drop in a second player beside a keyboard player one, even after a nudge"
+	elif camp.p1_device != PlayerInput.KEYS or p1.input.owns_event(_stick(0)) or not p1.input.owns_event(_key(KEY_W)):
+		why = "player one should keep the keyboard and leave the couch controller alone"
+	elif camp.owner_of(_key(KEY_E)) != "p_host" or camp.owner_of(_pad_button(0, 0)) != camp.couch_id:
+		why = "keys should go to player one and the controller's buttons to the couch player"
+	await _done()
+	return why
+
+
+func test_a_keyboard_start_can_still_play_alone_on_a_controller() -> String:
+	_fresh()
+	var camp := _camp("StartSide", "p_host", "Hana")
+	camp.start_solo(1)
+	camp._input(_key(KEY_ENTER))
+	camp._input(_pad_button(0, 0))
+	var why := ""
+	if camp.owner_of(_stick(0)) != "p_host" or camp.owner_of(_key(KEY_W)) != "p_host":
+		why = "alone, player one should play with every device, the keyboard and any controller"
+	elif camp.campers["p_host"].input != null:
+		why = "alone, player one should read every action"
 	if why == "":
 		camp._input(_pad_button(0, MENU_BUTTON))
-		if camp.couch_id == "" or camp.couch_pad != 0 or camp.campers.size() != 2:
-			why = "the free controller's menu button should drop in a second player beside the keyboard"
-		elif p1.input.owns_event(_stick(0)) or not p1.input.owns_event(_key(KEY_W)):
-			why = "player one should keep the keyboard and leave the couch controller alone"
-		elif camp.owner_of(_key(KEY_E)) != "p_host" or camp.owner_of(_pad_button(0, 0)) != camp.couch_id:
-			why = "keys should go to player one and the controller's buttons to the couch player"
+		if camp.couch_id != "":
+			why = "Options on the controller player one just pressed should open their menu, not drop in"
 	await _done()
 	return why
 
@@ -204,10 +217,8 @@ func test_player_one_can_hand_their_controller_over_from_the_keyboard() -> Strin
 	camp._input(_key(KEY_W))
 	camp._input(_pad_button(0, MENU_BUTTON))
 	var why := ""
-	if camp.couch_id == "" or camp.couch_pad != 0:
+	if camp.couch_id == "" or camp.couch_pad != 0 or camp.p1_device != PlayerInput.KEYS:
 		why = "after player one moves to the keyboard, their old controller's menu button should drop in a second player"
-	elif camp._p1_pads.has(0):
-		why = "the handed-over controller should no longer be player one's"
 	await _done()
 	return why
 
@@ -224,7 +235,46 @@ func test_player_one_back_on_their_controller_gets_the_menu() -> String:
 	if camp.couch_id != "":
 		why = "player one picking their own controller back up should open their menu, not drop in"
 	elif camp.campers["p_host"].input != null:
-		why = "player one back on a controller alone should read every action again"
+		why = "player one alone should read every action"
+	await _done()
+	return why
+
+
+func test_players_page_picks_swaps_and_clears_devices() -> String:
+	_fresh()
+	var camp := _camp("SeatSide", "p_host", "Hana")
+	camp.start_solo(1)
+	camp._input(_stick(0))
+	camp._open_menu()
+	camp._on_menu("players")
+	var why := "" if camp.menu.page() == "players" else "the in-camp menu should open the Players page"
+	if why == "":
+		camp._on_menu("players_p2")
+		camp._input(_key(KEY_SPACE))
+		if camp.couch_id == "" or camp.couch_pad != PlayerInput.KEYS or camp.p1_device != 0:
+			why = "player two choosing the keyboard should drop them in on it, with player one on their controller"
+		elif camp.owner_of(_key(KEY_W)) != camp.couch_id or camp.owner_of(_stick(0)) != "p_host":
+			why = "the keyboard should go to player two and the controller to player one"
+		elif camp._glyph(camp.couch_id) or not camp._glyph("p_host") == camp._pad:
+			why = "player two on the keyboard should see key prompts"
+	if why == "":
+		camp._on_menu("players_swap")
+		if camp.p1_device != PlayerInput.KEYS or camp.couch_pad != 0:
+			why = "swap should trade the two players' devices"
+	if why == "":
+		camp._on_menu("players_p1")
+		camp._input(_pad_button(0, 0))
+		if camp.p1_device != 0 or camp.couch_pad != PlayerInput.KEYS:
+			why = "player one choosing player two's device should swap them"
+	if why == "":
+		camp._on_menu("players_p2")
+		camp._input(_pad_button(1, 0))
+		if camp.couch_pad != 1 or camp.p1_device != 0:
+			why = "player two should be able to move to another controller"
+	if why == "":
+		camp._on_menu("players_nobody")
+		if camp.couch_id != "" or camp.p1_device != PlayerInput.ANY or camp.menu.page() != "players":
+			why = "player two: nobody should drop them out, give player one every device and stay on the page"
 	await _done()
 	return why
 

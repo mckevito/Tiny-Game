@@ -68,7 +68,22 @@
     "booking_accept": "Accept booking",
     "booking_later": "Ask them to come a day later",
     "booking_decline": "Decline booking",
-    "board_empty": "No bookings on the board right now."
+    "board_empty": "No bookings on the board right now.",
+    "players": "Players",
+    "players_p1": "Player one: choose a device",
+    "players_p2": "Player two: choose a device",
+    "players_swap": "Swap devices",
+    "players_nobody": "Player two: nobody",
+    "players_line": "%s: %s",
+    "players_press": "%s: now press something on the keyboard, the mouse or the controller to use.",
+    "players_taken": "That is player one's device. Choose player one's device first, or use another one.",
+    "players_none": "That press did not come from a keyboard, a mouse or a controller.",
+    "player_one": "Player one",
+    "player_two": "Player two",
+    "device_keys": "Keyboard and mouse",
+    "device_pad": "Controller %d",
+    "device_any": "Any device",
+    "device_nobody": "Nobody"
   },
   "join": {
     "full": "That camp already has two campers.",
