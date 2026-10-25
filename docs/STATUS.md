@@ -276,6 +276,32 @@ How to try round 5: walk to the camp's tent (west of the fire) and press E to cr
 8 pm, walk up to a guest's tent to see them asleep. T to the camera, then E near a rabbit or a deer; J and Q/R to the
 Field guide tab. Guests ask for something new about an hour after you help them.
 
+### Interface round 1: a couch HUD that never overlaps, and the Animal Crossing polish (25 Oct 2026)
+The first round of the Interface role (owner, 25 Oct 2026: a test for HUD overlap in couch split screen, then the Pack
+and dock polished against the owner's Animal Crossing reference). On `main` the new test failed: on the couch the
+couch player's clipboard covered the clock and the guests' wishes, and the clipboards and docks covered the prompts.
+
+| Proof | Test | Result |
+|---|---|---|
+| Couch split screen at 1920 x 1080 with a full HUD (three guests' wishes, odd jobs, three toasts, a build prompt each, the bed line): both docks, both clipboards on every page, both Packs, a Pack with a clipboard, and the workbench with each: nothing leaves the screen, nothing covers anything else, and each player's panels stay on their own half | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing (checked by putting back the wide prompt, the dock under an open clipboard, and the full clock under the couch clipboard: each fails) |
+| At the biggest interface size both clipboards still fit on screen and on their own half, clear of each other, the hint, the clock and the docks; a page too long shows what fits and says so | same test | Passing (only there may the centre prompts and toasts pass under a clipboard: there is no room for both) |
+| The dock shows the tool and build piece before and after the one in hand, round the cycle, so a player sees what the next press brings | `test_hud.test_the_dock_shows_its_neighbours_and_the_pack_names_the_pick` | Passing |
+| The Pack: rounded slots, a felt token coloured by the item's kind, the count in the corner, faded empty slots, and a name tag for the picked item that says what it is for | same test | Passing |
+| Review frames: the dock, the open Pack, and on the couch both docks, both clipboards and both Packs | `tools/capture.gd --hud` (hud_dock.png, hud_pack.png, couch_docks.png, couch_clipboards.png, couch_packs.png) | Looked at |
+| The couch HUD reads well and the Pack and dock feel like Animal Crossing's | Owner's play | Waiting on the owner |
+
+What changed: prompts keep to a centre column 640 px wide (`hud.prompt_width_px`); an open clipboard or workbench hides
+its player's dock, as the Pack already did; the clock folds to its own line while the couch player's clipboard or
+workbench is open under it (the wishes and odd jobs are on the clipboard's Today page); a clipboard starts below the
+hint or the clock on its side and a long page stops above the bottom of the screen; on the couch each Pack opens in its
+player's bottom corner, where the dock was; a player's own prompt hides while their Pack or workbench is open; the
+hint stops short of the clock. **Proposed** (data/tuning.json, data/text.json): token colours fish pond blue, meals
+ember, fruit blush, plants leaf, materials wood; slot 128 px; dock 420 px wide with the neighbours at half strength.
+
+How to try it: drop in a second controller (Options on it) and walk apart until the screen splits. Open both
+clipboards (J and Touchpad), both Packs (I and D-pad down) and the workbench: nothing should sit on anything else.
+Cycle the tool (T or D-pad up): the names either side of it are the one before and the one after.
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.

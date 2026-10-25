@@ -73,7 +73,8 @@
     "today_max": 2,
     "guests_max": 3,
     "flash_s": 0.35,
-    "flash_alpha": 0.7
+    "flash_alpha": 0.7,
+    "prompt_width_px": 640
   },
   "clipboard": {
     "_about": "The clipboard (scripts/camp/clipboard.gd): tabs in order (text: clipboard.tab.<name>), the panel width, font, gap from the screen edge and from the top, the margin, the edge and the thicker top edge (the clip), the felt swatches, and how often its text refreshes.",
@@ -95,26 +96,39 @@
     "refresh_s": 0.25
   },
   "pack_panel": {
-    "_about": "The Pack (scripts/camp/pack_panel.gd), opened with the pack button like Animal Crossing's pockets: a felt panel of columns x rows slots, each slot_w_px by slot_h_px, gap_px apart, with margin_px inside, corner_px corners and an edge_px edge (picked: picked_px, picked_swatch); font_px slot text and title_px for the title; it sits bottom_px above the bottom of its player's half; the panel's own margin is panel_margin_px.",
+    "_about": "The Pack (scripts/camp/pack_panel.gd), opened with the pack button like Animal Crossing's pockets: a felt panel of columns of square slots slot_px wide, gap_px apart, with margin_px inside, corner_px corners and an edge_px edge (picked: picked_px, picked_swatch; empty slots at empty_alpha). Each slot has a round felt token token_px wide in its item kind's colour (kind_swatch), the name at name_px and the count at count_px; the picked item's name tag under the grid is tag_px. font_px is the hint, title_px the title. Alone it sits bottom_px above the bottom of the screen, in the middle; with a couch player it opens in its player's bottom corner, corner_gap_px from the edges. The panel's own margin is panel_margin_px and its corners panel_corner_px.",
     "columns": 4,
-    "slot_w_px": 170,
-    "slot_h_px": 84,
-    "gap_px": 8,
-    "margin_px": 6,
-    "corner_px": 10,
+    "slot_px": 128,
+    "gap_px": 10,
+    "margin_px": 10,
+    "corner_px": 24,
     "edge_px": 3,
     "picked_px": 6,
+    "empty_alpha": 0.5,
+    "token_px": 34,
+    "name_px": 18,
+    "count_px": 18,
+    "tag_px": 21,
     "swatch": "warm_cream",
     "edge_swatch": "honey_thread",
     "picked_swatch": "rust_canvas",
+    "kind_swatch": {
+      "fish": "pond_blue",
+      "meal": "ember_felt",
+      "fruit": "blush_felt",
+      "plant": "leaf_felt",
+      "material": "wood_felt"
+    },
     "font_px": 20,
     "title_px": 26,
     "bottom_px": 200,
-    "panel_margin_px": 18
+    "corner_gap_px": 24,
+    "panel_margin_px": 18,
+    "panel_corner_px": 18
   },
   "dock": {
-    "_about": "Each player's corner dock (scripts/camp/hud_dock.gd), like Animal Crossing's: the tool in hand and the build piece picked, each a felt chip width_px wide and chip_h_px tall with a row of dots for where it sits in the cycle, and a Pack line. font_px on the chips, caption_px on the captions and the Pack line; gap_px from the screen edges; row_gap_px between rows; the captions have an outline_px outline. Player one's dock is bottom right (bottom left while someone is on the couch); the couch player's is bottom right.",
-    "width_px": 320,
+    "_about": "Each player's corner dock (scripts/camp/hud_dock.gd), like Animal Crossing's: the tool in hand and the build piece picked, each a felt chip width_px wide and chip_h_px tall with side_px inside its edges. The chip shows the one in hand in the middle at font_px (centre_share of the width) with the previous and next ones either side at near_px and near_alpha, so the player sees what the next press brings, then a row of dots for where it sits in the cycle. caption_px on the captions, the dots and the Pack line; gap_px from the screen edges; row_gap_px between rows; the captions have an outline_px outline. Player one's dock is bottom right (bottom left while someone is on the couch); the couch player's is bottom right. An open Pack, clipboard or workbench hides its player's dock.",
+    "width_px": 420,
     "chip_h_px": 50,
     "font_px": 24,
     "caption_px": 19,
@@ -124,6 +138,10 @@
     "swatch": "warm_cream",
     "edge_swatch": "rust_canvas",
     "edge_px": 4,
-    "corner_px": 12
+    "corner_px": 12,
+    "side_px": 10,
+    "near_px": 17,
+    "near_alpha": 0.5,
+    "centre_share": 1.6
   }
 }

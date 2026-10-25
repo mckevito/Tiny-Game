@@ -83,5 +83,22 @@ func show_text(body: String, hint: String) -> void:
 	_hint.text = hint
 
 
+## Puts the top edge at `top` (below the hint or the clock on its side) and keeps the panel above `bottom`: a page too
+## long for the room shows as many lines as fit, then the "more" line (text: clipboard.more).
+func fit(top: float, bottom: float) -> void:
+	offset_top = top
+	_body.clip_text = false
+	_body.custom_minimum_size.y = 0.0
+	var line_h := float(_body.get_line_height()) + float(_body.get_theme_constant("line_spacing"))
+	var extra := get_combined_minimum_size().y - _body.get_combined_minimum_size().y
+	var room := int(floor((bottom - top - extra) / maxf(line_h, 1.0)))
+	if _body.get_line_count() > room:
+		# A clipped Label is as tall as its own minimum, so the cut page keeps room for the "more" line.
+		_body.clip_text = true
+		_body.custom_minimum_size.y = maxi(room - 1, 1) * line_h
+		_hint.text = Tuning.text("clipboard.more") + "\n" + _hint.text
+	reset_size()
+
+
 func text() -> String:
 	return _body.text

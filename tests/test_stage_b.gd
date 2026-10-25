@@ -465,21 +465,9 @@ func test_dropping_the_camp_box_and_a_hud_that_stays_on_screen() -> String:
 	return why
 
 
-## "" when every visible piece with something in it is inside the view and none covers another.
+## "" when every visible piece with something in it is inside the view and none covers another (test_hud.gd).
 func _hud_fits(camp: Node, pieces: Array) -> String:
-	var view: Rect2 = camp.get_viewport().get_visible_rect()
-	var shown: Array[Control] = []
-	for c: Control in pieces:
-		if c.is_visible_in_tree() and not (c is Label and (c as Label).text == ""):
-			shown.append(c)
-	for i in shown.size():
-		var r := shown[i].get_global_rect()
-		if not view.encloses(r):
-			return "%s should stay inside the view %s, got %s" % [shown[i].name, view, r]
-		for j in range(i + 1, shown.size()):
-			if r.intersects(shown[j].get_global_rect()):
-				return "%s %s and %s %s should not overlap" % [shown[i].name, r, shown[j].name, shown[j].get_global_rect()]
-	return ""
+	return preload("res://tests/test_hud.gd").hud_fits(camp.get_viewport().get_visible_rect(), pieces)
 
 
 ## Round 5 from the buttons (owner: freedom to finish day 1 and sleep any time, guests at the heart of the day, tents
