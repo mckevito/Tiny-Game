@@ -1457,6 +1457,10 @@ func morning_report(summary: Dictionary) -> String:
 		for item: String in sale["items"]:
 			sold.append(Tuning.text("pack.slot") % [Tuning.text("items." + item), int(sale["items"][item])])
 		lines.append(Tuning.text("report.sale") % [int(sale["coins"]), ", ".join(sold)])
+	# The Today part below gives the stars and the ranger's hint; up here only the news of a new star.
+	var rated: Dictionary = summary.get("rating", {})
+	if not rated.is_empty() and int(rated["stars"]) > maxi(int(rated["was"]), 1):
+		lines.append(Tuning.text("rating.up") % [int(rated["stars"]), CampRating.max_stars(), int(rated["was"])])
 	lines.append("")
 	lines.append(Tuning.text("report.bookings"))
 	var any := false
@@ -1485,6 +1489,9 @@ func _today_report() -> Array[String]:
 	var goals := state.guests.goals()
 	lines.append_array(goals.slice(1))
 	lines.append(project_line())
+	lines.append(Tuning.text("rating.line") % [state.rating.stars(), CampRating.max_stars()])
+	if state.rating.hint() != "":
+		lines.append(ranger_hint(state.rating.hint()))
 	var tomorrow := state.day.today() + 1
 	if (Tuning.value("tasks", "news", []) as Array).any(func(d: Variant) -> bool: return int(d) == tomorrow):
 		lines.append("")
@@ -1503,6 +1510,11 @@ func project_line() -> String:
 				int(r["needs"][need])])
 	return Tuning.text("project.line") % [Tuning.text("project.%s.name" % r["id"]), ", ".join(needs),
 			project_reward(str(r["id"]))]
+
+
+## The ranger's hint about what would raise the camp's rating (data/text.json rating.hint.<factor>).
+func ranger_hint(factor: String) -> String:
+	return Tuning.text("rating.ranger") % [str(Tuning.value("rating", "ranger", "Ada")), Tuning.text("rating.hint." + factor)]
 
 
 ## What a camp project gives, in words (data/text.json project.<id>.reward, with its coins from data/projects.json).

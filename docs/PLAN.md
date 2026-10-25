@@ -129,7 +129,7 @@ together actions. Never cut both input methods, two-player reliability, decorati
 save recovery.
 
 ## Later (not in v1)
-Next round (owner, 25 Oct 2026): the camp's star rating (the sell crate, camp projects and field guide are built); then the
+Next round (owner, 25 Oct 2026): the sell crate, camp projects, field guide and the camp's star rating are built; next the
 clipboard's map tab with plan marks both players see. A free photo mode, text chat, separate remaps for each couch player, a credits page, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
 two players, a public release (itch.io or Steam), Steam's relay, consoles, voice acting.
 
@@ -208,3 +208,6 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   morning report at flat, low prices and gives back the last stack until night; three camp projects in order
   (fireside stools, flower planters, a tidy woodpile) filled by either player from their Pack and the camp box, each
   rewarding once (two new recipes, then coins); players stop at the clearing's edge.
+- 25 Oct 2026, **Proposed** (gameplay round 3): the camp's star rating, worked out each night from pitches, crafted
+  pieces, happy guests, photos and finished projects (each capped), never going down and with no mess penalty, with
+  one hint from Ranger Ada in the Today list.

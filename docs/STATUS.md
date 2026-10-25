@@ -342,6 +342,16 @@ How to try round 2: carry sticks or a fish to the little crate south of the fire
 nothing left to sell to take the last stack back. Sleep, and the morning report says what it paid. At the board west
 of the camp's tent, E brings what the open camp project needs (J, Today, says what that is).
 
+### Gameplay round 3: the camp's star rating (25 Oct 2026)
+The last of the owner's next-round pick (the v1 pick "a camp star rating with ranger hints").
+
+| Proof | Test | Result |
+|---|---|---|
+| The rating adds pitches, crafted pieces, happy guests (the last 3 nights' reviews), field-guide photos and finished projects, each up to a cap; a new camp has one star | `test_rating.test_the_rating_rises_with_the_camp_and_never_goes_down` | Passing |
+| It is worked out each night and never goes down, even when things are packed away (no mess penalty) | `test_rating.test_the_rating_rises_with_the_camp_and_never_goes_down` | Passing (checked by breaking it) |
+| The Today list (clipboard and morning report) gives the stars and one hint from Ranger Ada naming the first factor still short; the report says when a star is new | `test_rating.test_the_morning_report_and_today_list_show_the_stars_and_a_hint` | Passing |
+| Review frame: the morning report with the stars and the hint | Cloud frame (`stage-b/gameplay3_rating_report.png` in the project files) | Looked at |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -379,6 +389,10 @@ of the camp's tent, E brings what the open camp project needs (J, Today, says wh
   sleep from 8 pm; the tent opens within 2.8 m; a photo reaches 7 m and the first of each kind pays 5 coins; the
   photo odd job asks for 2 photos (4 coins); Apply covers picture, window, window size, vsync, frame limit and
   interface size.
+- **Proposed** gameplay round 3 numbers (data/rating.json): pitches 4 points each up to 12, crafted pieces (lantern
+  post, water point, log bench, stool, planter) 2 each up to 16, guests' satisfaction points over the last 3 nights 1
+  each up to 12, animal kinds photographed 2 each up to 8, projects done 3 each up to 9; stars at 0, 10, 22, 36 and
+  50 points; the ranger is Ada (renamable later, like every name). Stars never go down.
 - **Proposed** gameplay round 2 numbers (data/projects.json, data/craft.json, data/tuning.json): crate prices stick 1,
   wood 2, berries 2, perch and sunfish 3, trout 4, grilled perch and sunfish 5, grilled trout 6; projects in order:
   fireside stools (8 sticks, 4 berries: the stool recipe, 2 wood and 2 sticks), flower planters (6 wood, 2 fish of any
