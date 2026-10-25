@@ -57,7 +57,7 @@ func _process(delta: float) -> void:
 	else:
 		if not hold_turn:
 			yaw += (Input.get_action_strength("camera_right") - Input.get_action_strength("camera_left")) \
-					* deg_to_rad(_num("yaw_speed_deg_s", 90.0)) * delta
+					* deg_to_rad(_num("yaw_speed_deg_s", 90.0)) * Settings.camera_speed() * delta
 		if Input.is_action_just_pressed("zoom_in"):
 			_want_distance -= _num("zoom_step_m", 1.0)
 		if Input.is_action_just_pressed("zoom_out"):

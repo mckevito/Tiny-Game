@@ -237,3 +237,33 @@ rabbits and squirrels, the deer at dawn and dusk from day 2, and the bear by the
 - Guests still walk in a straight line. The clipboard's map tab with plan marks is the next round.
 - Frame rate on the weakest laptop is still unmeasured; round 2 adds up to 10 animals (no lights or physics), stump,
   sapling, stick and berry models, and the clipboard panel.
+
+## Title screen and settings (quality of life, 25 Oct 2026)
+Asked for by the owner alongside Stage B: a landing page with Start game, an Options screen and controls. Waits on the
+owner's try. Research notes are outside the repo (project files, "Title screen and settings.md").
+
+| Proof | Test | Result |
+|---|---|---|
+| The game opens on a title over the clearing (Start game, Options, Controls, Quit) with a button in focus; cancel goes back a page | `test_settings.test_title_start_options_and_back_with_focus_on_every_page` | Passing |
+| One Options screen, opened from the title and the in-camp menu, and back returns to where it came from | `test_settings.test_options_from_the_camp_menu_rebinds_and_goes_back` | Passing |
+| Settings are saved on this PC (user://settings.json), kept in range, and never in the camp save, the profile or the shared state | `test_settings.test_settings_are_saved_on_this_pc_and_kept_in_range`, `..._never_go_into_the_camp_save_or_to_the_other_pc` | Passing |
+| Volumes reach their buses (overall, music, effects, ambience) | `test_settings.test_sound_settings_reach_their_buses` | Passing |
+| Remapping on keyboard and controller swaps a clash, keeps the reserved keys, resets, and shows in prompts and in each couch player's own input | `test_settings.test_remapping_swaps_clashes_and_shows_in_prompts`, `..._pad_remaps_reach_each_couch_players_own_input` | Passing |
+| Remapping from the screen: choose a key button, press the new key; the stop key keeps the old one | `test_settings.test_options_from_the_camp_menu_rebinds_and_goes_back` | Passing |
+| The picture preset in Options reaches the camp's views (the existing Sharp and Light presets) | same test | Passing |
+| Every option, choice and action has words | `test_settings.test_every_option_and_action_has_words` | Passing |
+
+### How to try it
+1. Start the game: the title sits over the clearing. Move with the D-pad, the stick or the arrow keys; the focused
+   button has a rust ring. **Start game** opens the familiar start menu (with **Back**).
+2. **Options** has four tabs: Picture (Sharp or Light, window, vsync, frame limit), Sound, Controls and
+   Accessibility (interface size, still trees). Left and right change a choice or a slider.
+3. **Controls** (also a tab): choose a key or button, then press the new one. Escape or a click keeps the old key;
+   on the controller, wait a moment. A clash swaps the two actions. **Reset this page** puts the defaults back.
+4. In camp, the menu (Tab or Options) has **Options** too; back returns to the in-camp menu.
+
+### Still open
+- **Proposed** (docs/PLAN.md): remapping and the accessibility basics move forward from Stage E; the defaults are in
+  `data/settings.json` (in a window, vsync on, 60 frames a second, volumes 80/70/80/70, deadzone 20%, interface 100%).
+- There is no sound yet, so the volume sliders only set the buses that sound will use.
+- Remaps are per PC, so both couch controllers share them; walking on the controller stays on the left stick.

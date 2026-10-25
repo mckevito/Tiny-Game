@@ -50,7 +50,6 @@
     "resume": "Back to camp",
     "leave": "Leave camp",
     "leave_couch": "Hop off the couch",
-    "quality": "Picture: %s",
     "link_code": "Link code (only to bring a couch camper to this PC)",
     "link_info": "To play %s on their own PC, join this camp there with the link code %s.",
     "hosting": "Hosting camp %d. Your friend can join now.",
@@ -340,5 +339,84 @@
     "empty": "empty",
     "animals": "Animals spotted: %d of %d (%s)",
     "none_yet": "none yet"
+  },
+  "title": {
+    "tagline": "A cozy campground for two",
+    "start": "Start game",
+    "options": "Options",
+    "controls": "Controls",
+    "quit": "Quit",
+    "back": "Back"
+  },
+  "options": {
+    "title": "Options",
+    "tab": {
+      "picture": "Picture",
+      "sound": "Sound",
+      "controls": "Controls",
+      "access": "Accessibility"
+    },
+    "row": {
+      "picture": "Picture",
+      "window_mode": "Window",
+      "vsync": "Smooth frames (vsync)",
+      "fps_cap": "Frame limit",
+      "master": "Overall volume",
+      "music": "Music",
+      "effects": "Sound effects",
+      "ambience": "Ambience",
+      "background_sound": "Sound while in the background",
+      "stick_deadzone": "Stick deadzone",
+      "camera_speed": "Camera turn speed",
+      "ui_scale": "Interface size",
+      "still_trees": "Still trees (no swaying)"
+    },
+    "choice": {
+      "window_mode": {
+        "windowed": "In a window",
+        "borderless": "Full screen (borderless)",
+        "fullscreen": "Full screen (exclusive)"
+      },
+      "fps_cap": {
+        "30": "30 a second",
+        "60": "60 a second",
+        "120": "120 a second",
+        "0": "No limit"
+      }
+    },
+    "choice_shown": "‹  %s  ›",
+    "percent": "%d%%",
+    "keyboard": "Keyboard and mouse",
+    "controller": "Controller",
+    "stick": "Left stick",
+    "action": {
+      "move_forward": "Walk forward",
+      "move_back": "Walk back",
+      "move_left": "Walk left",
+      "move_right": "Walk right",
+      "interact": "Use or pick up",
+      "cancel": "Back or cancel",
+      "menu": "Menu",
+      "camera_left": "Turn camera left",
+      "camera_right": "Turn camera right",
+      "zoom_in": "Zoom in",
+      "zoom_out": "Zoom out",
+      "build": "Build",
+      "rotate": "Turn the piece",
+      "undo": "Undo",
+      "next_kind": "Next piece",
+      "clipboard": "Clipboard"
+    },
+    "press_key": "Waiting for a key…",
+    "press_button": "Waiting for a button…",
+    "wait_key": "Press the new key. %s or a click keeps the old one.",
+    "wait_button": "Press the new button on the controller. Wait a moment to keep the old one.",
+    "swapped": "Swapped: %s now uses %s.",
+    "reserved": "%s is kept for something else, so nothing changed.",
+    "reset": "Reset this page",
+    "back": "Back",
+    "glyph_pair": "%s and %s",
+    "on": "On",
+    "off": "Off"
   }
 }

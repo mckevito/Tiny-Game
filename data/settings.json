@@ -1,0 +1,72 @@
+{
+  "_about": "This PC's settings (scripts/core/settings.gd), kept in user://settings.json and never sent to the other PC. pages lists the Options screen (scripts/ui/options_screen.gd) tab by tab: each row has a key, a kind (choice, slider or toggle) and a default; a choice lists its options (picture takes the presets in data/graphics.json), a slider its min, max and step. Labels are in data/text.json: options.row.<key>, options.choice.<key>.<option>, options.tab.<page>. The controls page also lists every action in data/input.json except fixed ones, to remap. pad_names names DualSense buttons by Godot's JoyButton number for remapped prompts. look is the shared menu look (scripts/ui/ui_look.gd).",
+  "version": 1,
+  "pages": [
+    {"id": "picture", "rows": [
+      {"key": "picture", "kind": "choice", "from": "graphics", "default": "normal"},
+      {"key": "window_mode", "kind": "choice", "options": ["windowed", "borderless", "fullscreen"], "default": "windowed"},
+      {"key": "vsync", "kind": "toggle", "default": true},
+      {"key": "fps_cap", "kind": "choice", "options": [30, 60, 120, 0], "default": 60}
+    ]},
+    {"id": "sound", "rows": [
+      {"key": "master", "kind": "slider", "min": 0, "max": 100, "step": 5, "default": 80},
+      {"key": "music", "kind": "slider", "min": 0, "max": 100, "step": 5, "default": 70},
+      {"key": "effects", "kind": "slider", "min": 0, "max": 100, "step": 5, "default": 80},
+      {"key": "ambience", "kind": "slider", "min": 0, "max": 100, "step": 5, "default": 70},
+      {"key": "background_sound", "kind": "toggle", "default": false}
+    ]},
+    {"id": "controls", "bindings": true, "rows": [
+      {"key": "stick_deadzone", "kind": "slider", "min": 5, "max": 50, "step": 5, "default": 20},
+      {"key": "camera_speed", "kind": "slider", "min": 50, "max": 200, "step": 10, "default": 100}
+    ]},
+    {"id": "access", "rows": [
+      {"key": "ui_scale", "kind": "slider", "min": 80, "max": 150, "step": 10, "default": 100},
+      {"key": "still_trees", "kind": "toggle", "default": false}
+    ]}
+  ],
+  "audio_buses": {"music": "Music", "effects": "Effects", "ambience": "Ambience"},
+  "controls": {
+    "fixed": ["dev_menu"],
+    "cancel_key": "Escape",
+    "wait_s": 6.0
+  },
+  "glyph_parts": {
+    "move": ["move_forward", "move_left", "move_back", "move_right"],
+    "camera": ["camera_left", "camera_right"],
+    "tabs": ["camera_left", "camera_right"]
+  },
+  "pad_names": {
+    "0": "Cross", "1": "Circle", "2": "Square", "3": "Triangle", "4": "Create", "5": "PS button", "6": "Options",
+    "7": "L3", "8": "R3", "9": "L1", "10": "R1", "11": "D-pad up", "12": "D-pad down", "13": "D-pad left",
+    "14": "D-pad right", "15": "Mic button", "20": "Touchpad"
+  },
+  "look": {
+    "font_px": 28,
+    "title_font_px": 56,
+    "tagline_font_px": 26,
+    "heading_font_px": 40,
+    "disabled_alpha": 0.45,
+    "panel_swatch": "warm_cream",
+    "panel_alpha": 0.96,
+    "edge_swatch": "honey_thread",
+    "ink_swatch": "ink_brown",
+    "button_swatch": "sand_felt",
+    "hover_swatch": "honey_thread",
+    "focus_swatch": "rust_canvas",
+    "edge_px": 6,
+    "focus_px": 5,
+    "focus_fill_alpha": 0.25,
+    "track_px": 6,
+    "row_pad_px": 4,
+    "placeholder_alpha": 0.6,
+    "corner_px": 16,
+    "margin_px": 28,
+    "button_pad_px": 10,
+    "gap_px": 10,
+    "options_width_px": 1040,
+    "options_height_px": 560,
+    "label_width_px": 420,
+    "control_width_px": 420,
+    "bind_width_px": 260
+  }
+}

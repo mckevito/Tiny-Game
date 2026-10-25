@@ -1,18 +1,17 @@
 class_name InputSetup
 extends RefCounted
-## Registers every action in res://data/input.json with its keyboard, mouse and joypad bindings. Both input methods
-## are first-class (CLAUDE.md), so each action gets a keyboard or mouse binding and a joypad binding.
+## Registers every action in res://data/input.json with its keyboard, mouse and joypad bindings, plus this PC's
+## remaps and stick deadzone (Settings). Both input methods are first-class (CLAUDE.md), so each action gets a
+## keyboard or mouse binding and a joypad binding.
 
 
 static func apply() -> void:
-	var table := Tuning.table("input")
-	var deadzone := float(table.get("deadzone", 0.2))
-	var actions: Dictionary = table.get("actions", {})
-	for action: String in actions:
-		var row: Dictionary = actions[action]
+	var dz := deadzone()
+	for action: String in action_names():
+		var row := row(action)
 		if InputMap.has_action(action):
 			InputMap.erase_action(action)
-		InputMap.add_action(action, deadzone)
+		InputMap.add_action(action, dz)
 		for key_name: String in row.get("keys", []):
 			var ev := InputEventKey.new()
 			ev.physical_keycode = OS.find_keycode_from_string(key_name)
@@ -32,6 +31,36 @@ static func apply() -> void:
 			ev.axis_value = float(axis_row[1])
 			ev.device = -1
 			InputMap.action_add_event(action, ev)
+
+
+## An action's bindings from the table with this PC's remaps on top: a remap replaces the first key or pad button,
+## and a second key another action took is left out. Pad buttons come back as whole numbers.
+static func row(action: String) -> Dictionary:
+	var out: Dictionary = Tuning.value("input", "actions." + action, {}).duplicate(true)
+	var remap: Dictionary = Settings.binds().get(action, {})
+	for device: String in ["key", "pad"]:
+		var field := "keys" if device == "key" else "joy_buttons"
+		var list: Array = []
+		for input: Variant in out.get(field, []):
+			list.append(str(input) if device == "key" else int(input))
+		if remap.has(device):
+			var mine: Variant = str(remap[device]) if device == "key" else int(remap[device])
+			if list.is_empty():
+				list.append(mine)
+			else:
+				list[0] = mine
+		for dropped: Variant in remap.get("drop_" + device, []):
+			var at := list.find(str(dropped) if device == "key" else int(dropped), 1)
+			if at > 0:
+				list.remove_at(at)
+		if not list.is_empty() or out.has(field):
+			out[field] = list
+	return out
+
+
+## How far a stick must move before it counts (0 to 1), from this PC's settings.
+static func deadzone() -> float:
+	return Settings.num("stick_deadzone") / 100.0
 
 
 ## The action names from the table, for tests and menus.

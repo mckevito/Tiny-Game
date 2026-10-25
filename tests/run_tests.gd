@@ -24,6 +24,9 @@ class ScriptErrors extends Logger:
 
 
 
+const TEST_SETTINGS := "user://test_settings.json"
+
+
 func _initialize() -> void:
 	_run.call_deferred()
 
@@ -34,6 +37,9 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--filter="):
 			filter = arg.trim_prefix("--filter=")
+	# Tests never read or change this PC's real settings (Settings): they start from the defaults in a file of their own.
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SETTINGS))
+	Settings.use_file(TEST_SETTINGS)
 	var errors := ScriptErrors.new()
 	OS.add_logger(errors)
 	var lines: PackedStringArray = []

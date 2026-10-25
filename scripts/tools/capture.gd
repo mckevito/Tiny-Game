@@ -12,6 +12,9 @@ extends SceneTree
 ## animals in the day and dusk shots (day 3: rabbits, squirrels, deer, the bear by the fire), chop.png, and
 ## stump_log_clipboard.png (a felled tree's stump and sapling, a planted sapling, the long log carried and the
 ## clipboard open on Supplies).
+## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
+## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
+## with a throwaway save and settings file.
 
 const SETTLE_FRAMES := 30
 
@@ -26,6 +29,7 @@ func _run() -> void:
 	var couch := false
 	var stage_a := false
 	var stage_b := false
+	var menus := false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -33,6 +37,7 @@ func _run() -> void:
 		couch = couch or arg == "--couch"
 		stage_a = stage_a or arg == "--stage-a"
 		stage_b = stage_b or arg == "--stage-b"
+		menus = menus or arg == "--menus"
 	DirAccess.make_dir_recursive_absolute(out)
 	await process_frame
 	if couch:
@@ -45,6 +50,10 @@ func _run() -> void:
 		return
 	if stage_b:
 		await _stage_b(out)
+		quit(0)
+		return
+	if menus:
+		await _menus(out)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -276,3 +285,31 @@ func _stage_b(out: String) -> void:
 	_save(out + "/report.png")
 	camp.stop("")
 	CampSave.dir = ""
+
+
+func _menus(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://captures_settings.json"))
+	Settings.use_file("user://captures_settings.json")
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	var menu: CampMenu = camp.menu
+	await _settle()
+	_save(out + "/title.png")
+	menu.show_start()
+	await _settle()
+	_save(out + "/start.png")
+	for page: Dictionary in Tuning.value("settings", "pages", []):
+		menu.show_options(str(page["id"]), "title")
+		await _settle()
+		_save(out + "/options_%s.png" % page["id"])
+	camp.start_solo(1)
+	camp.report.visible = false
+	camp._open_menu()
+	menu.show_options("controls", "pause")
+	await _settle()
+	_save(out + "/options_in_camp.png")

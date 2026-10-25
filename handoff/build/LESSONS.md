@@ -88,4 +88,9 @@ Build owns how the game loads them.
   stopped working (why: the busy step passed the interact arg on to a request that takes none; stops it: only chop
   passes its arg, HANDOFF trap, the button test grills). Lesson: a playtest with nothing to do needed many small
   things to do at once, not one big system; building the shared part while the owner chose saved a round.
-
+- 25 Oct 2026: Title screen and settings: a title page over the clearing, one Options screen (picture, sound,
+  controls with remapping on both devices, accessibility) from the title and the in-camp menu, settings kept per PC.
+  Faults found by looking: a slider showed no focus (why: Godot's Slider draws no focus style; stops it: the whole
+  row lights up on focus); a toggle stretched into a long bar (why: CheckButton fills its width; stops it: toggles
+  are On/Off buttons like the choices); the first capture fell back to OpenGL (mesa-vulkan-drivers missing; HANDOFF
+  trap).
