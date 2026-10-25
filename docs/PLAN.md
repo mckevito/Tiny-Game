@@ -104,4 +104,5 @@ interiors, voice acting, more than two players, consoles.
 - 25 Oct 2026, owner: dynamic split screen like modern LEGO games; two players in total.
 - 25 Oct 2026, owner: fresh GDScript netcode, ideas only from Dead Acre.
 - 25 Oct 2026, owner: keep a hand-off and lessons method like the reference repos.
+- 25 Oct 2026, owner: the felt art proof is a very good first draft; polish the look later.
 - 25 Oct 2026, **Proposed**: licence MIT for code and CC BY 4.0 for original art; the scope and milestone order above.

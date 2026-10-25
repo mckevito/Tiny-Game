@@ -8,7 +8,8 @@
    playable), the play camera with turn, zoom and tree fade, daylight and dusk. Check the PR's live state on GitHub
    before talking about it.
 3. **Open work, in order:**
-   1. Milestone 1: the owner's verdict on the look, movement and camera with both inputs; tune from their notes.
+   1. Milestone 1: signed off by the owner as "a very good first draft" (25 Oct 2026); art polish comes later, so
+      don't block Milestone 2 on it. Merge of PR #2 is the owner's.
    2. Milestone 2: GDScript netcode on Godot's multiplayer (host decides, profile IDs, stable object IDs).
 4. **Owner decisions:** see the decision log in `docs/PLAN.md`.
 5. **Where the art lives:**

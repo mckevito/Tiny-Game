@@ -18,7 +18,7 @@ Signed off: yes, 25 Oct 2026 (PR #1 merged; the owner moved the capsule with the
 - Licence choice is Proposed (MIT code, CC BY 4.0 art).
 
 ## Milestone 1: Look and feel (felt art proof)
-Signed off: no. In its first PR.
+Signed off: yes, as a first draft (owner, 25 Oct 2026). Polish comes later; PR #2 waits on the owner's merge.
 
 | Proof | Test | Result |
 |---|---|---|
@@ -31,7 +31,7 @@ Signed off: no. In its first PR.
 | Daylight and dusk both apply (dusk: weaker sun, stronger fire); the dev key cycles them | `test_sandbox.test_both_light_moods_apply`, `test_dev_key_cycles_the_mood` | Passing |
 | Forward is away from the camera at any camera turn | `test_play_feel.test_forward_is_away_from_the_camera` | Passing |
 | A tree between the camera and the player fades; one behind or aside does not | `test_play_feel.test_tree_between_camera_and_player_fades` | Passing |
-| Movement and camera feel good with both inputs; the owner likes the look | Owner's hands-on try | Open |
+| Movement and camera feel good with both inputs; the owner likes the look | Owner's verdict | Passed: "a very good first draft", polish later (owner, 25 Oct 2026) |
 
 ### How to try it
 1. Open the project in Godot 4.7.2 and press F5 to open the sandbox.
@@ -41,6 +41,6 @@ Signed off: no. In its first PR.
 4. Walk behind the trees near the bottom of the screen to see them fade.
 
 ### Still open
-- The owner's verdict on the look, and on movement and camera feel with both inputs.
+- Art polish later (owner, 25 Oct 2026: "we can always make it look better later").
 - The extra palette shades in `data/palette.json` (grass, pine, wood, skin, stone, fire and so on) are Proposed.
 - The prompts in the sandbox hint are words ("L1", "WASD"); real button glyphs come with the prompt system.
