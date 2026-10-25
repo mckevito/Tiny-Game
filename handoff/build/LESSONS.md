@@ -62,3 +62,10 @@ Build owns how the game loads them.
 - 25 Oct 2026: Milestone 3 signed off by the owner ("works and looks good"). Cloud captures fell back to OpenGL
   without a word (why: lavapipe was missing in that container; stops it: check the "Vulkan ... Forward+" line in the
   capture log before reading frames, rule in HANDOFF traps).
+- 25 Oct 2026: Stage A core proof: day clock with light that follows it, one guest per free pitch, sleep vote from the
+  menu, a night that pays once (checked through save, load and an ENet reconnect), grid placement with undo and
+  pack-away. Faults found: the day's helpers kept their CampState alive (why: a two-way reference between
+  RefCounteds; stops it: weakref, rule in HANDOFF traps); the ghost's tint hid under the model (why: the tile sat
+  below the pitch's top; stops it: `ghost.lift_m` in data/build.json, checked in the `--stage-a` capture); the guest
+  stood on the pitch's sign post (why: the stand offset was picked without a look; stops it: looking at the capture
+  before the PR).

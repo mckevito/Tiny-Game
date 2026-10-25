@@ -129,3 +129,40 @@ not each confirmed by name; they stay open under "Still open".
 - If a couch controller goes quiet, its camper waits; the next controller to connect that player one has not used
   takes over.
 - Frame rate on the weakest PC is not measured yet (the cloud has no GPU); the presets are a first guess.
+
+## Stage A: Core proof
+Signed off: not yet. Built and tested in the cloud; waiting on the owner's try.
+
+| Proof | Test | Result |
+|---|---|---|
+| The day clock runs from morning to evening over about 20 real minutes and waits at the end of the day until bed; the calendar turns days, seasons and years | `test_day.test_the_clock_runs_to_the_evening_and_waits_there`, `test_the_calendar_turns_days_seasons_and_years` | Passing |
+| The light follows the clock from daylight into dusk; the HUD shows the season, day, time and coins | `tools/capture.gd --stage-a` frames; `test_stage_a.test_a_guest_walks_to_the_pitch_and_puts_up_a_tent` (coins line) | Looked at (day, 6:30 pm, 9 pm) |
+| Grid placement: a pitch snaps to the grid in quarter turns, costs coins, and is refused over another building, a chair, scenery, the pond or past the camp edge | `test_day.test_grid_placement_snaps_costs_and_refuses_bad_spots` | Passing |
+| Undo and pack away: each player undoes their own steps at a full refund; a packed pitch comes back on undo; a pitch with a guest stays; undo clears each night | `test_day.test_undo_and_pack_away_refund_in_full` | Passing |
+| Build mode in the camp: the build button shows a ghost on the grid ahead with its price; interact builds, rotate turns, undo takes it back; nothing is picked up meanwhile; the save holds it | `test_stage_a.test_build_mode_builds_on_the_grid_and_undoes` | Passing |
+| One guest: from 9 am a guest comes to a free pitch, walks in from the camp entry and puts up a tent there; after their night they head home and a new guest comes next morning | `test_day.test_a_guest_comes_to_a_free_pitch_stays_and_heads_home`, `test_stage_a.test_a_guest_walks_to_the_pitch_and_puts_up_a_tent` | Passing |
+| Sleep vote: bed opens in the evening; everyone in the camp must be ready; either can cancel; a player who leaves takes their vote | `test_day.test_bed_needs_everyone_and_either_can_cancel`, `test_stage_a.test_bed_from_the_menu_needs_both_couch_players` | Passing |
+| A night pays exactly once: a repeated or stale request, a save and load, and a guest PC leaving and rejoining (before or after the night) never pay it again; both PCs see the same coins | `test_day.test_a_night_pays_exactly_once`, `test_a_night_survives_save_and_load_without_paying_again`, `test_stage_a.test_a_night_pays_once_across_a_reconnect` | Passing |
+| The guest PC sees the host's clock, guest and coins, and builds and undoes through the host | `test_stage_a.test_the_guest_pc_sees_the_day_and_builds_through_the_host` | Passing |
+| A Milestone 3 save (version 1) is upgraded with the starting coins | `test_day.test_an_older_save_gets_the_starting_coins` | Passing |
+| The owner tries the stage | Owner's verdict | Waiting |
+
+### How to try it
+1. Press F5, then **Play alone** or **Host a camp**. The top right shows the season, day, time and coins (40 to start).
+2. Press B (Triangle) for build mode. A ghost pitch sits on the grid in front of you: green means it fits, rust means
+   it doesn't (the prompt says why). Walk to move it, F (Square) turns it, E (Cross) builds it for 25 coins. Z (D-pad
+   left) undoes your last step; E on an empty pitch packs it away at a full refund. B again leaves build mode.
+3. From 9 am a guest walks in from the path and puts up a tent on a free pitch.
+4. From 6 pm open the menu (Tab or Options) and choose **Ready for bed**. Alone, the night comes at once; with a friend
+   (couch or online) it waits for both, and either can choose **Not ready for bed yet**. The night pays 15 coins for
+   the guest, who heads home in the morning.
+5. To skip ahead, open the F1 panel on the host: the clock runs 30 times faster while it is open.
+
+### Still open
+- Defaults the plan left open, **approved by the owner** on 25 Oct 2026 (data/day.json, data/build.json): bed opens at 6 pm and is chosen from the
+  menu; the clock waits while the menu is open with no guest PC in; 40 starting coins, a pitch costs 25, a night pays
+  15; one guest at a time stays one night and comes from 9 am; undo is per player and clears each night; build mode is
+  B or Triangle, turn F or Square, undo Z or D-pad left; F1 speeds the clock 30 times on the host.
+- Guests walk in a straight line and pass through things; real paths come with more guests (Stage B or C).
+- The calendar starts in spring (the plan); Stage C's autumn chapter will start its own days.
+- Frame rate on the weakest laptop is still unmeasured; Stage A adds a few models and one ghost, nothing heavy.

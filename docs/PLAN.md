@@ -158,3 +158,7 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   share the camera's turn and zoom; a new couch character is "Couch friend" until its own PC claims it with a
   one-use link code, after which that PC plays it under the same profile ID.
 - 25 Oct 2026, **Proposed**: three save slots; thank-you letters; background wildlife; upkeep never below zero.
+- 25 Oct 2026, owner approved (Stage A defaults): bed opens at 6 pm and is chosen from the menu; a player who leaves takes their
+  vote; the clock waits while the menu is open with no guest PC in; 40 starting coins, a pitch costs 25 and a night
+  pays 15; one guest at a time, one night each, arriving from 9 am; undo is per player and clears each night; F1 runs
+  the clock 30 times faster on the host.
