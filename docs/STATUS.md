@@ -302,6 +302,15 @@ How to try it: drop in a second controller (Options on it) and walk apart until 
 clipboards (J and Touchpad), both Packs (I and D-pad down) and the workbench: nothing should sit on anything else.
 Cycle the tool (T or D-pad up): the names either side of it are the one before and the one after.
 
+Playtest's findings on round 1 (fixed in the next PR):
+
+| Proof | Test | Result |
+|---|---|---|
+| Tab closes the in-camp menu it opened (a focused menu button used to take Tab and move focus instead) | `test_hud.test_the_menu_key_closes_the_menu_it_opened` (real key presses through the viewport) | Passing (fails without the fix) |
+| An open clipboard, workbench or Pack never covers its own player's camper: that player's picture slides until the camper stands clear (`hud.keep_clear_*`) | `test_hud.test_couch_split_screen_hud_never_overlaps`, `test_hud.test_the_dock_shows_its_neighbours_and_the_pack_names_the_pick` | Passing (fails without the slide) |
+| The F1 fps line sits at the bottom centre, clear of the clock and hint | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing |
+| The hint wraps only between controls ("Tab for the menu" stays whole); a toast that comes with the morning report waits until it is put away | `test_hud.test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report` | Passing |
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.

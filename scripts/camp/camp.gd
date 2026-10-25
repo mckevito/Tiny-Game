@@ -73,6 +73,8 @@ var _board_clock := 0.0
 ## Round 4: each local player's corner dock, open Pack panels ({panel, pick}), tool in hand (an index into
 ## data/items.json tools.order) and picked build piece.
 var _docks := {}
+## Toasts that came while the morning report was up, shown once it is put away.
+var _held_toasts: Array[String] = []
 var _packs := {}
 var _tools := {}
 var _kinds := {}
@@ -284,6 +286,7 @@ func _clear_world() -> void:
 	for who: String in _busy.keys():
 		_end_busy(who)
 	report.visible = false
+	_held_toasts.clear()
 	for id: String in _building.keys():
 		toggle_build(id)
 	for who: String in _boards.keys():
@@ -429,6 +432,11 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if not report.visible and not _held_toasts.is_empty():
+		var held := _held_toasts.duplicate()
+		_held_toasts.clear()
+		for text: String in held:
+			_toast(text)
 	_toast_left -= delta
 	if _toast_left <= 0.0:
 		$Hud/Toast.text = ""
@@ -459,6 +467,7 @@ func _process(delta: float) -> void:
 	_update_clock()
 	_update_hint()
 	_show_hud()
+	_keep_in_view(delta)
 	if $Hud/Dev.visible:
 		_dev_clock -= delta
 		if _dev_clock <= 0.0:
@@ -523,6 +532,10 @@ func _carry_prompt(id: String) -> String:
 ## A short line at the top of the screen. Lines that come close together stack, newest last (data/tuning.json
 ## hud.toast_lines at most).
 func _toast(text: String) -> void:
+	# A toast under the morning report would never be read: it waits until the report is put away.
+	if report.visible:
+		_held_toasts.append(text)
+		return
 	text = Prompts.fill(text, _pad)
 	if _toast_left > 0.0 and $Hud/Toast.text != "" and $Hud/Toast.text != text:
 		var lines: PackedStringArray = (str($Hud/Toast.text) + "\n" + text).split("\n")
@@ -533,7 +546,11 @@ func _toast(text: String) -> void:
 
 
 func _update_hint() -> void:
-	var text := Prompts.fill(Tuning.text("prompt.controls"), _pad) if state else ""
+	# Spaces inside each control are non-breaking, so the line only wraps between controls ("Tab for the menu").
+	var parts: PackedStringArray = []
+	for part in (Prompts.fill(Tuning.text("prompt.controls"), _pad) if state else "").split(" · "):
+		parts.append(part.replace(" ", "\u00a0"))
+	var text := " · ".join(parts)
 	if can_drop_in() == "":
 		text += "\n" + Prompts.fill(Tuning.text("prompt.drop_in"), true)
 	$Hud/Hint.text = text
@@ -555,6 +572,11 @@ func apply_quality(preset: String, keep: bool = true) -> void:
 ## Sees every controller event before the menus do: a controller player one has not used drops in with the menu
 ## button; any other controller that player one touches becomes theirs.
 func _input(event: InputEvent) -> void:
+	# The menu button closes the in-camp menu before its focused button sees it (Godot's focus moves on Tab).
+	if state != null and menu.visible and menu.page() == "pause" and event.is_action_pressed("menu"):
+		_close_menu()
+		get_viewport().set_input_as_handled()
+		return
 	if not (event is InputEventJoypadButton or event is InputEventJoypadMotion) or event.device == couch_pad:
 		return
 	if event.is_action_pressed("menu") and not _p1_pads.has(event.device) and state != null and not menu.visible:
@@ -1930,6 +1952,46 @@ func _fit_panel(panel: Clipboard, who: String) -> void:
 	if above.visible and above.text != "":
 		top = maxf(top, above.position.y + above.get_combined_minimum_size().y + gap)
 	panel.fit(top, get_viewport().get_visible_rect().size.y - gap)
+
+
+## A player's open panel: their Pack, workbench or clipboard, or null.
+func _panel_of(who: String) -> Control:
+	if _packs.has(who):
+		return _packs[who]["panel"]
+	if _bench.has(who):
+		return _bench[who]["panel"]
+	return _boards.get(who)
+
+
+## Keeps each player on this PC in view beside their open panel: when the panel would cover their camper, the camera
+## drawing them slides the picture (sideways toward the middle of the screen, or up, whichever is less) until the
+## camper stands hud.keep_clear_px clear of it, easing at hud.keep_clear_rate (data/tuning.json).
+func _keep_in_view(delta: float) -> void:
+	var view := get_viewport().get_visible_rect()
+	var margin := Tuning.num("tuning", "hud.keep_clear_px", 60.0)
+	var cams: Array[PlayCamera] = [camera, couch.second_camera()]
+	var want: Array[Vector2] = [Vector2.ZERO, Vector2.ZERO]
+	var depth: Array[float] = [camera.distance, camera.distance]
+	for who in local_ids() if state != null else ([] as Array[String]):
+		var panel := _panel_of(who)
+		if panel == null or not panel.is_visible_in_tree() or not campers.has(who):
+			continue
+		var i := 1 if couch.split and who == couch_id else 0
+		var cam := cams[i]
+		var body: Vector3 = campers[who].global_position + Vector3.UP * Tuning.num("tuning", "hud.keep_clear_height_m", 0.6)
+		if cam.is_position_behind(body):
+			continue
+		var at := cam.unproject_position(body) * (view.size.y / cam.get_viewport().get_visible_rect().size.y) - cam.shift_px
+		var r := panel.get_global_rect().grow(margin)
+		if not r.has_point(at):
+			continue
+		var side := r.end.x - at.x if r.get_center().x < view.get_center().x else r.position.x - at.x
+		var up := r.position.y - at.y
+		want[i] = Vector2(side, 0.0) if absf(side) < absf(up) else Vector2(0.0, up)
+		depth[i] = (body - cam.global_position).dot(-cam.global_basis.z)
+	var ease := 1.0 - exp(-Tuning.num("tuning", "hud.keep_clear_rate", 6.0) * delta)
+	for i in cams.size():
+		cams[i].slide(cams[i].shift_px.lerp(want[i], ease), depth[i], view.size.y)
 
 
 ## True while the couch player's clipboard or workbench is open on the right, under the clock: the clock then shows
