@@ -7,6 +7,8 @@ owner something these files should answer, add the answer here.
 
 ## Owner rules (each with its reason)
 - **Public repo, nothing personal in git.** The repo is public; personal data and Dead Acre material must never leak.
+- **No session or thread links in commits.** Leave the `Claude-Session:` trailer out of commit messages; ids stay
+  out of the public repo (CLAUDE.md). Milestone 0's commit has one; don't repeat it.
 - **Reference repos are read-only, ideas only.** They are the owner's private projects.
 - **Online on two PCs first; two players in total.** That's how the owner wants to play.
 - **Both input methods are first-class.** The owner plays with a DualSense; others use keyboard and mouse.
