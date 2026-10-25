@@ -1,32 +1,35 @@
 {
-  "_about": "Lighting moods for the clearing (scripts/camp/light_moods.gd). Sun angles in degrees; colours are hex; saturation and contrast grade the picture (1 is untouched).",
+  "_about": "Lighting moods for the clearing (scripts/camp/light_moods.gd). Sun angles in degrees; colours are hex; saturation and contrast grade the picture (1 is untouched). sun_softness_deg widens the sun for soft shadow edges; ao_intensity and ao_radius_m set the ambient occlusion.",
   "order": [
     "day",
     "dusk"
   ],
   "moods": {
     "day": {
-      "sun_color": "#FFE6C4",
-      "sun_energy": 1.25,
+      "sun_color": "#FFDDB0",
+      "sun_energy": 1.35,
       "sun_elevation_deg": 52.0,
       "sun_azimuth_deg": -35.0,
       "ambient_color": "#DCD6C0",
-      "ambient_energy": 0.26,
+      "ambient_energy": 0.2,
       "background": "#A9C9CF",
       "exposure": 1.0,
       "fire_color": "#FFB65C",
       "fire_energy": 0.5,
       "fire_range_m": 4.0,
       "glow": false,
-      "saturation": 1.12,
-      "contrast": 1.08
+      "saturation": 1.05,
+      "contrast": 1.12,
+      "sun_softness_deg": 3.0,
+      "ao_intensity": 3.0,
+      "ao_radius_m": 0.6
     },
     "dusk": {
       "sun_color": "#FF8A6A",
       "sun_energy": 0.32,
       "sun_elevation_deg": 16.0,
       "sun_azimuth_deg": 60.0,
-      "ambient_color": "#6470AE",
+      "ambient_color": "#59658A",
       "ambient_energy": 0.7,
       "background": "#46426C",
       "exposure": 1.05,
@@ -35,7 +38,10 @@
       "fire_range_m": 5.5,
       "glow": true,
       "saturation": 1.0,
-      "contrast": 1.05
+      "contrast": 1.05,
+      "sun_softness_deg": 3.0,
+      "ao_intensity": 3.0,
+      "ao_radius_m": 0.6
     }
   }
 }

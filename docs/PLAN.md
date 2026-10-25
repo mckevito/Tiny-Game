@@ -212,3 +212,6 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, owner: the pilot's first pass is not enough: the world should look literally knitted together, like
   the reference. **Proposed** (built): knit, wood, water and grass weaves in the one material, hairy edges, richer
   graded colour, a ground strewn with felt clover, flowers, grass and ferns, and every model in view reworked.
+- 25 Oct 2026, owner: still off; the reference looks like a photo of real little knitted characters, a miniature
+  look with real felt. **Proposed** (built): a tilt-shift blur focused on the players, fuzz shells on every model,
+  finer fibres up close, soft sun shadows and deeper occlusion; blur and shells are off on the Light preset.

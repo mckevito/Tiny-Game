@@ -35,3 +35,7 @@ All of `handoff/build/LESSONS.md` "Owner rules" apply. For art especially:
   white (stops it: fibres fade by screen size); flat clover hid under the meadow (it must sit above the highest
   flat layer it covers); flames read as one pale cone (separate tongues, lower glow); greys turned purple at dusk
   under the boosted saturation (dusk keeps saturation 1).
+- 25 Oct 2026, round 3 (owner: "a miniature faking kind of look... real felt"): the look of a photo of a tabletop set
+  comes from the camera and light as much as from the models: tilt-shift blur, soft shadows, deep occlusion and
+  fuzz on every edge. Faults found by looking: the flame tongues cast a star of shadows over the fire circle (the
+  fire light sat inside them; it now sits above).

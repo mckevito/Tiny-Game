@@ -104,12 +104,24 @@ static func material(sway: bool) -> ShaderMaterial:
 	var felt: Dictionary = Tuning.table("art").get("felt", {})
 	for key in ["noise_scale", "noise_strength", "grain_scale", "grain_strength", "fuzz_strength", "rim", "rim_tint",
 			"glow_strength", "sway_speed", "fibre_scale", "fibre_strength", "bump_strength", "hair_edge", "knit_scale",
-			"knit_depth", "knit_bump", "wood_scale", "wood_strength", "water_scale", "water_strength", "grass_tint"]:
+			"knit_depth", "knit_bump", "wood_scale", "wood_strength", "water_scale", "water_strength", "grass_tint",
+			"fine_scale", "fine_strength"]:
 		mat.set_shader_parameter(key, float(felt.get(key, 0.0)))
 	for key in ["grass_light", "grass_dark"]:
 		mat.set_shader_parameter(key, vec3(felt.get(key), Vector3.ONE))
 	mat.set_shader_parameter("sway_height", float(felt.get("sway_height_m", 3.0)))
 	mat.set_shader_parameter("sway_amount", float(felt.get("sway_amount_m", 0.0)) if sway else 0.0)
+	# Fuzz shells as next passes (data/art.json "shells"), left off for the presets in shells.off_presets.
+	var shells: Dictionary = Tuning.table("art").get("shells", {})
+	var last := mat
+	if not (shells.get("off_presets", []) as Array).has(Quality.current):
+		for i in int(shells.get("count", 0)):
+			var shell := mat.duplicate() as ShaderMaterial
+			shell.set_shader_parameter("shell", float(i + 1))
+			for key in ["shell_height", "shell_keep", "strand_scale"]:
+				shell.set_shader_parameter(key, float(shells.get(key, 0.0)))
+			last.next_pass = shell
+			last = shell
 	_materials[sway] = mat
 	return mat
 

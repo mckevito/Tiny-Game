@@ -31,6 +31,15 @@ uniform float water_strength = 0.35;
 uniform float grass_tint = 0.35;
 uniform vec3 grass_light = vec3(1.18, 1.08, 0.7);
 uniform vec3 grass_dark = vec3(0.62, 0.7, 0.52);
+// Fuzz shells: the same mesh drawn again a hair bigger, keeping only scattered fibre tips, so every edge looks
+// fuzzy like real felt. shell 0 is the solid model; 1 and up are the shells (FeltBuilder chains them as next passes).
+uniform float shell = 0.0;
+uniform float shell_height = 0.006;
+uniform float shell_keep = 0.4;
+uniform float strand_scale = 260.0;
+// A finer second layer of fibres that shows only close up, for the macro-photo look.
+uniform float fine_scale = 220.0;
+uniform float fine_strength = 0.3;
 uniform float rim = 0.35;
 uniform float rim_tint = 0.6;
 uniform float glow_strength = 2.0;
@@ -78,6 +87,9 @@ float knit3(vec3 p, vec3 n) {
 }
 
 void vertex() {
+	if (shell > 0.0) {
+		VERTEX += NORMAL * shell_height * shell;
+	}
 	obj_pos = VERTEX;
 	obj_normal = NORMAL;
 	weave = UV.x;
@@ -99,6 +111,12 @@ void fragment() {
 			discard;
 		}
 	}
+	if (shell > 0.0) {
+		// Only fibre tips survive on a shell: a random few cells, fewer the farther out the shell sits.
+		if (COLOR.a < 0.99 || hash3(floor(obj_pos * strand_scale)) > shell_keep / shell) {
+			discard;
+		}
+	}
 	int kind = int(weave + 0.5);
 	float n = noise3(obj_pos * noise_scale) * 0.6 + noise3(obj_pos * noise_scale * 2.3) * 0.4;
 	float g = noise3(obj_pos * grain_scale);
@@ -109,6 +127,8 @@ void fragment() {
 	// Far away a fibre is smaller than a pixel and only sparkles: fade it (and its bump) to an even felt.
 	float near = clamp(1.5 - length(fwidth(obj_pos)) * fibre_scale, 0.0, 1.0);
 	fibre = mix(0.42, fibre, near);
+	float near_fine = clamp(1.5 - length(fwidth(obj_pos)) * fine_scale, 0.0, 1.0);
+	fibre = mix(fibre, fibre * (0.7 + 0.6 * noise3(obj_pos * vec3(fine_scale, fine_scale * 0.4, fine_scale))), fine_strength * near_fine);
 	float edge = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
 	if (hair_edge > 0.0 && edge > 1.0 - hair_edge && COLOR.a > 0.99) {
 		if (fibre * 1.6 < (edge - (1.0 - hair_edge)) / hair_edge) {
@@ -150,7 +170,7 @@ void fragment() {
 		NORMAL = normalize(abs(det) * NORMAL - grad);
 	}
 	// Soft fuzz: edges facing away from the camera go a touch lighter, like felt fibres catching light.
-	ALBEDO = mix(base, base * 1.25 + vec3(0.02), edge * edge * fuzz_strength);
+	ALBEDO = mix(base, base * 1.25 + vec3(0.02), edge * edge * fuzz_strength) * (1.0 + shell * 0.06);
 	ROUGHNESS = 1.0;
 	RIM = rim;
 	RIM_TINT = rim_tint;

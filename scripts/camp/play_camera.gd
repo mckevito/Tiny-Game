@@ -78,6 +78,8 @@ func _place() -> void:
 	var offset := Vector3(0, sin(pitch), cos(pitch)).rotated(Vector3.UP, yaw) * (distance + extra_distance)
 	global_position = look_at_point + offset
 	look_at(look_at_point)
+	# The miniature look's tilt-shift blur stays focused on the players (scripts/art/miniature.gd).
+	Miniature.focus(self, distance + extra_distance)
 
 
 ## True when a vertical column at `base` (radius `r`, height `h`) stands between the camera and the target.

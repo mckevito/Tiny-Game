@@ -405,7 +405,7 @@
     ]
   },
   "fire_pit": {
-    "collide": {"radius": 0.6, "height": 0.4}, "light": {"pos": [0, 0.7, 0]},
+    "collide": {"radius": 0.6, "height": 0.4}, "light": {"pos": [0, 1.1, 0]},
     "parts": [
       {"shape": "cylinder", "size": [0.86, 0.03, 0.86], "pos": [0, 0.04, 0], "color": "ink_brown"},
       {"shape": "sphere", "size": [0.3, 0.22, 0.27], "pos": [0, 0.09, 0.5], "repeat": 9, "segments": 16, "color": "stone_grey"},

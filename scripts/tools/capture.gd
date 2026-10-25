@@ -476,8 +476,10 @@ func _hero(out: String) -> void:
 		sandbox.set_mood(i)
 		var mood: String = LightMoods.names()[i]
 		cam.look_at_from_position(mid + Vector3(0.6, 8.0, 9.0), mid + Vector3(0.6, 0.0, -1.2))
+		Miniature.focus(cam, cam.position.distance_to(mid))
 		await _settle()
 		_save(out + "/hero_%s.png" % mood)
 		cam.look_at_from_position(mid + Vector3(0, 2.1, 3.6), mid + Vector3(0, 0.75, 0))
+		Miniature.focus(cam, cam.position.distance_to(mid))
 		await _settle()
 		_save(out + "/face_%s.png" % mood)

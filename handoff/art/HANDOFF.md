@@ -21,8 +21,14 @@
      pokes through what players build; taller grass and ferns only past 13 m, and plants at the feet of trees and
      rocks (inside their build blockers). The avoid circles follow data/clearing.json; if Gameplay moves scenery,
      update them in the ground model.
-   - `scripts/camp/light_moods.gd` gained `_adjust` (saturation and contrast from data/lighting.json); it is the
-     only file outside `scripts/art/` the Art role touched.
+   - Round 3 (owner: "a miniature faking kind of look... a real felt kind of look"): a tilt-shift blur that keeps
+     the players sharp (`scripts/art/miniature.gd`, data/art.json "miniature"), two fuzz shells drawn as next passes
+     of the one material (data/art.json "shells"), finer close-up fibres, soft sun shadows and deeper ambient
+     occlusion (data/lighting.json), khaki grass. Both the blur and the shells are off on the "low" preset.
+   - Files outside `scripts/art/` the Art role touched: `scripts/camp/light_moods.gd` (`_adjust`, `_soften`) and
+     one call in `scripts/camp/play_camera.gd` `_place` (`Miniature.focus`). Tell Gameplay if either changes.
+   - Trap: the fire's light sits above the flame tongues (`light.pos` y 1.1), or each tongue casts a long shadow and
+     the fire circle shows a star.
    - Builder additions: the `lathe` shape (a profile of [radius, height] points turned round Y, with an optional
      `wave` [count, depth] that scallops pine tiers or ribs a knit beanie); `stitch` takes `points` (a polyline)
      as well as from/to; stitches, rings and seams take `thick`, `dash` and `gap` multipliers, and `gap: 0` makes a

@@ -23,17 +23,19 @@
     "wood_strength": 0.3,
     "water_scale": 2.2,
     "water_strength": 0.6,
-    "grass_tint": 0.35,
+    "grass_tint": 0.5,
     "grass_light": [
-      1.06,
-      1.0,
-      0.78
+      1.18,
+      1.05,
+      0.72
     ],
     "grass_dark": [
-      0.66,
-      0.74,
-      0.6
-    ]
+      0.62,
+      0.72,
+      0.55
+    ],
+    "fine_scale": 220.0,
+    "fine_strength": 0.35
   },
   "mesh": {
     "sphere_segments": 24,
@@ -59,5 +61,26 @@
     "wood": 2,
     "water": 3,
     "grass": 4
+  },
+  "shells": {
+    "_about": "Fuzz shells: count extra passes, each shell_height metres further out, keeping shell_keep of the fibre cells (strand_scale per metre) on the first and less beyond. Off for the presets listed.",
+    "count": 2,
+    "shell_height": 0.005,
+    "shell_keep": 0.45,
+    "strand_scale": 280.0,
+    "off_presets": [
+      "low"
+    ]
+  },
+  "miniature": {
+    "_about": "The tilt-shift blur of the miniature look (scripts/art/miniature.gd): sharp from near_gap_m in front of the players to far_gap_m behind them, blurring over the transitions. Off for the presets listed.",
+    "blur_amount": 0.09,
+    "near_gap_m": 3.0,
+    "near_transition_m": 2.5,
+    "far_gap_m": 2.5,
+    "far_transition_m": 7.0,
+    "off_presets": [
+      "low"
+    ]
   }
 }
