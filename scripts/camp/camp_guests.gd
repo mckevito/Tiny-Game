@@ -339,8 +339,7 @@ func goals() -> Array[String]:
 	var dream := Tuning.text("goal.cosy")
 	for kind: String in CampBuild.kinds():
 		if bool(CampBuild.kinds()[kind].get("improvement", false)) and count_built(kind) == 0:
-			dream = Tuning.text("goal.build") % [Tuning.text("build." + kind), CampBuild.cost(kind),
-					Tuning.text("improvement." + kind)]
+			dream = Tuning.text("goal.build") % [Tuning.text("build." + kind), Tuning.text("improvement." + kind)]
 			break
 	return [Tuning.text("report.goal_quick") % quick, Tuning.text("report.goal_project") % project,
 			Tuning.text("report.goal_dream") % dream]

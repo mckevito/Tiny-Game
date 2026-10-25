@@ -232,6 +232,28 @@ at the camp box (by the workbench, west of the fire) to put your wood and sticks
 recipe with C or Q and R (L1 and R1), and E crafts it into the build kit. B then C cycles the kit; the tent pitch is
 always there.
 
+### Round 4: Animal Crossing style Pack, tools and a corner dock (25 Oct 2026)
+From the owner's feedback on round 3 (the in-camp menu ran under the Pack bar and off the screen, Q and R turned the
+camera at the workbench, and they wanted an Animal Crossing style inventory with the build piece and the tool shown
+and cycled in the bottom right corner, plus window modes).
+
+| Proof | Test | Result |
+|---|---|---|
+| The menu covers the HUD: the hint, toasts, docks and clipboards hide while it is open; it fits a 16:9 screen, even at the biggest interface size (it scales down); the day's goals left the menu (the morning report and clipboard have them) | `test_stage_b.test_dropping_the_camp_box_and_a_hud_that_stays_on_screen` | Passing (checked by putting the hint back and by turning the scaling off) |
+| On a 16:9 screen with a full Pack, long names and toasts, no HUD piece leaves the screen or covers another (the Pack, the dock, the clipboard, the prompt, the clock, the hint) | `test_stage_b.test_dropping_the_camp_box_and_a_hud_that_stays_on_screen` | Passing (it caught the clipboard under the open Pack, so opening the Pack or the workbench now puts the clipboard away) |
+| The Pack opens as a grid of 8 slots (I or D-pad down) with whole item names; the turn buttons or walking keys pick a slot, interact drops it, and the camper stands still meanwhile | `test_stage_b.test_dropping_the_camp_box_and_a_hud_that_stays_on_screen`, `test_stage_b.test_three_days_of_play_from_the_buttons` | Passing |
+| The corner dock shows the tool in hand and the picked build piece, each with dots for its place in the cycle; next tool (T or D-pad up) goes hands, axe, rod; next kind (C or D-pad right) picks the piece and build mode starts on it | `test_stage_b.test_three_days_of_play_from_the_buttons` | Passing |
+| Chopping needs the axe in hand and fishing the rod; without it the prompt says which tool to take out | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_stage_b.test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons` | Passing |
+| At the workbench (and in the Pack and clipboard) Q and R no longer turn the camera | `test_stage_b.test_three_days_of_play_from_the_buttons` | Passing |
+| Options has window, borderless and full screen (from the title-screen round) and now a window size | `test_settings` (every row has its text) | Passing |
+| Review frames: the open Pack, the dock with the rod while fishing, the menu over a clean HUD | `tools/capture.gd --stage-b` (pack_dock.png, fishing.png, menu.png) | Looked at |
+| The Pack, tools and dock feel like Animal Crossing's, and nothing overlaps on the owner's screen | Owner's play | Waiting on the owner |
+
+How to try round 4: I (D-pad down) opens your Pack; Q and R or WASD pick a slot, E drops it, I closes. T (D-pad up)
+cycles your tool in the bottom right: take out the axe to chop and the rod to fish. C (D-pad right) picks the build
+piece shown under it, and B starts building it. Zoom moved to L3 and R3 on the controller. Options, Picture has
+the window mode and a window size.
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -264,6 +286,10 @@ always there.
   the kit; the build kit is shared by both players; drop is G or D-pad left (undo keeps D-pad left in build mode);
   the HUD shows 3 Today lines; bench and box reach 1.6 m and 1.4 m.
 - Next round (owner's pick): a sell crate, camp projects, a field guide and the star rating, then the clipboard's map.
+- **Proposed** round 4 choices: tools are hands, axe and fishing rod, every player has all three and the tool in
+  hand is not saved; the Pack opens on I or D-pad down and the next tool is T or D-pad up, so zoom moved from the
+  D-pad to L3 and R3 and the drop button went away (drop from the open Pack); the window size choices are 1280 × 720
+  to 2560 × 1440, 1600 × 900 by default (data/settings.json); dock and Pack sizes in data/tuning.json.
 - Frame rate on the weakest laptop is still unmeasured; round 2 adds up to 10 animals (no lights or physics), stump,
   sapling, stick and berry models, and the clipboard panel.
 

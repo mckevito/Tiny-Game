@@ -197,6 +197,15 @@ static func apply(key: String) -> void:
 						"borderless": DisplayServer.WINDOW_MODE_FULLSCREEN,
 						"fullscreen": DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN}.get(str(value(key)),
 						DisplayServer.WINDOW_MODE_WINDOWED))
+				apply("window_size")
+		"window_size":
+			# In a window only: the size picked (never bigger than the screen), centred on the screen.
+			if windowed and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_WINDOWED:
+				var parts := str(value(key)).split("x")
+				var screen := DisplayServer.screen_get_usable_rect(DisplayServer.window_get_current_screen())
+				var size := Vector2i(int(parts[0]), int(parts[1])).min(screen.size)
+				DisplayServer.window_set_size(size)
+				DisplayServer.window_set_position(screen.position + (screen.size - size) / 2)
 		"vsync":
 			if windowed:
 				DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if value(key) else DisplayServer.VSYNC_DISABLED)

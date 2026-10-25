@@ -13,9 +13,10 @@
     "couch_name": "Couch friend"
   },
   "prompt": {
+    "need_tool": "Take out the %s ({next_tool})",
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
-    "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {clipboard} clipboard · {menu} for the menu",
+    "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {clipboard} clipboard · {pack} Pack · {menu} for the menu",
     "drop_in": "A friend can drop in: {menu} on a second controller",
     "for_player": "%s: %s",
     "build_here": "{interact} Put a %s here (%s) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
@@ -110,7 +111,7 @@
     "no_tree": "This tree is down. Plant a sapling at its stump and it will grow back.",
     "no_stump": "Saplings go in a bare stump.",
     "no_sapling": "You need a sapling for that. A fallen tree drops one.",
-    "pack_full": "Your Pack is full. Drop something ({drop}) or put materials in the camp box.",
+    "pack_full": "Your Pack is full. Open it ({pack}) to drop something, or put materials in the camp box.",
     "not_in_kit": "None in the kit yet. Craft one at the workbench.",
     "materials": "Not quite enough materials for that yet.",
     "nothing_to_drop": "Nothing in that slot.",
@@ -284,7 +285,7 @@
     "ready": "%s come on %s, and you have room.",
     "offer": "look at the booking board: %s would like to come on %s.",
     "pitch": "make another tent pitch for more guests.",
-    "build": "save up for a %s (%d coins): %s.",
+    "build": "craft a %s at the workbench: %s.",
     "cosy": "make the camp cosier with chairs by the tents."
   },
   "hud": {
@@ -353,7 +354,21 @@
   },
   "pack": {
     "slot": "%s ×%d",
-    "hint": "{next_kind} pick a slot · {drop} drop it"
+    "slot_open": "%s\n×%d",
+    "title": "%s's Pack",
+    "hint": "{tabs} or {move} pick · {interact} drop it here · {pack} close"
+  },
+  "tool": {
+    "hands": "Hands",
+    "axe": "Axe",
+    "rod": "Fishing rod"
+  },
+  "dock": {
+    "tool": "Tool · {next_tool}",
+    "build": "Build · {next_kind} pick · {build} place",
+    "pack": "Pack %d/%d · {pack} open",
+    "dot": "●",
+    "dot_off": "○"
   },
   "bench": {
     "title": "Workbench",
@@ -384,6 +399,7 @@
     "row": {
       "picture": "Picture",
       "window_mode": "Window",
+      "window_size": "Window size",
       "vsync": "Smooth frames (vsync)",
       "fps_cap": "Frame limit",
       "master": "Overall volume",
@@ -401,6 +417,12 @@
         "windowed": "In a window",
         "borderless": "Full screen (borderless)",
         "fullscreen": "Full screen (exclusive)"
+      },
+      "window_size": {
+        "1280x720": "1280 × 720",
+        "1600x900": "1600 × 900",
+        "1920x1080": "1920 × 1080",
+        "2560x1440": "2560 × 1440"
       },
       "fps_cap": {
         "30": "30 a second",
@@ -431,7 +453,8 @@
       "undo": "Undo",
       "next_kind": "Next piece",
       "clipboard": "Clipboard",
-      "drop": "Drop from the Pack"
+      "next_tool": "Next tool",
+      "pack": "Open the Pack"
     },
     "press_key": "Waiting for a key…",
     "press_button": "Waiting for a button…",

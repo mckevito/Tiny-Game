@@ -184,7 +184,13 @@ func set_booking(state: String) -> void:
 	_booking[2].visible = state in ["offered", "accepted"]
 
 
-## Shrinks the panel to what it shows now and centres it.
+## Shrinks the panel to what it shows now and centres it, scaled down when it would not fit the screen (a big
+## interface size, a short window; data/tuning.json hud.menu_margin_px).
 func _fit() -> void:
+	scale = Vector2.ONE
 	reset_size()
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	var room := get_viewport_rect().size - Vector2.ONE * Tuning.num("tuning", "hud.menu_margin_px", 24.0) * 2.0
+	var k := minf(1.0, minf(room.x / size.x, room.y / size.y))
+	pivot_offset = size / 2.0
+	scale = Vector2(k, k)

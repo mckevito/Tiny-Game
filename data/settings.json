@@ -5,6 +5,7 @@
     {"id": "picture", "rows": [
       {"key": "picture", "kind": "choice", "from": "graphics", "default": "normal"},
       {"key": "window_mode", "kind": "choice", "options": ["windowed", "borderless", "fullscreen"], "default": "windowed"},
+      {"key": "window_size", "kind": "choice", "options": ["1280x720", "1600x900", "1920x1080", "2560x1440"], "default": "1600x900"},
       {"key": "vsync", "kind": "toggle", "default": true},
       {"key": "fps_cap", "kind": "choice", "options": [30, 60, 120, 0], "default": 60}
     ]},

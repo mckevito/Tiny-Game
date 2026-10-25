@@ -131,16 +131,34 @@ func test_three_days_of_play_from_the_buttons() -> String:
 	if why == "":
 		_stand(camp, "p_host", _shore())
 		await _tree().process_frame
-		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.fish"), false)):
-			why = "by the pond the prompt should offer to fish, got " + camp.get_node("Hud/Prompt").text
+		var rod := Prompts.fill(Tuning.text("prompt.need_tool") % Tuning.text("tool.rod"), false)
+		if not camp.get_node("Hud/Prompt").text.contains(rod):
+			why = "by the pond with bare hands the prompt should ask for the rod, got " + camp.get_node("Hud/Prompt").text
+		# The next-tool button goes hands, axe, rod, and the corner dock shows it.
+		camp._unhandled_input(_key("next_tool"))
+		camp._unhandled_input(_key("next_tool"))
+		await _tree().process_frame
+		if why != "":
+			pass
+		elif camp._docks["p_host"].tool_text() != Tuning.text("tool.rod"):
+			why = "two presses of next tool should take out the rod, the dock shows " + camp._docks["p_host"].tool_text()
+		elif not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.fish"), false)):
+			why = "by the pond with the rod the prompt should offer to fish, got " + camp.get_node("Hud/Prompt").text
 		elif not await _use(camp, "p_host") or s.pack.first_of("p_host", "fish") == "":
 			why = "interact by the pond should cast and catch a fish"
-		elif not camp._bars["p_host"].slot_text(0).contains(Tuning.text("items." + s.pack.first_of("p_host", "fish"))):
-			why = "the Pack bar should show the catch"
+		else:
+			camp._unhandled_input(_key("pack"))
+			if not camp._packs.has("p_host") or not camp._packs["p_host"]["panel"].slot_text(0).contains(
+					Tuning.text("items." + s.pack.first_of("p_host", "fish"))):
+				why = "the pack button should open the Pack, showing the catch"
+			camp._unhandled_input(_key("pack"))
+			if why == "" and (camp._packs.has("p_host") or not camp.campers["p_host"].controlled):
+				why = "the pack button again should close the Pack and free the camper"
 	# Chop a tree for the fire's wood.
 	if why == "":
 		var tree: Dictionary = CampGather.trees()[0]
 		_stand(camp, "p_host", (tree["pos"] as Vector2) + Vector2(1.0, 0.0))
+		camp.hold_tool("p_host", "axe")
 		await _tree().process_frame
 		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.chop") % 3, false)):
 			why = "by a tree the prompt should offer to chop, got " + camp.get_node("Hud/Prompt").text
@@ -171,6 +189,8 @@ func test_three_days_of_play_from_the_buttons() -> String:
 		camp._unhandled_input(_key("interact"))
 		if why == "" and not camp._bench.has("p_host"):
 			why = "interact by the workbench should open its panel"
+		elif why == "" and not camp.camera.hold_turn:
+			why = "the turn buttons pick recipes at the workbench, so they should not turn the camera"
 		if why == "":
 			var pick := CampBuild.recipes().map(func(r: Dictionary) -> String: return r["kind"]).find("water_point")
 			for i in pick:
@@ -179,13 +199,17 @@ func test_three_days_of_play_from_the_buttons() -> String:
 			if s.build.in_kit("water_point") != 1:
 				why = "interact on the picked recipe should craft a water point into the kit"
 			camp._unhandled_input(_key("cancel"))
-			if camp._bench.has("p_host") or not camp.campers["p_host"].controlled:
-				why = "cancel should close the workbench and free the camper"
+			if camp._bench.has("p_host") or not camp.campers["p_host"].controlled or camp.camera.hold_turn:
+				why = "cancel should close the workbench and free the camper and the camera"
 	if why == "":
-		camp._unhandled_input(_key("build"))
 		camp._unhandled_input(_key("next_kind"))
-		if camp._building.get("p_host", {}).get("kind", "") != "water_point":
-			why = "the next-kind button should switch build mode to the water point"
+		await _tree().process_frame
+		if not camp._docks["p_host"].piece_text().contains(Tuning.text("build.water_point")):
+			why = "outside build mode the next-kind button should pick the water point in the dock, got " \
+					+ camp._docks["p_host"].piece_text()
+		camp._unhandled_input(_key("build"))
+		if why == "" and camp._building.get("p_host", {}).get("kind", "") != "water_point":
+			why = "build mode should start on the piece picked in the dock"
 		camp._unhandled_input(_key("build"))
 	if why == "":
 		why = _sleep(camp)
@@ -242,6 +266,7 @@ func test_the_guest_pc_fishes_gives_and_books_through_the_host() -> String:
 	if why == "":
 		_stand(guest, "p_guest", _shore())
 		await _until(func() -> bool: return host.state.player_pos("p_guest").distance_to(_shore()) < 0.05)
+		guest.hold_tool("p_guest", "rod")
 		guest.interact("p_guest")
 		guest._busy["p_guest"]["left"] = 0.0
 		if not await _until(func() -> bool: return guest.state.pack.first_of("p_guest", "fish") != ""):
@@ -289,6 +314,7 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 	var tree: Dictionary = CampGather.trees()[0]
 	var index := int(tree["index"])
 	_stand(camp, "p_host", (tree["pos"] as Vector2) + Vector2(1.0, 0.0))
+	camp.hold_tool("p_host", "axe")
 	for i in int(Tuning.num("gather", "trees.wood_per_tree")):
 		if why == "" and not await _use(camp, "p_host"):
 			why = "chop %d should work" % (i + 1)
@@ -348,24 +374,30 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 	return why
 
 
-## Round 3 from the buttons: pick a Pack slot, drop it as a bundle, pick it back up, fill the camp box; and with a
-## full Pack, long words and a busy screen every HUD piece stays inside the view (the owner saw the top line run off).
+## Round 3 and 4 from the buttons: open the Pack, pick a slot, drop it as a bundle, pick it back up, fill the camp
+## box; and with a full Pack, long words and a busy screen every HUD piece stays inside the view and none covers
+## another, also with the menu open (the owner saw the top line run off, then the menu run under the Pack bar).
 func test_dropping_the_camp_box_and_a_hud_that_stays_on_screen() -> String:
 	_fresh()
 	var camp := _camp("RoundThree", "p_host", "Hana")
 	camp.start_solo(1)
 	var s: CampState = camp.state
 	var why := ""
+	# A 16:9 screen like the owner's (headless windows start square, which hides anything too tall).
+	var was := _tree().root.size
+	_tree().root.size = Vector2i(1920, 1080)
 	s.pack.add("p_host", "berries", 2)
 	s.pack.add("p_host", "stick", 5)
 	_stand(camp, "p_host", Vector2(-3.0, 6.0))
+	camp._unhandled_input(_key("pack"))
 	camp._unhandled_input(_key("next_kind"))
-	if int(camp._picked.get("p_host", 0)) != 1:
-		why = "next kind outside build mode should pick the next Pack slot"
+	if not camp._packs.has("p_host") or int(camp._packs["p_host"]["pick"]) != 1:
+		why = "next kind in the open Pack should pick the next slot"
 	if why == "":
-		camp._unhandled_input(_key("drop"))
+		camp._unhandled_input(_key("interact"))
 		if s.pack.count("p_host", "stick") != 0 or s.camp["bundles"].size() != 1 or camp._bundle_nodes.size() != 1:
-			why = "the drop button should set the picked stack down as a bundle you can see"
+			why = "interact in the open Pack should set the picked stack down as a bundle you can see"
+		camp._unhandled_input(_key("cancel"))
 	if why == "":
 		await _tree().process_frame
 		if not camp.get_node("Hud/Prompt").text.contains(Prompts.fill(Tuning.text("prompt.pick_bundle")
@@ -388,15 +420,63 @@ func test_dropping_the_camp_box_and_a_hud_that_stays_on_screen() -> String:
 		for i in 4:
 			camp._toast(Tuning.text("toast.crafted") % ["Hana", Tuning.text("build.lantern_post")])
 		camp._unhandled_input(_key("clipboard"))
+		camp._unhandled_input(_key("pack"))
+		_stand(camp, "p_host", _shore())
 		for f in 3:
 			await _tree().process_frame
-		var view: Rect2 = camp.get_viewport().get_visible_rect()
-		var pieces: Array[Control] = [camp.get_node("Hud/Clock"), camp.get_node("Hud/Hint"), camp.get_node("Hud/Toast"),
-				camp.get_node("Hud/Prompt"), camp._bars["p_host"], camp._boards["p_host"]]
-		for c in pieces:
-			var r := c.get_global_rect()
-			if not view.encloses(r):
-				why = "%s should stay inside the view %s, got %s" % [c.name, view, r]
-				break
+		if camp._boards.has("p_host"):
+			why = "opening the Pack should put the clipboard away"
+		else:
+			why = _hud_fits(camp, [camp.get_node("Hud/Clock"), camp.get_node("Hud/Hint"), camp.get_node("Hud/Toast"),
+					camp.get_node("Hud/Prompt"), camp._packs["p_host"]["panel"]])
+		camp._unhandled_input(_key("pack"))
+		camp._unhandled_input(_key("clipboard"))
+		for f in 2:
+			await _tree().process_frame
+		if why == "":
+			why = _hud_fits(camp, [camp.get_node("Hud/Clock"), camp.get_node("Hud/Hint"), camp.get_node("Hud/Toast"),
+					camp.get_node("Hud/Prompt"), camp._docks["p_host"], camp._boards["p_host"]])
+	# The menu covers the HUD: nothing else shows over or under it, and it fits on screen.
+	if why == "":
+		camp._unhandled_input(_key("menu"))
+		for f in 2:
+			await _tree().process_frame
+		var panel: Control = camp.menu
+		if not camp.get_viewport().get_visible_rect().encloses(panel.get_global_rect()):
+			why = "the menu should fit on screen, got %s" % panel.get_global_rect()
+		for c: Control in [camp.get_node("Hud/Hint"), camp.get_node("Hud/Toast"), camp._docks["p_host"], camp._boards["p_host"]]:
+			if why == "" and c.is_visible_in_tree() and c.get_global_rect().intersects(panel.get_global_rect()):
+				why = "%s should be hidden under the open menu" % c.name
+		camp._unhandled_input(_key("menu"))
+		# The biggest interface size still fits.
+		Settings.set_value("ui_scale", 150)
+		Settings.apply("ui_scale")
+		camp._unhandled_input(_key("menu"))
+		for f in 2:
+			await _tree().process_frame
+		if why == "" and not camp.get_viewport().get_visible_rect().encloses(panel.get_global_rect()):
+			why = "at the biggest interface size the menu should still fit, got %s in %s" % [panel.get_global_rect(),
+					camp.get_viewport().get_visible_rect()]
+		camp._unhandled_input(_key("menu"))
+		Settings.reset_page("access")
+		Settings.apply("ui_scale")
+	_tree().root.size = was
 	await _done()
 	return why
+
+
+## "" when every visible piece with something in it is inside the view and none covers another.
+func _hud_fits(camp: Node, pieces: Array) -> String:
+	var view: Rect2 = camp.get_viewport().get_visible_rect()
+	var shown: Array[Control] = []
+	for c: Control in pieces:
+		if c.is_visible_in_tree() and not (c is Label and (c as Label).text == ""):
+			shown.append(c)
+	for i in shown.size():
+		var r := shown[i].get_global_rect()
+		if not view.encloses(r):
+			return "%s should stay inside the view %s, got %s" % [shown[i].name, view, r]
+		for j in range(i + 1, shown.size()):
+			if r.intersects(shown[j].get_global_rect()):
+				return "%s %s and %s %s should not overlap" % [shown[i].name, r, shown[j].name, shown[j].get_global_rect()]
+	return ""

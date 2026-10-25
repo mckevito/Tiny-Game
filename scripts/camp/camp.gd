@@ -13,8 +13,10 @@ extends Node3D
 ## Stage B round 2: the Today list (CampTasks) whose firsts teach day 1, chopping the clearing's trees and picking up
 ## what the forage spots hold (CampGather), the log bench built from wood, felt animals to spot (Wildlife), and the
 ## morning report's line about tomorrow, and each player's clipboard (Today, Bookings, Supplies; Clipboard).
-## Round 3: each player's Pack of stacks along the bottom (PackBar; pick a slot with next kind, drop it as a bundle),
-## the camp box for materials, and the workbench that crafts into the shared build kit build mode places from.
+## Round 3: each player's Pack of stacks (drop one as a bundle), the camp box for materials, and the workbench that
+## crafts into the shared build kit build mode places from.
+## Round 4: like Animal Crossing, the Pack opens as a grid (PackPanel), and a corner dock (HudDock) shows the tool in
+## hand (cycled with next tool; chopping needs the axe, fishing the rod) and the build piece picked (next kind).
 ## Command line: -- --solo | --host | --join=ADDRESS [--link=CODE], plus --slot=N and --profile=NAME (a second local
 ## player file).
 
@@ -67,10 +69,13 @@ var _tree_props := {}
 ## Open clipboards by player on this PC, and the countdown to refreshing their text.
 var _boards := {}
 var _board_clock := 0.0
-## Round 3: each local player's Pack bar and picked slot, open workbench panels ({panel, pick}), and dropped
-## bundles' nodes by bundle id.
-var _bars := {}
-var _picked := {}
+## Round 3: open workbench panels ({panel, pick}) and dropped bundles' nodes by bundle id.
+## Round 4: each local player's corner dock, open Pack panels ({panel, pick}), tool in hand (an index into
+## data/items.json tools.order) and picked build piece.
+var _docks := {}
+var _packs := {}
+var _tools := {}
+var _kinds := {}
 var _bench := {}
 var _bundle_nodes := {}
 
@@ -277,9 +282,11 @@ func _clear_world() -> void:
 		toggle_clipboard(who)
 	for who: String in _bench.keys():
 		close_bench(who)
-	for who: String in _bars.keys():
-		_bars[who].queue_free()
-	_bars.clear()
+	for who: String in _packs.keys():
+		close_pack(who)
+	for who: String in _docks.keys():
+		_docks[who].queue_free()
+	_docks.clear()
 	for node: Node3D in _bundle_nodes.values():
 		node.queue_free()
 	_bundle_nodes.clear()
@@ -430,6 +437,7 @@ func _process(delta: float) -> void:
 	$Hud/Prompt.text = "\n".join(lines)
 	$Hud/Clock.text = clock_line() + today_lines() if state else ""
 	_update_hint()
+	_show_hud()
 	if $Hud/Dev.visible:
 		_dev_clock -= delta
 		if _dev_clock <= 0.0:
@@ -447,7 +455,7 @@ func _carry_prompt(id: String) -> String:
 		var put := action_for(id)
 		if put.get("what", "") == "place":
 			return Tuning.text("prompt.put_down") + " · " + Tuning.text("prompt.log_alone")
-	if _bench.has(id):
+	if _bench.has(id) or _packs.has(id):
 		return ""
 	if _busy.has(id):
 		return Tuning.text({"fish": "prompt.fishing", "cook": "prompt.cooking", "chop": "prompt.chopping"}[_busy[id]["what"]])
@@ -474,6 +482,8 @@ func _carry_prompt(id: String) -> String:
 			return Tuning.text("prompt.deposit")
 		"plant":
 			return Tuning.text("prompt.plant")
+		"need_tool":
+			return Tuning.text("prompt.need_tool") % Tuning.text("tool." + str(act["arg"]))
 		"cook":
 			return Tuning.text("prompt.cook") % Tuning.text("items." + str(act["arg"]))
 		"give":
@@ -564,6 +574,29 @@ func _unhandled_input(event: InputEvent) -> void:
 		_refresh_boards()
 		get_viewport().set_input_as_handled()
 		return
+	if _packs.has(who) and not menu.visible:
+		var count := int(Tuning.num("items", "pack_slots", 8))
+		var cols := int(Tuning.num("tuning", "pack_panel.columns", 4))
+		var step := 0
+		if event.is_action_pressed("next_kind") or event.is_action_pressed("camera_right") or event.is_action_pressed("move_right"):
+			step = 1
+		elif event.is_action_pressed("camera_left") or event.is_action_pressed("move_left"):
+			step = -1
+		elif event.is_action_pressed("move_back"):
+			step = cols
+		elif event.is_action_pressed("move_forward"):
+			step = -cols
+		elif event.is_action_pressed("interact"):
+			ask("drop", [int(_packs[who]["pick"])], who)
+		elif event.is_action_pressed("pack") or event.is_action_pressed("cancel") or event.is_action_pressed("menu"):
+			close_pack(who)
+		else:
+			return
+		if _packs.has(who):
+			_packs[who]["pick"] = posmod(int(_packs[who]["pick"]) + step, count)
+		_refresh_boards()
+		get_viewport().set_input_as_handled()
+		return
 	if report.visible and not menu.visible:
 		if event.is_action_pressed("interact") or event.is_action_pressed("cancel") or event.is_action_pressed("menu"):
 			report.visible = false
@@ -589,11 +622,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _building.has(who) and event.is_action_pressed("interact"):
 		build_here(who)
 	elif not _building.has(who) and event.is_action_pressed("next_kind"):
-		var size := state.pack.slots(who).size()
-		_picked[who] = posmod(int(_picked.get(who, 0)) + 1, maxi(size, 1))
+		var kinds := state.build.available()
+		_kinds[who] = kinds[(kinds.find(piece(who)) + 1) % kinds.size()]
 		_refresh_boards()
-	elif not _building.has(who) and event.is_action_pressed("drop"):
-		ask("drop", [int(_picked.get(who, 0))], who)
+	elif event.is_action_pressed("next_tool"):
+		_tools[who] = posmod(int(_tools.get(who, 0)) + 1, tools().size())
+		_refresh_boards()
+	elif not _building.has(who) and event.is_action_pressed("pack"):
+		open_pack(who)
 	elif event.is_action_pressed("interact"):
 		interact(who)
 
@@ -611,7 +647,6 @@ func _open_menu(who: String = "") -> void:
 	var board := state.guests.current()
 	lines.append(Tuning.text("menu.bookings") + ": " + (state.guests.booking_line(board) if not board.is_empty()
 			else Tuning.text("menu.board_empty")))
-	lines.append_array(state.guests.goals())
 	menu.set_booking(str(board.get("state", "")))
 	menu.show_pause(_menu_for == couch_id, "\n".join(lines))
 	if campers.has(_menu_for):
@@ -621,7 +656,7 @@ func _open_menu(who: String = "") -> void:
 func _close_menu() -> void:
 	menu.visible = false
 	if campers.has(_menu_for):
-		campers[_menu_for].controlled = true
+		campers[_menu_for].controlled = not (_bench.has(_menu_for) or _packs.has(_menu_for))
 	_menu_for = ""
 
 
@@ -757,8 +792,11 @@ func action_for(who: String) -> Dictionary:
 		return {"what": "take_sapling", "arg": state.gather.sapling_near(at)}
 	if state.gather.stump_near(at) >= 0 and state.pack.first_of(who, "plant") != "":
 		return {"what": "plant", "arg": state.gather.stump_near(at)}
+	var need := ""
 	if state.gather.tree_near(at) >= 0:
-		return {"what": "chop", "arg": state.gather.tree_near(at)}
+		if has_tool(who, "chop"):
+			return {"what": "chop", "arg": state.gather.tree_near(at)}
+		need = tool_for("chop")
 	if nearest_object(who) != "":
 		return {"what": "pick_up", "arg": nearest_object(who)}
 	if CampBuild.near_bench(at):
@@ -766,8 +804,10 @@ func action_for(who: String) -> Dictionary:
 	if CampPack.near_box(at) and state.pack.has_boxable(who):
 		return {"what": "deposit"}
 	if CampPack.can_fish_at(at):
-		return {"what": "fish"}
-	return {}
+		if has_tool(who, "fish"):
+			return {"what": "fish"}
+		need = tool_for("fish")
+	return {"what": "need_tool", "arg": need} if need != "" else {}
 
 
 ## The interact button of a player on this PC (player one by default): see action_for. Fishing and grilling take a
@@ -1440,7 +1480,8 @@ func toggle_build(who: String, kind: String = "") -> void:
 		_toast(Tuning.text("deny.hands_full"))
 		return
 	if kind == "":
-		kind = str(CampBuild.kinds().keys()[0])
+		kind = piece(who)
+	_kinds[who] = kind
 	var ghost := Node3D.new()
 	ghost.name = "Ghost_" + who
 	var mesh := FeltBuilder.build(str(CampBuild.kinds()[kind]["model"]))
@@ -1621,13 +1662,14 @@ func toggle_clipboard(who: String) -> void:
 		$Hud.add_child(board)
 		board.dock(who == couch_id)
 		_boards[who] = board
-	camera.hold_turn = not _boards.is_empty()
+	_hold_camera()
 	_refresh_boards()
 
 
 func _refresh_boards() -> void:
 	_board_clock = Tuning.num("tuning", "clipboard.refresh_s", 0.25)
-	_refresh_bars()
+	_refresh_docks()
+	_refresh_packs()
 	_refresh_bench()
 	for who: String in _boards.keys():
 		if state == null or not local_ids().has(who):
@@ -1694,27 +1736,124 @@ func clipboard_text(who: String, tab: String) -> String:
 
 # --- Round 3: the Pack bar, dropped bundles and the workbench ------------------------------------------------------
 
-## Keeps a Pack bar for each player on this PC: player one's bottom centre (bottom left with a couch player), the
+## Keeps a corner dock for each player on this PC: player one's bottom right (bottom left with a couch player), the
 ## couch player's bottom right.
-func _refresh_bars() -> void:
+func _refresh_docks() -> void:
 	var mine := local_ids() if state != null else ([] as Array[String])
-	for who: String in _bars.keys():
+	for who: String in _docks.keys():
 		if not mine.has(who):
-			_bars[who].queue_free()
-			_bars.erase(who)
+			_docks[who].queue_free()
+			_docks.erase(who)
 	for who in mine:
 		if not campers.has(who) or not state.camp["profiles"].has(who):
 			continue
-		if not _bars.has(who):
-			var bar := PackBar.new()
-			bar.name = "Pack_" + who
-			$Hud.add_child(bar)
-			_bars[who] = bar
-		var bar: PackBar = _bars[who]
-		bar.dock("right" if who == couch_id else ("left" if couch_id != "" else "centre"))
-		var stacks := state.pack.slots(who)
-		_picked[who] = clampi(int(_picked.get(who, 0)), 0, maxi(stacks.size() - 1, 0))
-		bar.show_pack(stacks, int(_picked[who]), Prompts.fill(Tuning.text("pack.hint"), _pad if who == profile["id"] else true))
+		if not _docks.has(who):
+			var made := HudDock.new()
+			made.name = "Dock_" + who
+			$Hud.add_child(made)
+			_docks[who] = made
+		var dock: HudDock = _docks[who]
+		dock.dock(couch_id != "" and who != couch_id)
+		var pad: Variant = _pad if who == profile["id"] else true
+		var kinds := state.build.available()
+		var kind := piece(who)
+		var name := Tuning.text("build." + kind)
+		if not CampBuild.is_free(kind):
+			name = Tuning.text("pack.slot") % [name, state.build.in_kit(kind)]
+		dock.show_dock(Tuning.text("tool." + tool_of(who)), int(_tools.get(who, 0)), tools().size(), name,
+				kinds.find(kind), kinds.size(), [Prompts.fill(Tuning.text("dock.tool"), pad),
+				Prompts.fill(Tuning.text("dock.build"), pad), Prompts.fill(Tuning.text("dock.pack"), pad)
+				% [state.pack.slots(who).size(), int(Tuning.num("items", "pack_slots", 8))]])
+
+
+## Shows or hides the HUD's parts: the menu and the morning report cover the hint and the docks, and an open Pack
+## covers its player's dock.
+func _show_hud() -> void:
+	var covered := menu.visible or report.visible
+	$Hud/Hint.visible = not covered
+	$Hud/Toast.visible = not menu.visible
+	for who: String in _docks:
+		_docks[who].visible = not covered and not _packs.has(who)
+	for who: String in _boards:
+		_boards[who].visible = not menu.visible
+	for panels: Dictionary in [_packs, _bench]:
+		for who: String in panels:
+			panels[who]["panel"].visible = not menu.visible
+
+
+## Keeps the turn buttons off the camera while any panel that uses them is open.
+func _hold_camera() -> void:
+	camera.hold_turn = not (_boards.is_empty() and _bench.is_empty() and _packs.is_empty())
+
+
+## The tools every player cycles through (data/items.json tools.order).
+static func tools() -> Array:
+	return Tuning.value("items", "tools.order", ["hands"])
+
+
+## The tool a step needs in hand ("chop": the axe, "fish": the rod), or "" when any will do.
+static func tool_for(step: String) -> String:
+	return str(Tuning.value("items", "tools.needs." + step, ""))
+
+
+func tool_of(who: String) -> String:
+	return str(tools()[posmod(int(_tools.get(who, 0)), tools().size())])
+
+
+func has_tool(who: String, step: String) -> bool:
+	return tool_for(step) == "" or tool_of(who) == tool_for(step)
+
+
+## Takes a tool out for a player on this PC.
+func hold_tool(who: String, tool: String) -> void:
+	_tools[who] = maxi(tools().find(tool), 0)
+	_refresh_boards()
+
+
+## The build piece a player has picked: one the kit holds (the tent pitch until they pick another).
+func piece(who: String) -> String:
+	var kinds := state.build.available()
+	return str(_kinds.get(who, "")) if kinds.has(str(_kinds.get(who, ""))) else str(kinds[0])
+
+
+## Opens a player's Pack, like Animal Crossing's pockets (putting their clipboard away): the camper stands still while
+## it is open.
+func open_pack(who: String) -> void:
+	if _packs.has(who) or not campers.has(who):
+		return
+	if _boards.has(who):
+		toggle_clipboard(who)
+	var panel := PackPanel.new()
+	panel.name = "Pack_" + who
+	$Hud.add_child(panel)
+	panel.dock("right" if who == couch_id else ("left" if couch_id != "" else "centre"))
+	_packs[who] = {"panel": panel, "pick": 0}
+	campers[who].controlled = false
+	campers[who].velocity = Vector3.ZERO
+	_hold_camera()
+	_refresh_boards()
+
+
+func close_pack(who: String) -> void:
+	if not _packs.has(who):
+		return
+	var panel: PackPanel = _packs[who]["panel"]
+	_packs.erase(who)
+	panel.get_parent().remove_child(panel)
+	panel.queue_free()
+	if campers.has(who) and _menu_for != who and not _bench.has(who):
+		campers[who].controlled = true
+	_hold_camera()
+
+
+func _refresh_packs() -> void:
+	for who: String in _packs.keys():
+		if state == null or not local_ids().has(who) or not state.camp["profiles"].has(who):
+			close_pack(who)
+			continue
+		var panel: PackPanel = _packs[who]["panel"]
+		panel.show_pack(Tuning.text("pack.title") % state.camp["profiles"][who]["name"], state.pack.slots(who),
+				int(_packs[who]["pick"]), Prompts.fill(Tuning.text("pack.hint"), _pad if who == profile["id"] else true))
 
 
 ## Dropped bundles on screen follow the camp's.
@@ -1738,6 +1877,8 @@ func _sync_bundles() -> void:
 func open_bench(who: String) -> void:
 	if _bench.has(who) or not campers.has(who):
 		return
+	if _boards.has(who):
+		toggle_clipboard(who)
 	var panel := Clipboard.new()
 	panel.name = "Bench_" + who
 	panel.heading = Tuning.text("bench.title")
@@ -1746,6 +1887,7 @@ func open_bench(who: String) -> void:
 	_bench[who] = {"panel": panel, "pick": 0}
 	campers[who].controlled = false
 	campers[who].velocity = Vector3.ZERO
+	_hold_camera()
 	_refresh_bench()
 
 
@@ -1756,8 +1898,9 @@ func close_bench(who: String) -> void:
 	_bench.erase(who)
 	panel.get_parent().remove_child(panel)
 	panel.queue_free()
-	if campers.has(who) and _menu_for != who:
+	if campers.has(who) and _menu_for != who and not _packs.has(who):
 		campers[who].controlled = true
+	_hold_camera()
 
 
 ## The workbench panel's text for a player: each recipe (the picked one marked) with its needs as have/need.
