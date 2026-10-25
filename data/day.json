@@ -1,5 +1,5 @@
 {
-  "_about": "Stage A's day, sleep and night (scripts/camp/camp_day.gd). The clock runs from start_hour to end_hour over real_seconds_per_day of real time, then waits there until everyone in the camp is ready for bed. Bed opens at evening_hour. The calendar's minute is game minutes since start_hour. While the camp has no guest PC and the menu is open, the clock waits too. The host's clock is the true one; it tells a guest PC send_hz times a second. light blends the daylight mood into dusk between the two hours (data/lighting.json). A stay is one guest at one pitch: a guest comes at arrive_hour when a pitch is free (max_stays at once), stays nights nights and pays its pitch's lodging price (coins) each night, then heads home the next morning. Guests walk in from entry ([x, z] metres) at walk_speed_mps and stand at stand_offset from the pitch centre. looks are guest camper models, used in turn; names are in data/text.json guest.names.",
+  "_about": "Stage A's day, sleep and night (scripts/camp/camp_day.gd). The clock runs from start_hour to end_hour over real_seconds_per_day of real time, then waits there until everyone in the camp is ready for bed. Bed opens at evening_hour. The calendar's minute is game minutes since start_hour. While the camp has no guest PC and the menu is open, the clock waits too. The host's clock is the true one; it tells a guest PC send_hz times a second. light blends the daylight mood into dusk between the two hours (data/lighting.json). A stay is one guest at one pitch: a walk-in guest comes at arrive_hour when a pitch is free (up to max_stays walk-ins at once, each at least gap_min game minutes after the one before that day, so they arrive one by one), stays nights nights and pays its pitch's lodging price (coins) each night, then heads home the next morning. Guests walk in from entry ([x, z] metres) at walk_speed_mps and stand at stand_offset from the pitch centre. looks are guest camper models, used in turn; names are in data/text.json guest.names.",
   "clock": {
     "real_seconds_per_day": 1200,
     "start_hour": 7.0,
@@ -15,8 +15,9 @@
   "night": {"fade_s": 0.8, "hold_s": 0.8, "swatch": "ink_brown"},
   "stays": {
     "arrive_hour": 9.0,
-    "max_stays": 1,
-    "nights": 1,
+    "max_stays": 3,
+    "nights": 2,
+    "gap_min": 40,
     "entry": [0.8, 11.0],
     "walk_speed_mps": 1.6,
     "stand_offset": [-1.25, 0.9],

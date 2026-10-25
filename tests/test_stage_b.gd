@@ -256,8 +256,8 @@ func test_three_days_of_play_from_the_buttons() -> String:
 		var text: String = camp.report.text()
 		if not (text.contains(Tuning.text("booking.birdwatchers.name")) and text.contains(Tuning.text("build.water_point"))):
 			why = "morning 4 should show the extras bonus and the next booking, got:\n" + text
-		elif s.guests.row("ferns").get("state", "") != "done":
-			why = "the Fern family should have gone home"
+		elif s.guests.row("ferns").get("state", "") != "arrived":
+			why = "the Fern family should still be staying on morning 4 (two nights)"
 	await _done()
 	return why
 
@@ -287,6 +287,14 @@ func test_the_guest_pc_fishes_gives_and_books_through_the_host() -> String:
 			why = "the guest PC's catch should come back from the host"
 		elif host.state.pack.first_of("p_guest", "fish") == "":
 			why = "the host should keep the guest's catch"
+	# Reading the clipboard shows on the other PC too.
+	if why == "":
+		guest.toggle_clipboard("p_guest")
+		if not await _until(func() -> bool: return host.campers["p_guest"].held == "clipboard"):
+			why = "the host should see the guest's camper reading the clipboard"
+		guest.toggle_clipboard("p_guest")
+		if why == "" and not await _until(func() -> bool: return host.campers["p_guest"].held == "rod"):
+			why = "putting the clipboard away should hand the rod back on the host too"
 	if why == "":
 		var stay: String = host.state.camp["stays"].keys()[0]
 		host.state.camp["stays"][stay]["request"] = {"kind": "fish", "done": false}
@@ -377,6 +385,8 @@ func test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons() -
 		var board: Clipboard = camp._boards.get("p_host")
 		if board == null or not board.text().contains(CampTasks.line(s.tasks.active()[0])):
 			why = "the clipboard key should open the clipboard on its Today tab"
+		elif camp.held_by("p_host") != "clipboard":
+			why = "while the clipboard is open the camper should hold it up to read"
 		elif not camp.camera.hold_turn:
 			why = "while the clipboard is open the turn buttons should flip its tabs, not the camera"
 		else:

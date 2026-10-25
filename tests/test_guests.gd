@@ -246,6 +246,12 @@ func test_a_booking_waits_on_the_board_and_comes_when_there_is_room() -> String:
 	var summary := state.day.settle_night()
 	if (summary["bonuses"] as Array).size() != 1 or int(summary["bonuses"][0]["coins"]) != int(row["bonus"]):
 		return "the extras bonus should be paid with the first night"
+	for night in int(plan.get("nights", 1)) - 1:
+		if row["state"] == "done":
+			return "the booking should stay all its nights"
+		_at_hour(state, Tuning.num("day", "clock.end_hour"))
+		if not (state.day.settle_night()["bonuses"] as Array).is_empty():
+			return "the extras bonus should be paid only once"
 	if row["state"] != "done":
 		return "after the guests head home the booking is done"
 	_at_hour(state, Tuning.num("day", "clock.end_hour"))
