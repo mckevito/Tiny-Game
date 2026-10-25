@@ -62,6 +62,9 @@ static func mesh(id: String) -> ArrayMesh:
 	if _meshes.has(id):
 		return _meshes[id]
 	var model := resolve(id)
+	if model.has("file"):
+		_meshes[id] = _file_mesh(model)
+		return _meshes[id]
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var colors := PackedColorArray()
@@ -92,6 +95,39 @@ static func mesh(id: String) -> ArrayMesh:
 	if not verts.is_empty():
 		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	_meshes[id] = out
+	return out
+
+
+## A model sculpted outside the game (a .glb under art/, made by its own build script): its UV.x is the weave and
+## its UV.y the index into the model's "file_slots" (swatch names or $slots), so it is painted from the palette here
+## and variants swap colours like any other model.
+static func _file_mesh(model: Dictionary) -> ArrayMesh:
+	var out := ArrayMesh.new()
+	var scene: PackedScene = load(str(model["file"]))
+	if scene == null:
+		push_error("FeltBuilder: can't load %s" % model["file"])
+		return out
+	var root := scene.instantiate()
+	var found: Array[Node] = root.find_children("*", "MeshInstance3D", true, false)
+	if found.is_empty():
+		root.free()
+		return out
+	var src: Mesh = (found[0] as MeshInstance3D).mesh
+	var arrays := src.surface_get_arrays(0)
+	root.free()
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var names: Array = model.get("file_slots", [])
+	var palette: Array[Color] = []
+	for n: Variant in names:
+		palette.append(swatch(swatch_name({"color": n}, model)))
+	var colors := PackedColorArray()
+	colors.resize(uvs.size())
+	for i in uvs.size():
+		# glTF flips V (v = 1 - y), so the slot comes back as 1 - UV.y.
+		var slot := clampi(roundi(1.0 - uvs[i].y), 0, palette.size() - 1)
+		colors[i] = palette[slot] if not palette.is_empty() else Color.WHITE
+	arrays[Mesh.ARRAY_COLOR] = colors
+	out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return out
 
 

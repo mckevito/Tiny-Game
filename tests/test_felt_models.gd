@@ -5,7 +5,7 @@ extends RefCounted
 const SIZES := {
 	"camper_a": [1.1, 1.6], "camper_b": [1.1, 1.6], "tent": [1.2, 2.0], "tree_pine": [2.5, 4.5],
 	"tree_round": [2.5, 4.5], "tree_puff": [2.5, 4.5], "picnic_table": [0.6, 1.0], "chair_teal": [0.7, 1.2],
-	"chair_honey": [0.7, 1.2], "fire_pit": [0.4, 1.2],
+	"chair_honey": [0.7, 1.2], "fire_pit": [0.4, 1.2], "knit_camper": [1.1, 1.6],
 }
 
 
@@ -112,3 +112,20 @@ func test_stitch_cord_is_unbroken() -> String:
 	if cord[Mesh.ARRAY_VERTEX].size() != 48:
 		return "a cord should be one piece per segment, got %d corners" % cord[Mesh.ARRAY_VERTEX].size()
 	return "" if dashes.is_empty() or dashes[Mesh.ARRAY_VERTEX].size() < 48 else "the dashes should leave gaps"
+
+
+func test_sculpted_camper_is_painted_from_the_palette() -> String:
+	var model := FeltBuilder.resolve("knit_camper")
+	for n: Variant in model.get("file_slots", []):
+		if not Tuning.table("palette").get("swatches", {}).has(FeltBuilder.swatch_name({"color": n}, model)):
+			return "file slot %s has no swatch" % n
+	var mesh := FeltBuilder.mesh("knit_camper")
+	if mesh.get_surface_count() == 0:
+		return "the sculpted camper didn't load"
+	var colors: PackedColorArray = mesh.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+	var seen := {}
+	for c in colors:
+		seen[c] = true
+	# Ten slots, seven colours by default: the hat shares the sweater's teal, the boots the hair's brown, the shine the
+	# mittens' cream.
+	return "" if seen.size() >= 7 else "only %d colours on the sculpted camper" % seen.size()

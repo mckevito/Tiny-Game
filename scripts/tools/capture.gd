@@ -20,6 +20,7 @@ extends SceneTree
 ## with a throwaway save and settings file.
 ## --hero is the art review shot: the sandbox from a lower, closer camera framed like the owner's felt reference
 ## picture (hero_<mood>.png, no hint text), plus face_<mood>.png, a close look at the two campers.
+## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
 
 const SETTLE_FRAMES := 30
 
@@ -37,6 +38,7 @@ func _run() -> void:
 	var menus := false
 	var hud := false
 	var hero := false
+	var swap := {}
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -47,6 +49,9 @@ func _run() -> void:
 		menus = menus or arg == "--menus"
 		hud = hud or arg == "--hud"
 		hero = hero or arg == "--hero"
+		for who in ["player", "friend"]:
+			if arg.begins_with("--%s=" % who):
+				swap[who] = arg.trim_prefix("--%s=" % who)
 	DirAccess.make_dir_recursive_absolute(out)
 	await process_frame
 	if couch:
@@ -70,7 +75,7 @@ func _run() -> void:
 		quit(0)
 		return
 	if hero:
-		await _hero(out)
+		await _hero(out, swap)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -461,8 +466,10 @@ func _hud(out: String) -> void:
 
 ## The art review shot: a lower, closer camera on the sandbox's fire, tent and trees, in each mood, then a close
 ## look at the campers' faces. The play camera keeps following the player, so this camera is made current instead.
-func _hero(out: String) -> void:
+func _hero(out: String, swap: Dictionary) -> void:
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
+	for who: String in swap:
+		sandbox.get_node("Player" if who == "player" else "Friend").model_id = swap[who]
 	root.add_child(sandbox)
 	await process_frame
 	for label in ["Hint", "Mood"]:

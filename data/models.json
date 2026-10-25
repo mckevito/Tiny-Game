@@ -36,6 +36,11 @@
       {"shape": "seam", "size": [0.67, 0.51, 0.63], "pos": [0, 1.06, 0.03], "count": 9, "turn": 20, "from_lat": 10, "to_lat": 80, "thick": 0.8, "dash": 0.8, "gap": 0.3, "color": "$strand", "option": "bun"}
     ]
   },
+  "knit_camper": {
+    "file": "res://art/characters/knit_camper/knit_camper.glb",
+    "file_slots": ["skin_felt", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "ink_brown", "blush_felt", "warm_cream"],
+    "slots": {"shirt": "teal_felt", "pants": "denim_felt", "mitten": "warm_cream", "hat": "teal_felt", "hair": "bark_brown", "boots": "bark_brown"}
+  },
   "camper_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "teal_felt", "hat": "teal_felt", "trim": "warm_cream", "mitten": "warm_cream"}},
   "guest_a": {"base": "camper", "show": ["beanie"], "slots": {"shirt": "rust_canvas", "pants": "moss_felt", "hat": "pond_blue", "trim": "honey_thread", "mitten": "warm_cream"}},
   "guest_b": {"base": "camper", "show": ["bun"], "slots": {"shirt": "pond_blue", "pants": "bark_brown", "hair": "ink_brown", "mitten": "honey_thread"}},

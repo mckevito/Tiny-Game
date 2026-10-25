@@ -27,6 +27,13 @@
      occlusion (data/lighting.json), khaki grass. Both the blur and the shells are off on the "low" preset.
    - Files outside `scripts/art/` the Art role touched: `scripts/camp/light_moods.gd` (`_adjust`, `_soften`) and
      one call in `scripts/camp/play_camera.gd` `_place` (`Miniature.focus`). Tell Gameplay if either changes.
+   - Blender pilot (owner's pick, 25 Oct 2026): `art/characters/knit_camper/build_knit_camper.py` builds
+     `knit_camper.glb` (run it with `blender --background --factory-startup --python ... -- OUT.glb`, then
+     `godot --headless --import`). Overlapping primitives are fused by a voxel remesh and smoothed, ribs and real knit
+     bumps are pushed into the beanie and sweater, and every vertex carries (weave, slot) in its UV. A model with
+     `file` and `file_slots` in data/models.json loads it, and the builder paints it from the palette (glTF flips V,
+     so the slot is 1 - UV.y). It is only the `knit_camper` model so far; the capture's `--player=ID --friend=ID` puts
+     it beside the code camper. It has about 30k vertices; the next step is to cut that before it replaces campers.
    - Trap: the fire's light sits above the flame tongues (`light.pos` y 1.1), or each tongue casts a long shadow and
      the fire circle shows a star.
    - Builder additions: the `lathe` shape (a profile of [radius, height] points turned round Y, with an optional
