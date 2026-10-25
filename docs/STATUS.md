@@ -394,6 +394,19 @@ hook is hit, drop into the world, collect with +1. The owner picked this round f
 | From the buttons: the camper swings the axe, the wood is in the air, walking onto it sweeps it up; a felled tree topples before it hides; the shovel's prompt and dig | `test_stage_b.test_three_days_of_play_from_the_buttons`, `test_stage_b.test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons` | Passing |
 | Review clip: three chops, the tree toppling away from the camper, sweeping the wood with +1 tags, digging the stump | `capture.gd --chop` (`first-minutes-g1/` in the project files) | Looked at |
 
+### First-minutes round 2: a campfire that grows, and a board you put up (25 Oct 2026)
+The owner's asks "crafting like being able to make a bonfire or upgrade the existing one" and "putting up key items
+like the board for events". Round 1 (PR #30) was merged by the owner on 25 Oct 2026.
+
+| Proof | Test | Result |
+|---|---|---|
+| At the fire, the fire grows in two levels (a stone ring with log seats, then a big bonfire), paid like a recipe from the Pack, the camp box and coins; it says what is missing and stops at the last level; its light grows | `test_projects.test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit` | Passing |
+| Each fire level counts toward the star rating, with a ranger hint | `test_projects.test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit` | Passing |
+| The camp board starts in a new camp's kit and goes up wherever the players place it in build mode (a Today first, "Put up the camp board"); projects are given there and reading it opens the clipboard's Bookings | `test_projects.test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit`, `test_projects.test_camp_projects_fill_from_both_players_and_open_a_recipe_once` | Passing |
+| A version 6 save gets its board put up where the scenery board stood, a plain fire and no second board | `test_projects.test_the_fire_grows_in_levels_and_the_board_goes_up_from_the_kit` | Passing |
+| The guest PC sees the board go up and the fire grow (the fire level is shared) | `test_projects.test_the_guest_pc_sells_and_gives_to_a_project_from_the_buttons` | Passing (checked by breaking it) |
+| Review frames: the three fire levels at dusk | `capture.gd --fire` (`first-minutes-g2/` in the project files) | Looked at |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -453,6 +466,12 @@ hook is hit, drop into the world, collect with +1. The owner picked this round f
   shovel is the last tool (hands, axe, rod, camera, shovel); a felled tree tips 84° over 0.6 s; puffs are 12 felt bits.
   Dropped bundles (G) still need a press to pick up; only pieces that popped out sweep up by walking. No sounds yet
   (the game has no audio so far). Online play needs both PCs on protocol 7.
+- **Proposed** first-minutes round 2 numbers (data/craft.json, data/rating.json, data/tasks.json, data/save.json): the
+  stone ring costs 6 wood, 4 sticks and 10 coins and lights 1.35 times as far; the big bonfire 12 wood, 6 sticks and
+  30 coins, 1.8 times; each fire level is 3 rating points (up to 6); "Put up the camp board" is the third Today first
+  (3 coins); an older camp's board goes up at (-6, 0). The fire is upgraded at the fire, after every other action
+  there (a fish to grill, chairs and the camp box come first). The bigger light is one shadowed light made brighter,
+  not a new light.
 - Frame rate on the weakest laptop is still unmeasured; the first-minutes round adds at most a few short-lived pieces,
   12-bit puffs (CPU particles) and tweens per chop. Round 2 adds up to 10 animals (no lights or physics), stump,
   sapling, stick and berry models, and the clipboard panel.

@@ -234,3 +234,8 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   4 guest activities) and Interface rounds (1 item icons and icon pop-ups, 2 a picture clipboard and Pack).
 - 25 Oct 2026, owner picks: chop feel and the shovel first; up to **3 guests at once, 2 nights each** (Gameplay round
   3); a new camp starts with **100 coins** (built in first-minutes round 1).
+- 25 Oct 2026, owner merged first-minutes round 1 (PR #30, the chop feel and the shovel). Round 2 builds the campfire
+  that grows (stone ring with log seats, then a big bonfire) and the camp board that players put up themselves.
+  **Proposed**: the board starts in the kit; the fire is upgraded at the fire itself, not crafted at the bench.
+- 25 Oct 2026, owner (Interface thread): button icons, a knitted clipboard and tidier UI; the Interface thread takes
+  the icon and clipboard rounds from the first-minutes plan.

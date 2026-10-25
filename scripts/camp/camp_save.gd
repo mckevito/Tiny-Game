@@ -105,6 +105,15 @@ static func upgrade(camp: Dictionary) -> Dictionary:
 				if int(camp.get("wood", 0)) > 0:
 					camp["box"] = {"wood": int(camp["wood"])}
 				camp.erase("wood")
+			6:
+				# First minutes: the camp board stops being scenery; an older camp gets it put up where it stood.
+				var spot: Array = Tuning.value("save", "board_spot", [0, 0])
+				var n := int(camp.get("next_object_id", 1))
+				camp["next_object_id"] = n + 1
+				if not camp.has("objects"):
+					camp["objects"] = {}
+				camp["objects"]["project_board_%d" % n] = {"model": "project_board", "pos": [float(spot[0]), float(spot[1])], "yaw": 0.0}
+				camp["kit"] = camp.get("kit", {})
 		from += 1
 	_fill(camp, Tuning.value("save", "new_camp", {}))
 	for id: String in camp["profiles"]:
@@ -121,5 +130,5 @@ static func _fill(into: Dictionary, defaults: Dictionary) -> void:
 		if not into.has(key):
 			into[key] = defaults[key].duplicate(true) if defaults[key] is Dictionary or defaults[key] is Array \
 					else defaults[key]
-		elif into[key] is Dictionary and defaults[key] is Dictionary and key != "objects" and key != "profiles":
+		elif into[key] is Dictionary and defaults[key] is Dictionary and not key in ["objects", "profiles", "kit"]:
 			_fill(into[key], defaults[key])

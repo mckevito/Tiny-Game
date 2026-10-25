@@ -5,7 +5,8 @@
     {"id": "pieces", "per": 2, "cap": 16, "models": ["lantern_post", "water_point", "log_bench", "stool", "planter"]},
     {"id": "happy", "per": 1, "cap": 12, "nights": 3},
     {"id": "photos", "per": 2, "cap": 8},
-    {"id": "projects", "per": 3, "cap": 9}
+    {"id": "projects", "per": 3, "cap": 9},
+    {"id": "fire", "per": 3, "cap": 6}
   ],
   "stars": [[0, 1], [10, 2], [22, 3], [36, 4], [50, 5]],
   "ranger": "Ada"

@@ -43,3 +43,10 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   landed on the same spot (why: the fan only alternated sides; caught by the sweep test); the felled tree fell onto
   the camper (why: a fixed tip axis; seen in the review clip, so it now tips away from the nearest camper); with a
   sapling in the Pack the shovel planted instead of digging (why: plant came first; the tool in hand now wins).
+- 25 Oct 2026: first-minutes round 2: the fire grows in two levels and the camp board goes up from the kit. Faults
+  found: loading an old save deep-filled the kit from new_camp and gave it a second board (why: `_fill` recurses into
+  every dictionary; caught by the migration test); the fire upgrade stole the camp box's press (why: the fire's reach
+  covers the box and chairs; it is now last at the fire); the ring's log seats first lay radially across the path
+  (seen in the dusk frame). Playtest then found the seats
+  ran through the folding chairs at (±1.5, 1.0) and campers could stand on the stones (why: placed against the fire
+  alone, not the chairs beside it; the seats now sit behind the fire and the collider grows with the ring).
