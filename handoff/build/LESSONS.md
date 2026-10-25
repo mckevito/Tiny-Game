@@ -59,3 +59,6 @@ Build owns how the game loads them.
   F1 fps readout for the weakest laptop. Fault found: the split-side test passed with the halves swapped (why: it
   checked only which side of the line, not that the player was on screen; stops it: it checks bounds too, rule in
   HANDOFF traps).
+- 25 Oct 2026: Milestone 3 signed off by the owner ("works and looks good"). Cloud captures fell back to OpenGL
+  without a word (why: lavapipe was missing in that container; stops it: check the "Vulkan ... Forward+" line in the
+  capture log before reading frames, rule in HANDOFF traps).
