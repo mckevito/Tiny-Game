@@ -357,6 +357,24 @@ What changed: the hint, prompt and toast are RichTextLabels; `Prompts.rich` turn
 `data/input.json`; sizes and colours are `glyphs.*` in `data/tuning.json`. The Bookings "answer" line moved from the
 page to the clipboard's hint. **Proposed:** icon height 34 px, keycaps warm cream on ink brown.
 
+### Interface round 3: a knitted clipboard (25 Oct 2026)
+The owner (25 Oct 2026): "make the clipboard look like an actual knitted clip board" with "a literally knitted piece
+of paper that is used to have writing on". The clipboard (and the workbench, which shares its look) is now a knitted
+wood-felt board holding a knitted cream sheet, with a ribbed honey clip across the top and a stitched rule under each
+line of writing. The open tab is a honey felt tag. Keys on a cream panel are honey keycaps.
+
+| Proof | Test | Result |
+|---|---|---|
+| The board and sheet are knitted (`scripts/ui/knit.gdshader`); a rule runs under every line of the page, starting where the writing starts and stopping at its end; the board shows above the sheet for the clip; keys on the sheet are honey caps that stand out from it | `test_hud.test_the_clipboard_is_a_knitted_board_with_a_ruled_sheet` | Passing (fails with the rules off by the tab row) |
+| The couch layout still fits with the knitted board (the sheet's text is 16 px narrower so the whole board keeps its old width) | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing |
+| Review frames: both knitted clipboards on the couch | `tools/capture.gd --hud` (couch_clipboards.png) | Looked at |
+| The clipboard feels knitted on the owner's screen | Owner's play | Waiting on the owner |
+
+The camper holding a clipboard while it is open is Gameplay's (PR #37, a felt stand-in); Art is making the knitted
+prop to the same brief (wood-felt board, honey clip, cream sheet). **Proposed** (data/tuning.json `clipboard`, `glyphs`):
+board wood_felt, sheet warm_cream, clip and rules honey_thread, stitches 16 x 11 px on the board and 12 x 8 px on the
+sheet, paper keycaps honey_thread.
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.

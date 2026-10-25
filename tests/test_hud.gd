@@ -325,3 +325,45 @@ func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> St
 			why = "the toast should show once the report is put away, got " + camp.get_node("Hud/Toast").text
 	await _done()
 	return why
+
+
+## The owner (25 Oct 2026): a clipboard that looks knitted, with a knitted sheet of paper the writing sits on. The board
+## and the sheet are knitted (scripts/ui/knit.gdshader), the clip sits across the top of the sheet, a stitched rule
+## runs under each line of the page and stops at its end, and keys on the sheet are honey caps, not cream on cream.
+func test_the_clipboard_is_a_knitted_board_with_a_ruled_sheet() -> String:
+	_fresh()
+	var camp := _camp("NearSide", "p_host", "Hana")
+	camp.start_solo(1)
+	camp.toggle_clipboard("p_host")
+	await _frames(3)
+	var why := ""
+	var board: Clipboard = camp._boards.get("p_host")
+	var sheet: PanelContainer = board._sheet if board else null
+	if board == null or not (board.material is ShaderMaterial and sheet.material is ShaderMaterial):
+		why = "the open clipboard should be a knitted board holding a knitted sheet"
+	if why == "" and (sheet.material as ShaderMaterial).shader != Clipboard.KNIT:
+		why = "the sheet should use the knit shader"
+	if why == "":
+		var knit := sheet.material as ShaderMaterial
+		var body: Label = board._body
+		var line_h := float(body.get_line_height()) + float(body.get_theme_constant("line_spacing"))
+		var top := float(knit.get_shader_parameter("rule_top"))
+		var body_top := body.get_global_rect().position.y - sheet.get_global_rect().position.y
+		if absf(float(knit.get_shader_parameter("rule_px")) - line_h) > 0.5:
+			why = "a rule should come every line (%.1f px), got %s" % [line_h, knit.get_shader_parameter("rule_px")]
+		elif absf(top - body_top) > 0.5:
+			why = "the rules should start where the writing starts (%.1f), got %.1f" % [body_top, top]
+		elif float(knit.get_shader_parameter("rule_bottom")) > body_top + body.size.y + 1.5:
+			why = "the rules should stop at the end of the page"
+		elif sheet.get_global_rect().position.y <= board.get_global_rect().position.y:
+			why = "the board should show above the sheet, where the clip holds it"
+	if why == "":
+		var sheet_face := FeltBuilder.swatch(str(Tuning.value("tuning", "clipboard.sheet_swatch"))).linear_to_srgb()
+		var paper_key := FeltBuilder.swatch(str(Tuning.value("tuning", "glyphs.paper_key_swatch"))).linear_to_srgb()
+		if not Prompts.rich("{clipboard}", false, true).contains(paper_key.to_html()):
+			why = "keys on the sheet should be paper keycaps"
+		elif absf(sheet_face.get_luminance() - paper_key.get_luminance()) < 0.12:
+			why = "a paper keycap should stand out from the sheet"
+	camp.toggle_clipboard("p_host")
+	await _done()
+	return why

@@ -418,7 +418,6 @@
       "supplies": "Supplies",
       "guide": "Field guide"
     },
-    "open_tab": "[ %s ]",
     "hint": "{tabs} turn the page · {clipboard} put it away",
     "answer": "Answer a new booking from the menu ({menu}).",
     "staying": "Staying now",

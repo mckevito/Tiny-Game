@@ -1591,7 +1591,7 @@ func _show_night(summary: Dictionary) -> void:
 		leave_tent(who, false)
 	for who: String in _busy.keys():
 		_end_busy(who)
-	report.show_report(morning_report(summary), Prompts.rich(Tuning.text("prompt.report_close"), _pad))
+	report.show_report(morning_report(summary), Prompts.rich(Tuning.text("prompt.report_close"), _pad, true))
 	_sync_stays(false)
 	_sync_forage()
 	_sync_trees()
@@ -1702,7 +1702,7 @@ func _welcome_report() -> void:
 		return
 	var lines: Array[String] = [Tuning.text("report.welcome"), ""]
 	lines.append_array(_today_report())
-	report.show_report("\n".join(lines), Prompts.rich(Tuning.text("prompt.report_close"), _pad))
+	report.show_report("\n".join(lines), Prompts.rich(Tuning.text("prompt.report_close"), _pad, true))
 
 
 func _update_night(delta: float) -> void:
@@ -2050,9 +2050,9 @@ func _refresh_boards() -> void:
 			continue
 		var board: Clipboard = _boards[who]
 		# The button glyphs live on the hint line (a RichTextLabel): the bookings page's answer line goes there too.
-		var hint := Prompts.rich(Tuning.text("clipboard.hint"), _glyph(who))
+		var hint := Prompts.rich(Tuning.text("clipboard.hint"), _glyph(who), true)
 		if board.tab_name() == "bookings":
-			hint = Prompts.rich(Tuning.text("clipboard.answer"), _glyph(who)) + "\n" + hint
+			hint = Prompts.rich(Tuning.text("clipboard.answer"), _glyph(who), true) + "\n" + hint
 		board.show_text(clipboard_text(who, board.tab_name()), hint)
 		_fit_panel(board, who)
 
@@ -2343,7 +2343,7 @@ func _refresh_packs() -> void:
 			continue
 		var panel: PackPanel = _packs[who]["panel"]
 		panel.show_pack(Tuning.text("pack.title") % state.camp["profiles"][who]["name"], state.pack.slots(who),
-				int(_packs[who]["pick"]), Prompts.rich(Tuning.text("pack.hint"), _glyph(who)))
+				int(_packs[who]["pick"]), Prompts.rich(Tuning.text("pack.hint"), _glyph(who), true))
 
 
 ## Dropped bundles on screen follow the camp's. A loose piece new since the last look pops out of its tree in an arc
@@ -2632,7 +2632,7 @@ func _refresh_bench() -> void:
 			continue
 		var panel: Clipboard = _bench[who]["panel"]
 		panel.show_text(bench_text(who, int(_bench[who]["pick"])), Prompts.rich(Tuning.text("bench.hint"),
-				_glyph(who)))
+				_glyph(who), true))
 		_fit_panel(panel, who)
 
 
