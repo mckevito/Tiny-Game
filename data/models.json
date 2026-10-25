@@ -255,6 +255,12 @@
     {"shape": "box", "size": [0.06, 0.12, 0.2], "pos": [0, 0.33, -0.07], "round": 0.02, "color": "stone_grey"},
     {"shape": "box", "size": [0.065, 0.13, 0.04], "pos": [0, 0.33, -0.17], "round": 0.015, "color": "warm_cream"}
   ]},
+  "tool_shovel": {"parts": [
+    {"shape": "cylinder", "size": [0.045, 0.62, 0.045], "pos": [0, 0.16, 0], "color": "wood_felt"},
+    {"shape": "box", "size": [0.16, 0.05, 0.05], "pos": [0, 0.48, 0], "round": 0.02, "color": "honey_thread"},
+    {"shape": "box", "size": [0.17, 0.2, 0.035], "pos": [0, -0.22, 0], "round": 0.04, "color": "stone_grey"},
+    {"shape": "stitch", "from": [-0.07, -0.14, 0.02], "to": [0.07, -0.14, 0.02], "thick": 0.8, "color": "warm_cream"}
+  ]},
   "tool_rod": {"parts": [
     {"shape": "cylinder", "size": [0.03, 1.15, 0.03], "pos": [0, 0.45, 0], "taper": 0.5, "color": "wood_felt"},
     {"shape": "cylinder", "size": [0.055, 0.2, 0.055], "pos": [0, -0.02, 0], "color": "warm_cream"},
@@ -276,6 +282,23 @@
       {"shape": "cylinder", "size": [0.26, 0.24, 0.26], "pos": [-0.5, 0.12, 0], "color": "bark_brown"},
       {"shape": "cylinder", "size": [0.26, 0.24, 0.26], "pos": [0.5, 0.12, 0], "color": "bark_brown"},
       {"shape": "stitch", "from": [-0.7, 0.57, -0.02], "to": [0.7, 0.57, -0.02], "color": "honey_thread"}
+    ]
+  },
+  "wood_piece": {
+    "weave": "wood",
+    "parts": [
+      {"shape": "cylinder", "size": [0.16, 0.34, 0.16], "pos": [0, 0.08, 0], "rot": [0, 0, 90], "color": "bark_brown"},
+      {"shape": "cylinder", "size": [0.13, 0.02, 0.13], "pos": [0.17, 0.08, 0], "rot": [0, 0, 90], "color": "sand_felt"},
+      {"shape": "cylinder", "size": [0.13, 0.02, 0.13], "pos": [-0.17, 0.08, 0], "rot": [0, 0, 90], "color": "sand_felt"},
+      {"shape": "ring", "size": [0.07, 0.0, 0.07], "pos": [0.181, 0.08, 0], "rot": [0, 0, 90], "color": "wood_felt"}
+    ]
+  },
+  "dig_hole": {
+    "parts": [
+      {"shape": "cylinder", "size": [0.55, 0.02, 0.55], "pos": [0, 0.005, 0], "color": "ink_brown"},
+      {"shape": "sphere", "size": [0.3, 0.14, 0.24], "pos": [0.38, 0.03, 0.1], "color": "trouser_brown"},
+      {"shape": "sphere", "size": [0.18, 0.1, 0.16], "pos": [0.3, 0.03, -0.22], "color": "trouser_brown"},
+      {"shape": "ring", "size": [0.56, 0.0, 0.56], "pos": [0, 0.02, 0], "color": "sand_felt"}
     ]
   },
   "stick_pile": {

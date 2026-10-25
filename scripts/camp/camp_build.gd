@@ -187,9 +187,11 @@ func check(kind: String, pos: Vector2, yaw_deg: float, ignore: String = "") -> S
 		elif rect.grow(gap).has_point(state.object_pos(id)):
 			return "deny.too_close"
 	var blockers: Dictionary = Tuning.value("build", "blockers", {})
-	for row: Dictionary in Tuning.table("clearing").get("placements", []):
+	var rows: Array = Tuning.table("clearing").get("placements", [])
+	for i in rows.size():
+		var row: Dictionary = rows[i]
 		var radius := float(blockers.get(str(row.get("model", "")), 0.0))
-		if radius > 0.0:
+		if radius > 0.0 and not state.gather.cleared(i):
 			var p: Array = row["pos"]
 			var at := Vector2(float(p[0]), float(p[1]))
 			if at.distance_to(at.clamp(rect.position, rect.end)) < radius:

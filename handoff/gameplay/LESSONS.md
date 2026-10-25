@@ -36,3 +36,10 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   with the rule broken (why: what it packed away was too little to lose a star; stops it: break each rule once and
   make the test take enough away); the report said the stars twice (why: the Today part already has them; seen in
   the frame).
+- 25 Oct 2026: first-minutes round 1 (owner: hook players in the first 15 seconds): the axe swing, wood that pops
+  onto the grass and sweeps up by walking over it with a +1 tag, a tree that topples, the shovel for stumps, 100
+  starting coins. Faults found: loose wood beside the tree stole the next chop's press (why: pick-up comes first in
+  `action_for`; stops it: loose pieces come after chop and dig, and sweep up by walking anyway); two of three pieces
+  landed on the same spot (why: the fan only alternated sides; caught by the sweep test); the felled tree fell onto
+  the camper (why: a fixed tip axis; seen in the review clip, so it now tips away from the nearest camper); with a
+  sapling in the Pack the shovel planted instead of digging (why: plant came first; the tool in hand now wins).

@@ -16,7 +16,15 @@
    guests who ask again (a growing daily share), odd jobs that pay but never gate anything, tents to sleep in and to
    see guests asleep in, a camera tool and a field guide. Stage B is NOT signed off yet. The architecture (CampState
    and its weakref sub-objects, host decides, `_share`, save versions) is in `handoff/build/HANDOFF.md` section 2.
-3. **Open work, in order:**
+3. **First-minutes plan (owner, 25 Oct 18:59; picks 19:05).** The research doc "Hooked in the first minute" (Claude
+   Doc, linked in the project thread and in project memory) ranks the owner's feedback into rounds, one PR each:
+   Gameplay 1 chop feel and shovel (done: loose pieces `CampPack.lay`/`sweep`, `CampGather.dig`, tree stages
+   `hole`/`cleared`, `Camper.swing`, `Camp._strike`/`_struck`/`_swept`, `capture.gd --chop`); Gameplay 2 craft a
+   bonfire and upgrade it in stages, place the events board yourself; Gameplay 3 up to 3 guests at once, 2 nights each
+   (owner's pick); Gameplay 4 guests fish, photograph animals, fly kites, play frisbee fetch with each other and sit on
+   chairs, the bench and logs. Interface 1 item icons, icon pop-ups, picture wish bubbles; Interface 2 a stamp-card
+   Today list, guest cards and a picture Pack. Stage B stays unsigned until the owner plays these.
+4. **Open work, in order:**
    1. The owner plays round 5 and signs off Stage B (chat sign-off plus the merged PR; record it in the next PR's
       `docs/STATUS.md` and the `docs/PLAN.md` decision log). Approve or change the **Proposed** numbers.
    2. Next: the clipboard's map tab with plan marks (with Interface). The star rating came in gameplay round 3
@@ -25,10 +33,10 @@
    3. Gaps left on purpose: guests' requests have no walk-up animation. (Gameplay round 1 sent the tent visit and
       the tool in hand to the other PC and tucked sleepers into their bags; neither is saved.)
    4. Stage C (the autumn chapter) when the owner says go.
-4. **Owner decisions:** the decision log in `docs/PLAN.md`. The ones that shape gameplay most: the cozy contract (no
+5. **Owner decisions:** the decision log in `docs/PLAN.md`. The ones that shape gameplay most: the cozy contract (no
    failure, timers or lost items); guests' requests are the core loop and gathering is optional money (25 Oct); the
    day must never be stuck (bed open all day); trees fall and are replanted like Animal Crossing; two players max.
-5. **Traps:** all of `handoff/build/HANDOFF.md` section 6, plus:
+6. **Traps:** all of `handoff/build/HANDOFF.md` section 6, plus:
    - Solo, anything that votes for bed (the tent, the menu) starts the night at once; a test that needs to stay in
      bed adds a second online player with `state.join` first.
    - A guest who walks in only pitches their tent on arrival (`Camper.arrived`); tests call `_pitch_tent(stay)`.
@@ -42,3 +50,8 @@
      Recipes with a `project` show only via `state.build.known_recipes()`; never index `CampBuild.recipes()` from the
      bench.
    - Tents swap meshes (`_tent_look`, the model's `_open` variant), so a tent node's child 0 must stay its mesh.
+   - A tree node's child 0 is its mesh too: `_topple` turns it and marks it `falling` while it tips; `_sync_trees`
+     leaves a falling mesh alone. Holes and cleared spots switch the tree's collider off.
+   - Loose bundles (`loose: true`, with `from`) sweep up by walking; dropped ones (G) need a press and never merge
+     into loose ones. `_airborne` (host) keeps a piece from being swept before it lands; tests wait for it.
+   - With the shovel in hand, dig beats plant at a stump; a hole takes a sapling whatever is in hand.

@@ -17,6 +17,8 @@ extends Node3D
 ## crafts into the shared build kit build mode places from.
 ## Round 4: like Animal Crossing, the Pack opens as a grid (PackPanel), and a corner dock (HudDock) shows the tool in
 ## hand (cycled with next tool; chopping needs the axe, fishing the rod) and the build piece picked (next kind).
+## First-minutes round: the camper swings the axe or shovel, the tree shudders and puffs, wood pops out onto the grass
+## and flies into the Pack of whoever walks over it with a +N tag, a felled tree topples, and the shovel digs stumps.
 ## Command line: -- --solo | --host | --join=ADDRESS [--link=CODE], plus --slot=N and --profile=NAME (a second local
 ## player file).
 
@@ -85,6 +87,10 @@ var _inside := {}
 var _asleep := {}
 var _bubbles := {}
 var _bundle_nodes := {}
+## First-minutes round: loose pieces still in the air (bundle id -> seconds before they can be swept), and who swept
+## a piece up (bundle id -> profile id), so its node flies to them.
+var _airborne := {}
+var _sweeper := {}
 
 @onready var clearing: Clearing = $Clearing
 @onready var camera: PlayCamera = $PlayCamera
@@ -275,8 +281,8 @@ func _build_world() -> void:
 	wildlife.name = "Wildlife"
 	add_child(wildlife)
 	_sync_forage()
-	_sync_trees()
-	_sync_bundles()
+	_sync_trees(false)
+	_sync_bundles(false)
 	camera.target = campers.get(profile["id"])
 	camera.snap()
 	menu.visible = false
@@ -307,6 +313,8 @@ func _clear_world() -> void:
 	for node: Node3D in _bundle_nodes.values():
 		node.queue_free()
 	_bundle_nodes.clear()
+	_airborne.clear()
+	_sweeper.clear()
 	if wildlife:
 		wildlife.queue_free()
 		wildlife = null
@@ -421,6 +429,7 @@ func _physics_process(delta: float) -> void:
 			objects[id].transform = carrier.transform * Transform3D(Basis.IDENTITY, hold)
 			carrier.speed_scale = CampGather.carry_speed(str(state.camp["objects"][id]["model"]), carrier.position,
 					spots.filter(func(p: Vector3) -> bool: return p != carrier.position))
+	_sweep(delta)
 	_send_clock += delta
 	if mode in [Mode.HOST, Mode.GUEST] and _send_clock >= 1.0 / maxf(_net("send_rate_hz"), 1.0):
 		_send_clock = 0.0
@@ -490,7 +499,8 @@ func _carry_prompt(id: String) -> String:
 	if _bench.has(id) or _packs.has(id):
 		return ""
 	if _busy.has(id):
-		return Tuning.text({"fish": "prompt.fishing", "cook": "prompt.cooking", "chop": "prompt.chopping"}[_busy[id]["what"]])
+		return Tuning.text({"fish": "prompt.fishing", "cook": "prompt.cooking", "chop": "prompt.chopping",
+				"dig": "prompt.digging"}[_busy[id]["what"]])
 	var act := action_for(id)
 	match act.get("what", ""):
 		"place":
@@ -526,6 +536,8 @@ func _carry_prompt(id: String) -> String:
 			return Tuning.text("prompt.project") % Tuning.text("project.%s.name" % state.projects.current()["id"])
 		"plant":
 			return Tuning.text("prompt.plant")
+		"dig":
+			return Tuning.text("prompt.dig")
 		"need_tool":
 			return Tuning.text("prompt.need_tool") % Tuning.text("tool." + str(act["arg"]))
 		"cook":
@@ -854,6 +866,8 @@ func action_for(who: String) -> Dictionary:
 		return {"what": "forage", "arg": state.gather.spot_near(at)}
 	if state.gather.sapling_near(at) >= 0:
 		return {"what": "take_sapling", "arg": state.gather.sapling_near(at)}
+	if has_tool(who, "dig") and state.gather.dig_near(at) >= 0:
+		return {"what": "dig", "arg": state.gather.dig_near(at)}
 	if state.gather.stump_near(at) >= 0 and state.pack.first_of(who, "plant") != "":
 		return {"what": "plant", "arg": state.gather.stump_near(at)}
 	var need := ""
@@ -861,6 +875,8 @@ func action_for(who: String) -> Dictionary:
 		if has_tool(who, "chop"):
 			return {"what": "chop", "arg": state.gather.tree_near(at)}
 		need = tool_for("chop")
+	if state.pack.bundle_near(at, true) != "":
+		return {"what": "pick_bundle", "arg": state.pack.bundle_near(at, true)}
 	if nearest_object(who) != "":
 		return {"what": "pick_up", "arg": nearest_object(who)}
 	if at.distance_to(home_tent_pos()) <= Tuning.num("guests", "tent.reach_m", 2.0):
@@ -911,18 +927,24 @@ func interact(who: String = "") -> void:
 		"photo":
 			_flash()
 			ask("photo", [act["arg"]], who)
-		"fish", "cook", "chop":
-			_start_busy(who, act["what"], act.get("arg") if act["what"] == "chop" else null)
+		"fish", "cook", "chop", "dig":
+			_start_busy(who, act["what"], act.get("arg") if act["what"] in ["chop", "dig"] else null)
 
 
-## Starts a moment of fishing, grilling or chopping (`arg`: the tree's index); the camper stands still meanwhile.
+## Starts a moment of fishing, grilling, chopping or digging (`arg`: the tree's index); the camper stands still
+## meanwhile. A chop or a dig winds the tool back over the wait and strikes as it ends (Camper.swing).
 func _start_busy(who: String, what: String, arg: Variant = null) -> void:
 	var me: Camper = campers[who]
 	var bobber: Node3D = null
 	var wait := Tuning.num("fishing", "cast_s" if what == "fish" else "cook_s", 2.0)
 	if what == "chop":
 		wait = Tuning.num("gather", "trees.chop_s", 0.8)
-		wobble(int(arg))
+	elif what == "dig":
+		wait = Tuning.num("gather", "dig.dig_s", 1.0)
+	if what in ["chop", "dig"]:
+		var at := CampGather.tree_pos(int(arg))
+		me.rotation.y = atan2(-(at.x - me.position.x), -(at.y - me.position.z))
+		me.swing(wait)
 	if what == "fish":
 		bobber = clearing.place({"model": "bobber", "pos": [0, 0]})
 		var ahead := me.position - me.transform.basis.z * Tuning.num("fishing", "cast_m", 1.6)
@@ -1004,6 +1026,8 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		why = state.gather.take_sapling(profile_id, args[0])
 	elif what == "plant" and args.size() == 1 and args[0] is int:
 		why = state.gather.plant(profile_id, args[0])
+	elif what == "dig" and args.size() == 1 and args[0] is int:
+		why = state.gather.dig(profile_id, args[0])
 	elif what == "drop" and args.size() == 1 and args[0] is int:
 		why = state.pack.drop(profile_id, args[0])
 	elif what == "pick_bundle" and args.size() == 1 and args[0] is String:
@@ -1026,7 +1050,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		else:
 			_denied.rpc_id(peer, why)
 		return
-	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "forage", "spot", "take_sapling", "plant", "drop",
+	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "dig", "forage", "spot", "take_sapling", "plant", "drop",
 			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project"]:
 		match what:
 			"fish":
@@ -1040,12 +1064,18 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 				_sync_stays(false)
 				_progress("give")
 			"chop":
+				_strike(profile_id, "chop", args[0])
 				if state.gather.felled:
 					_say_all("toast.felled", [])
 					_sync_trees()
-				else:
-					_say(peer, "toast.chopped", [state.pack.count(profile_id, str(Tuning.value("gather", "wood_item")))])
+				_sync_bundles()
 				_progress("chop")
+			"dig":
+				_strike(profile_id, "dig", args[0])
+				_say(peer, "toast.dug", [])
+				_sync_trees()
+				_sync_bundles()
+				_progress("dig")
 			"take_sapling":
 				_say(peer, "toast.found", [Tuning.text("items.sapling")])
 				_sync_trees()
@@ -1788,7 +1818,9 @@ func _sync_forage() -> void:
 
 ## Felled trees on screen follow the camp: the tree hides, its stump shows (with the dropped sapling beside it until
 ## someone picks it up), and a planted sapling stands in its place until it grows back.
-func _sync_trees() -> void:
+## A tree that falls while someone watches topples over first (`animate`; data/gather.json fall). A dug-up stump leaves
+## a hole, and a cleared spot shows nothing; neither blocks walking.
+func _sync_trees(animate: bool = true) -> void:
 	if state == null:
 		return
 	for t: Dictionary in CampGather.trees():
@@ -1798,12 +1830,26 @@ func _sync_trees() -> void:
 			node.queue_free()
 		_tree_props.erase(index)
 		var root := clearing.placed[index]
-		root.get_child(0).visible = row["stage"] == "standing"
-		if row["stage"] == "standing":
+		var mesh := root.get_child(0) as Node3D
+		var standing: bool = row["stage"] == "standing"
+		if animate and mesh.visible and not standing and row["stage"] == "stump":
+			_topple(index, mesh)
+		elif not mesh.has_meta("falling"):
+			mesh.visible = standing
+		for body in root.get_children():
+			if body is StaticBody3D:
+				for shape in body.get_children():
+					if shape is CollisionShape3D:
+						shape.set_deferred("disabled", row["stage"] in ["hole", "cleared"])
+		if standing or row["stage"] == "cleared":
 			continue
 		var at: Vector2 = t["pos"]
 		var props: Array[Node3D] = []
-		var model := str(Tuning.value("gather", "trees.stump_model" if row["stage"] == "stump" else "trees.sapling_model"))
+		var model := str(Tuning.value("gather", "trees.sapling_model"))
+		if row["stage"] == "stump":
+			model = str(Tuning.value("gather", "trees.stump_model"))
+		elif row["stage"] == "hole":
+			model = str(Tuning.value("gather", "dig.hole_model"))
 		props.append(clearing.place({"model": model, "pos": [at.x, at.y]}))
 		if bool(row["sapling_out"]):
 			var off: Array = Tuning.value("gather", "trees.sapling_offset", [0.7, 0.5])
@@ -2154,20 +2200,188 @@ func _refresh_packs() -> void:
 				int(_packs[who]["pick"]), Prompts.fill(Tuning.text("pack.hint"), _pad if who == profile["id"] else true))
 
 
-## Dropped bundles on screen follow the camp's.
-func _sync_bundles() -> void:
+## Dropped bundles on screen follow the camp's. A loose piece new since the last look pops out of its tree in an arc
+## (`animate`); one swept up flies into its sweeper (or the nearest camper) with a +N tag.
+func _sync_bundles(animate: bool = true) -> void:
 	if state == null:
 		return
 	var bundles: Dictionary = state.camp["bundles"]
 	for id: String in _bundle_nodes.keys():
 		if not bundles.has(id):
-			_bundle_nodes[id].queue_free()
+			_fly_away(_bundle_nodes[id], _sweeper.get(id, ""))
 			_bundle_nodes.erase(id)
+			_airborne.erase(id)
+			_sweeper.erase(id)
 	for id: String in bundles:
 		if not _bundle_nodes.has(id):
-			var p: Vector2 = CampPack.bundle_pos(bundles[id])
-			_bundle_nodes[id] = clearing.place({"model": str(Tuning.value("items", "bundle.model", "bundle")),
-					"pos": [p.x, p.y], "yaw": hash(id) % 360})
+			var row: Dictionary = bundles[id]
+			var p: Vector2 = CampPack.bundle_pos(row)
+			var model := str(Tuning.value("items", "items.%s.drop_model" % row["item"], ""))
+			if model == "" or not row.get("loose", false):
+				model = str(Tuning.value("items", "bundle.model", "bundle"))
+			var node := clearing.place({"model": model, "pos": [p.x, p.y], "yaw": hash(id) % 360})
+			node.set_meta("count", int(row["n"]))
+			_bundle_nodes[id] = node
+			if animate and row.get("loose", false) and row.has("from"):
+				_pop_out(node, Vector2(float(row["from"][0]), float(row["from"][1])))
+				_airborne[id] = Tuning.num("gather", "drops.sweep_wait_s", 0.6)
+
+
+# --- First-minutes round: the swing, the drop and the sweep ---------------------------------------------------------
+
+## Host: the strike of a chop or a dig, shown on every PC (the tree shudders and puffs; the other PC's camper swings).
+func _strike(profile_id: String, what: String, index: int) -> void:
+	_struck(profile_id, what, index)
+	for guest: int in _guests:
+		_struck.rpc_id(guest, profile_id, what, index)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _struck(profile_id: String, what: String, index: int) -> void:
+	if index < 0 or index >= clearing.placed.size():
+		return
+	if not local_ids().has(profile_id) and campers.has(profile_id):
+		(campers[profile_id] as Camper).swing(0.0)
+	if what == "chop":
+		wobble(index)
+	puff(index, what == "chop")
+
+
+## Host: tells the other PC who swept a piece up, just before the shared camp drops it, so its node flies to them.
+@rpc("authority", "call_remote", "reliable")
+func _swept(bundle_id: String, profile_id: String) -> void:
+	_sweeper[bundle_id] = profile_id
+
+
+## A puff of felt bits from a tree's crown (`crown`) or round its stump (data/gather.json hit).
+func puff(index: int, crown: bool) -> void:
+	var bits := CPUParticles3D.new()
+	var life := Tuning.num("gather", "hit.puff_s", 0.7)
+	bits.one_shot = true
+	bits.amount = int(Tuning.num("gather", "hit.puff_count", 10))
+	bits.lifetime = life
+	bits.explosiveness = 1.0
+	bits.direction = Vector3.UP
+	bits.spread = 95.0
+	bits.initial_velocity_min = 1.2
+	bits.initial_velocity_max = 2.6
+	bits.gravity = Vector3(0, -5.0, 0)
+	bits.scale_amount_min = 0.6
+	bits.scale_amount_max = 1.2
+	var dot := SphereMesh.new()
+	dot.radius = 0.05
+	dot.height = 0.07
+	dot.radial_segments = 6
+	dot.rings = 3
+	var paint := StandardMaterial3D.new()
+	paint.albedo_color = FeltBuilder.swatch(str(Tuning.value("gather",
+			"hit.puff_swatch" if crown else "hit.stump_swatch", "olive_felt"))).linear_to_srgb()
+	dot.material = paint
+	bits.mesh = dot
+	var at := CampGather.tree_pos(index)
+	bits.position = Vector3(at.x, Tuning.num("gather", "hit.crown_y_m", 1.3) if crown else 0.3, at.y)
+	add_child(bits)
+	bits.emitting = true
+	get_tree().create_timer(life + 0.3).timeout.connect(bits.queue_free)
+
+
+## A felled tree tips over away from the nearest camper (whoever chopped it), then hides (data/gather.json fall).
+func _topple(index: int, mesh: Node3D) -> void:
+	mesh.set_meta("falling", true)
+	var at := CampGather.tree_pos(index)
+	var away := Vector3(1, 0, 0)
+	var best := INF
+	for c: Camper in campers.values():
+		var d := Vector3(at.x - c.position.x, 0, at.y - c.position.z)
+		if d.length() < best and d.length() > 0.01:
+			best = d.length()
+			away = d.normalized()
+	var local: Vector3 = mesh.get_parent().global_transform.basis.inverse() * away
+	local.y = 0.0
+	var axis := Vector3.UP.cross(local.normalized()).normalized()
+	var rest := mesh.transform.basis
+	var tip := create_tween()
+	tip.tween_method(func(a: float) -> void:
+		mesh.transform.basis = Basis(axis, a) * rest,
+			0.0, deg_to_rad(Tuning.num("gather", "fall.deg", 84.0)),
+			Tuning.num("gather", "fall.fall_s", 0.6)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tip.tween_callback(func() -> void:
+		mesh.visible = state != null and state.gather.tree(index)["stage"] == "standing"
+		mesh.transform.basis = rest
+		mesh.remove_meta("falling")
+		puff(index, false))
+
+
+## A piece of wood pops out of the tree at `from` in an arc to where it lies, with a little hop on landing.
+func _pop_out(node: Node3D, from: Vector2) -> void:
+	var land := node.position
+	var start := Vector3(from.x, Tuning.num("gather", "drops.start_y_m", 1.0), from.y)
+	var high := Tuning.num("gather", "drops.pop_height_m", 0.8)
+	var hop := Tuning.num("gather", "drops.bounce_m", 0.12)
+	var pop := create_tween()
+	pop.tween_method(func(k: float) -> void:
+		if is_instance_valid(node):
+			node.position = start.lerp(land, k) + Vector3.UP * (4.0 * high * k * (1.0 - k)),
+			0.0, 1.0, Tuning.num("gather", "drops.pop_s", 0.45))
+	pop.tween_method(func(k: float) -> void:
+		if is_instance_valid(node):
+			node.position = land + Vector3.UP * (4.0 * hop * k * (1.0 - k)),
+			0.0, 1.0, Tuning.num("gather", "drops.pop_s", 0.45) * 0.4)
+
+
+## A swept-up piece flies into its sweeper and shrinks away, and a +N tag rises over them; other bundles just go.
+func _fly_away(node: Node3D, who: String) -> void:
+	var to: Camper = campers.get(who)
+	if to == null:
+		var best := Tuning.num("items", "reach_m", 1.4) + 0.5
+		for c: Camper in campers.values():
+			if c.position.distance_to(node.position) < best:
+				best = c.position.distance_to(node.position)
+				to = c
+	if to == null:
+		node.queue_free()
+		return
+	var fly_s := Tuning.num("gather", "drops.fly_s", 0.28)
+	var fly := create_tween().set_parallel()
+	fly.tween_property(node, "global_position", to.global_position + Vector3.UP * 0.8, fly_s)
+	fly.tween_property(node, "scale", Vector3.ONE * 0.2, fly_s)
+	fly.chain().tween_callback(node.queue_free)
+	var tag := Label3D.new()
+	tag.text = Tuning.text("toast.got_tag") % int(node.get_meta("count", 1))
+	tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	tag.no_depth_test = true
+	tag.font_size = int(Tuning.num("tuning", "camper.name_font_px", 48))
+	tag.outline_size = int(Tuning.num("tuning", "camper.name_outline_px", 12))
+	tag.pixel_size = 0.004
+	tag.modulate = FeltBuilder.swatch("honey_thread").linear_to_srgb()
+	tag.position = Vector3.UP * 1.2
+	to.add_child(tag)
+	var rise_s := Tuning.num("gather", "drops.tag_s", 0.9)
+	var up := tag.create_tween().set_parallel()
+	up.tween_property(tag, "position:y", 1.2 + Tuning.num("gather", "drops.rise_m", 0.6), rise_s)
+	up.tween_property(tag, "modulate:a", 0.0, rise_s).set_delay(rise_s * 0.4)
+	up.chain().tween_callback(tag.queue_free)
+
+
+## Host: a player walking over a loose piece that has landed sweeps it into their Pack.
+func _sweep(delta: float) -> void:
+	for id: String in _airborne.keys():
+		_airborne[id] = float(_airborne[id]) - delta
+		if float(_airborne[id]) <= 0.0:
+			_airborne.erase(id)
+	if mode == Mode.GUEST or state.camp["bundles"].is_empty():
+		return
+	for who: String in state.online:
+		var id := state.pack.sweep(who, _airborne.keys())
+		if id == "":
+			continue
+		_sweeper[id] = who
+		for guest: int in _guests:
+			_swept.rpc_id(guest, id, who)
+		_sync_bundles()
+		_share()
+		_progress("sweep:" + state.pack.last_item)
+		save_camp()
 
 
 ## Opens the workbench panel for a player on this PC: the recipes, what each needs and what they have; the camper

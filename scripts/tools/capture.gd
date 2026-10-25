@@ -15,6 +15,9 @@ extends SceneTree
 ## pack_dock.png (the open Pack and the corner dock with a tool in hand) and menu.png (the in-camp menu over the HUD);
 ## round 5 adds guest_tent.png (a guest asleep in their opened tent with its name bubble, at night), home_tent.png (the
 ## player in the camp's tent) and guide.png (the clipboard's field guide).
+## --chop plays the first-minutes loop at 30 fps and saves chop_###.png frames: the camper chops a tree three times
+## (the swing, the shudder and puff, wood popping onto the grass), the tree topples, the camper walks over the wood
+## to sweep it up (+1 tags), then digs the stump with the shovel; a throwaway save.
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
@@ -42,6 +45,7 @@ func _run() -> void:
 	var menus := false
 	var hud := false
 	var hero := false
+	var chop := false
 	var swap := {}
 	var turn := ""
 	var glb := ""
@@ -55,6 +59,7 @@ func _run() -> void:
 		menus = menus or arg == "--menus"
 		hud = hud or arg == "--hud"
 		hero = hero or arg == "--hero"
+		chop = chop or arg == "--chop"
 		if arg.begins_with("--turn="):
 			turn = arg.trim_prefix("--turn=")
 		if arg.begins_with("--glb="):
@@ -74,6 +79,10 @@ func _run() -> void:
 		return
 	if stage_b:
 		await _stage_b(out)
+		quit(0)
+		return
+	if chop:
+		await _chop(out)
 		quit(0)
 		return
 	if menus:
@@ -384,6 +393,52 @@ func _stage_b(out: String) -> void:
 	_save(out + "/report.png")
 	camp.stop("")
 	CampSave.dir = ""
+
+
+func _chop(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.start_solo(1)
+	camp.report.visible = false
+	var s: CampState = camp.state
+	s.camp["calendar"]["minute"] = (11.0 - Tuning.num("day", "clock.start_hour")) * 60.0
+	var tree: Dictionary = CampGather.trees()[4]
+	var me: Camper = camp.campers["p_capture_one"]
+	me.position = Vector3(tree["pos"].x - 1.1, 0, tree["pos"].y + 0.3)
+	camp.hold_tool("p_capture_one", "axe")
+	camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m")
+	await _settle()
+	var frame := [0]
+	var shoot := func(n: int) -> void:
+		for i in n:
+			await process_frame
+			_save(out + "/chop_%03d.png" % frame[0])
+			frame[0] += 1
+	for i in int(Tuning.num("gather", "trees.wood_per_tree")):
+		camp.interact("p_capture_one")
+		await shoot.call(36)
+	await shoot.call(10)
+	for id: String in s.camp["bundles"].keys():
+		var to := CampPack.bundle_pos(s.camp["bundles"][id])
+		var from := me.position
+		for k in 12:
+			me.position = from.lerp(Vector3(to.x, 0, to.y), (k + 1) / 12.0)
+			me.rotation.y = atan2(-(to.x - from.x), -(to.y - from.z))
+			await shoot.call(1)
+		await shoot.call(8)
+	me.position = Vector3(tree["pos"].x - 1.1, 0, tree["pos"].y + 0.3)
+	s.gather.take_sapling("p_capture_one", int(tree["index"]))
+	camp._sync_trees(false)
+	camp.hold_tool("p_capture_one", "shovel")
+	await shoot.call(4)
+	camp.interact("p_capture_one")
+	await shoot.call(50)
 
 
 func _menus(out: String) -> void:

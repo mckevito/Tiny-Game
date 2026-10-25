@@ -30,6 +30,9 @@ signal arrived
 var _body: Node3D
 var _tool: Node3D
 var _walk_phase := 0.0
+## A swing of the tool in hand: seconds into it (-1 when still) and its wind-up time.
+var _swing := -1.0
+var _wind := 0.0
 
 
 func _ready() -> void:
@@ -73,6 +76,54 @@ func hold(tool: String) -> void:
 	_tool.rotation_degrees = FeltBuilder.vec3(row.get("rot", [0, 0, 0]))
 	_tool.scale = Vector3.ONE * Tuning.num("tuning", "camper.tool_scale", 1.0)
 	_body.add_child(_tool)
+
+
+## Swings the tool in hand (data/items.json tools.held.<tool>.swing): it winds back over `wind_s`, strikes, then
+## settles, while the body leans into the strike. Anyone can see it; it changes nothing in the camp.
+func swing(wind_s: float) -> void:
+	if _tool == null:
+		return
+	_swing = 0.0
+	_wind = maxf(wind_s, 0.12)
+
+
+## True while a swing is playing.
+func swinging() -> bool:
+	return _swing >= 0.0
+
+
+func _process(delta: float) -> void:
+	if _swing < 0.0:
+		return
+	var row: Dictionary = Tuning.value("items", "tools.held.%s.swing" % held, {})
+	if _tool == null or row.is_empty():
+		_swing = -1.0
+		return
+	_swing += delta
+	var wind := float(row.get("wind_deg", 60))
+	var strike := float(row.get("strike_deg", -50))
+	var lean := float(row.get("lean_deg", 8))
+	var strike_s := maxf(float(row.get("strike_s", 0.1)), 0.01)
+	var settle_s := maxf(float(row.get("settle_s", 0.25)), 0.01)
+	var turn := 0.0
+	var bend := 0.0
+	if _swing < _wind:
+		var k := smoothstep(0.0, 1.0, _swing / _wind)
+		turn = wind * k
+		bend = -0.3 * lean * k
+	elif _swing < _wind + strike_s:
+		var k := (_swing - _wind) / strike_s
+		turn = lerpf(wind, strike, k * k)
+		bend = lerpf(-0.3 * lean, lean, k)
+	elif _swing < _wind + strike_s + settle_s:
+		var k := smoothstep(0.0, 1.0, (_swing - _wind - strike_s) / settle_s)
+		turn = lerpf(strike, 0.0, k)
+		bend = lerpf(lean, 0.0, k)
+	else:
+		_swing = -1.0
+	var rest: Array = Tuning.value("items", "tools.held.%s.rot" % held, [0, 0, 0])
+	_tool.rotation_degrees.x = float(rest[0]) + turn
+	_body.rotation.x = deg_to_rad(-bend)
 
 
 ## The wanted ground velocity for a stick or key input, turned by the camera's yaw.

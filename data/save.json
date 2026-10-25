@@ -5,7 +5,7 @@
   "dir": "user://saves",
   "new_camp": {
     "calendar": {"year": 1, "season": "spring", "day": 1, "minute": 0},
-    "coins": 40,
+    "coins": 100,
     "ledger": [],
     "reservations": [],
     "stays": {},

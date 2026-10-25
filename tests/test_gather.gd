@@ -26,8 +26,17 @@ func test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted() -> S
 	for i in per_tree:
 		if state.gather.chop("p_host", index) != "" or state.gather.felled != (i == per_tree - 1):
 			return "chop %d should be allowed, and only the last should fell the tree" % (i + 1)
-	if state.pack.count("p_host", "wood") != per_tree:
-		return "each chop should put one wood in the Pack, got %d" % state.pack.count("p_host", "wood")
+	if state.pack.count("p_host", "wood") != 0 or _loose(state, "wood") != per_tree:
+		return "each chop should pop one wood out onto the grass, not into the Pack"
+	for id: String in state.camp["bundles"].keys():
+		state.set_player_pos("p_host", CampPack.bundle_pos(state.camp["bundles"][id]), 0.0)
+		if state.pack.sweep("p_host", [id]) != "":
+			return "a piece still in the air should wait before it can be swept up"
+		if state.pack.sweep("p_host") != id:
+			return "walking over a landed piece should sweep it up"
+	if state.pack.count("p_host", "wood") != per_tree or _loose(state, "wood") != 0:
+		return "sweeping should put every piece in the Pack, got %d" % state.pack.count("p_host", "wood")
+	state.set_player_pos("p_host", (tree["pos"] as Vector2) + Vector2(1, 0), 0.0)
 	if state.gather.chop("p_host", index) != "deny.no_tree" or state.gather.tree_near(at) == index:
 		return "a fallen tree should not be offered for chopping"
 	if state.gather.chop("p_host", 0) != "deny.not_movable":
@@ -38,8 +47,18 @@ func test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted() -> S
 		state.pack.add("p_host", "item_%d" % i, int(Tuning.num("items", "stack_max")))
 	if state.gather.take_sapling("p_host", index) != "deny.pack_full" or state.gather.sapling_near(at) != index:
 		return "with a full Pack the sapling should wait by the stump, never lost"
-	if state.gather.chop("p_host", int(CampGather.trees()[1]["index"])) not in ["deny.pack_full", "deny.too_far"]:
-		return "a full Pack should leave the wood in the tree"
+	state.pack.add("p_host", "wood", int(Tuning.num("items", "stack_max")))
+	var other: Dictionary = CampGather.trees()[1]
+	state.set_player_pos("p_host", (other["pos"] as Vector2) + Vector2(1, 0), 0.0)
+	if state.gather.chop("p_host", int(other["index"])) != "" or _loose(state, "wood") != 1:
+		return "with a full Pack a chop should still pop its wood onto the grass"
+	var piece: String = state.camp["bundles"].keys()[0]
+	state.set_player_pos("p_host", CampPack.bundle_pos(state.camp["bundles"][piece]), 0.0)
+	if state.pack.sweep("p_host") != "" or not state.camp["bundles"].has(piece):
+		return "a full Pack should leave the wood on the grass, never lost"
+	state.camp["bundles"].erase(piece)
+	state.camp["trees"].erase(str(other["index"]))
+	state.set_player_pos("p_host", (tree["pos"] as Vector2) + Vector2(1, 0), 0.0)
 	state.camp["profiles"]["p_host"]["pack"] = []
 	if state.gather.plant("p_host", index) != "deny.no_stump":
 		return "planting needs a bare stump first"
@@ -59,6 +78,56 @@ func test_a_tree_falls_drops_a_sapling_and_grows_back_where_it_is_planted() -> S
 	state.gather.new_day()
 	if state.gather.wood_left(index) != per_tree:
 		return "after grow_days mornings the tree should stand again, full of wood"
+	return ""
+
+
+func _loose(state: CampState, item: String) -> int:
+	var n := 0
+	for row: Dictionary in state.camp["bundles"].values():
+		if row.get("loose", false) and row["item"] == item:
+			n += int(row["n"])
+	return n
+
+
+## The shovel: a stump (its sapling still by it or not) digs up into a hole, popping its roots as wood and the sapling
+## too; a sapling planted in the hole grows back; a hole left empty is grass by morning and free to build on.
+func test_the_shovel_digs_a_stump_into_a_hole_that_grasses_over() -> String:
+	var state := _camp()
+	var tree: Dictionary = CampGather.trees()[0]
+	var index := int(tree["index"])
+	state.set_player_pos("p_host", (tree["pos"] as Vector2) + Vector2(1, 0), 0.0)
+	if state.gather.dig("p_host", index) != "deny.no_dig":
+		return "a standing tree should not be dug up"
+	for i in int(Tuning.num("gather", "trees.wood_per_tree")):
+		state.gather.chop("p_host", index)
+	state.camp["bundles"] = {}
+	var at := state.player_pos("p_host")
+	if state.gather.dig_near(at) != index or state.gather.dig("p_host", index) != "":
+		return "a stump with its sapling beside it should dig up"
+	if state.gather.tree(index)["stage"] != "hole" or _loose(state, "sapling") != 1 \
+			or _loose(state, "wood") != int(Tuning.num("gather", "dig.roots_wood")):
+		return "digging should leave a hole and pop out the roots and the sapling"
+	if state.gather.dig_near(at) >= 0 or state.gather.stump_near(at) != index:
+		return "a hole is not dug again, but takes a sapling"
+	state.pack.add("p_host", "sapling")
+	if state.gather.plant("p_host", index) != "" or state.gather.tree(index)["stage"] != "sapling":
+		return "a sapling should go into the hole"
+	var second: Dictionary = CampGather.trees()[1]
+	var j := int(second["index"])
+	state.set_player_pos("p_host", (second["pos"] as Vector2) + Vector2(1, 0), 0.0)
+	for i in int(Tuning.num("gather", "trees.wood_per_tree")):
+		state.gather.chop("p_host", j)
+	state.gather.take_sapling("p_host", j)
+	if state.gather.dig("p_host", j) != "":
+		return "a bare stump should dig up too"
+	var spot := CampGather.tree_pos(j)
+	var blocked := state.build.check("pitch", spot, 0.0)
+	state.camp["calendar"]["day"] = int(state.camp["calendar"]["day"]) + 1
+	state.gather.new_day()
+	if not state.gather.cleared(j) or state.gather.tree(index)["stage"] != "sapling":
+		return "an empty hole should grass over by morning; a planted one keeps growing"
+	if blocked == state.build.check("pitch", spot, 0.0) and blocked == "deny.too_close":
+		return "a cleared spot should no longer block building"
 	return ""
 
 

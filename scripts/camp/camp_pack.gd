@@ -178,11 +178,13 @@ static func bundle_pos(row: Dictionary) -> Vector2:
 	return Vector2(float(row["pos"][0]), float(row["pos"][1]))
 
 
-## The nearest bundle within reach of a spot, or "".
-func bundle_near(pos: Vector2) -> String:
+## The nearest bundle within reach of a spot, or "": dropped ones, or with `loose` pieces popped out of a tree.
+func bundle_near(pos: Vector2, loose: bool = false) -> String:
 	var best := ""
 	var best_d := Tuning.num("items", "reach_m", 1.4)
 	for id: String in state.camp["bundles"]:
+		if bool(state.camp["bundles"][id].get("loose", false)) != loose:
+			continue
 		var d := pos.distance_to(bundle_pos(state.camp["bundles"][id]))
 		if d <= best_d:
 			best = id
@@ -204,7 +206,8 @@ func drop(profile_id: String, index: int) -> String:
 	last_bundle = ""
 	for id: String in state.camp["bundles"]:
 		var row: Dictionary = state.camp["bundles"][id]
-		if row["item"] == last_item and bundle_pos(row).distance_to(at) <= Tuning.num("items", "bundle.merge_m", 1.0):
+		if row["item"] == last_item and not row.get("loose", false) \
+				and bundle_pos(row).distance_to(at) <= Tuning.num("items", "bundle.merge_m", 1.0):
 			row["n"] = int(row["n"]) + int(s["n"])
 			last_bundle = id
 			return ""
@@ -231,6 +234,38 @@ func pick_bundle(profile_id: String, id: String) -> String:
 	row["n"] = int(row["n"]) - got
 	if int(row["n"]) <= 0:
 		state.camp["bundles"].erase(id)
+	return ""
+
+
+## Lays a loose piece that popped out of a tree or a stump on the grass at `at`, flying from `from` (data/gather.json
+## drops). It lies there until a player walks over it (sweep). Returns its bundle id.
+func lay(item: String, n: int, at: Vector2, from: Vector2) -> String:
+	var next := int(state.camp.get("next_object_id", 1))
+	state.camp["next_object_id"] = next + 1
+	last_bundle = "bundle_%d" % next
+	state.camp["bundles"][last_bundle] = {"item": item, "n": n, "pos": [at.x, at.y], "loose": true,
+			"from": [from.x, from.y]}
+	return last_bundle
+
+
+## A player walking over a loose piece sweeps it into their Pack (data/gather.json drops.sweep_m); `wait` lists the
+## pieces still in the air. Returns the bundle id swept, or "" (a full Pack leaves it on the grass).
+func sweep(profile_id: String, wait: Array = []) -> String:
+	if not state.online.has(profile_id):
+		return ""
+	var at := state.player_pos(profile_id)
+	for id: String in state.camp["bundles"]:
+		var row: Dictionary = state.camp["bundles"][id]
+		if not row.get("loose", false) or wait.has(id) \
+				or bundle_pos(row).distance_to(at) > Tuning.num("gather", "drops.sweep_m", 0.75):
+			continue
+		if room_for(profile_id, str(row["item"])) < int(row["n"]):
+			continue
+		add(profile_id, str(row["item"]), int(row["n"]))
+		last_item = str(row["item"])
+		last_bundle = id
+		state.camp["bundles"].erase(id)
+		return id
 	return ""
 
 
