@@ -319,6 +319,15 @@ How to try it: drop in a second controller (Options on it) and walk apart until 
 clipboards (J and Touchpad), both Packs (I and D-pad down) and the workbench: nothing should sit on anything else.
 Cycle the tool (T or D-pad up): the names either side of it are the one before and the one after.
 
+Playtest's findings on round 1 (fixed in the next PR):
+
+| Proof | Test | Result |
+|---|---|---|
+| Tab closes the in-camp menu it opened (a focused menu button used to take Tab and move focus instead) | `test_hud.test_the_menu_key_closes_the_menu_it_opened` (real key presses through the viewport) | Passing (fails without the fix) |
+| An open clipboard, workbench or Pack never covers its own player's camper: that player's picture slides until the camper stands clear (`hud.keep_clear_*`) | `test_hud.test_couch_split_screen_hud_never_overlaps`, `test_hud.test_the_dock_shows_its_neighbours_and_the_pack_names_the_pick` | Passing (fails without the slide) |
+| The F1 fps line sits at the bottom centre, clear of the clock and hint | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing |
+| The hint wraps only between controls ("Tab for the menu" stays whole); a toast that comes with the morning report waits until it is put away | `test_hud.test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report` | Passing |
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.
@@ -331,6 +340,34 @@ lay on top of their bag.
 
 The tool and the tent ride on the movement message the PCs already send 20 times a second (protocol 6, so both PCs
 need this build). Neither is saved.
+
+### Gameplay round 2: a sell crate and camp projects (25 Oct 2026)
+The owner's next-round pick: places for gathered things to go. The field guide came in round 5; the star rating is
+the next PR.
+
+| Proof | Test | Result |
+|---|---|---|
+| The sell crate (by the camp's tent, south of the fire) takes one stack from the Pack a press, gives the last one back while there is nothing left to sell, pays at night at flat prices, and counts what was sold; saplings stay out | `test_projects.test_the_sell_crate_pays_at_night_and_gives_back_until_then` | Passing (checked by breaking it) |
+| Three camp projects at the project board (west of the camp's tent), one open at a time: either player brings what it needs from their Pack and the camp box, only what is missing is taken, and a finished one opens its recipe (stool, flower planter) or pays coins, once | `test_projects.test_camp_projects_fill_from_both_players_and_open_a_recipe_once` | Passing |
+| The guest PC sells and gives through the host; the clipboard's Supplies lists the crate and what was sold, the Today list names the open project, and both PCs' morning reports say what the crate paid | `test_projects.test_the_guest_pc_sells_and_gives_to_a_project_from_the_buttons` | Passing |
+| A version 5 save gets an empty crate, sold list and projects (save version 6) | `test_projects.test_a_version_5_save_gets_the_crate_and_projects` | Passing |
+| A stool counts as a chair for guests; a flower planter near a pitch is a new atmosphere point | `data/guests.json` | Built, not tested on its own |
+| Playtest's finding on main: walking could leave the clearing into the empty field; players now stop at the edge | `test_camp_rules.test_a_player_cannot_walk_off_the_clearing` | Passing |
+| Review frames: the crate prompt, stools and a planter by the fire, Supplies with the crate, the morning report's sale line | Cloud frames (`stage-b/gameplay2_crate_projects.jpg` in the project files) | Looked at |
+
+How to try round 2: carry sticks or a fish to the little crate south of the fire and press E; press E again with
+nothing left to sell to take the last stack back. Sleep, and the morning report says what it paid. At the board west
+of the camp's tent, E brings what the open camp project needs (J, Today, says what that is).
+
+### Gameplay round 3: the camp's star rating (25 Oct 2026)
+The last of the owner's next-round pick (the v1 pick "a camp star rating with ranger hints").
+
+| Proof | Test | Result |
+|---|---|---|
+| The rating adds pitches, crafted pieces, happy guests (the last 3 nights' reviews), field-guide photos and finished projects, each up to a cap; a new camp has one star | `test_rating.test_the_rating_rises_with_the_camp_and_never_goes_down` | Passing |
+| It is worked out each night and never goes down, even when things are packed away (no mess penalty) | `test_rating.test_the_rating_rises_with_the_camp_and_never_goes_down` | Passing (checked by breaking it) |
+| The Today list (clipboard and morning report) gives the stars and one hint from Ranger Ada naming the first factor still short; the report says when a star is new | `test_rating.test_the_morning_report_and_today_list_show_the_stars_and_a_hint` | Passing |
+| Review frame: the morning report with the stars and the hint | Cloud frame (`stage-b/gameplay3_rating_report.png` in the project files) | Looked at |
 
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
@@ -369,6 +406,16 @@ need this build). Neither is saved.
   sleep from 8 pm; the tent opens within 2.8 m; a photo reaches 7 m and the first of each kind pays 5 coins; the
   photo odd job asks for 2 photos (4 coins); Apply covers picture, window, window size, vsync, frame limit and
   interface size.
+- **Proposed** gameplay round 3 numbers (data/rating.json): pitches 4 points each up to 12, crafted pieces (lantern
+  post, water point, log bench, stool, planter) 2 each up to 16, guests' satisfaction points over the last 3 nights 1
+  each up to 12, animal kinds photographed 2 each up to 8, projects done 3 each up to 9; stars at 0, 10, 22, 36 and
+  50 points; the ranger is Ada (renamable later, like every name). Stars never go down.
+- **Proposed** gameplay round 2 numbers (data/projects.json, data/craft.json, data/tuning.json): crate prices stick 1,
+  wood 2, berries 2, perch and sunfish 3, trout 4, grilled perch and sunfish 5, grilled trout 6; projects in order:
+  fireside stools (8 sticks, 4 berries: the stool recipe, 2 wood and 2 sticks), flower planters (6 wood, 2 fish of any
+  kind: the planter recipe, 3 wood and 2 berries), a tidy woodpile (10 wood, 10 sticks: 25 coins); crate and board
+  reach 1.4 m; the walking edge is 14 m from the fire. The bigger Pack (8 to 12 slots) the research ranks as the best
+  reward needs the Pack panel's grid to grow, so it waits for Interface.
 - **Proposed** gameplay round 1 choices: tools are drawn 1.3 times life size so they read from the play camera
   (data/tuning.json camper.tool_scale); the camp's tent has two bags (rust and honey), a guest tent one (teal).
 - **Proposed** round 4 choices: tools are hands, axe and fishing rod, every player has all three and the tool in

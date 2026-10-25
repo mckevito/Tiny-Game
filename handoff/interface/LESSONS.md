@@ -26,3 +26,7 @@ See `handoff/gameplay/LESSONS.md` "Who owns what". `camp.gd` and `data/text.json
   the clipboards and docks covered the prompts. Why it got through: the only layout test was solo. What stops it:
   the couch test opens every pair of panels with a full HUD at 1920 x 1080 and at the biggest interface size, and
   each fix was proved by putting the fault back. Then the dock's neighbours and the Pack's tokens and name tag.
+- 25 Oct 2026, round 1 fixes (Playtest): Tab didn't close the menu (focus took it), panels covered their own camper,
+  F1 over the clock, the hint split "Tab for the / menu", toasts under the report. Why: tests called
+  `_unhandled_input` directly (skipping GUI focus) and checked only HUD pieces, not the campers. What stops it: a test
+  with real key presses through `Input.parse_input_event`, and `_campers_clear` in the layout test.

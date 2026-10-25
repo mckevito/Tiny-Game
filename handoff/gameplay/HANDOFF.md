@@ -2,15 +2,15 @@
 
 1. **Owns:** the rules of the camp and what players can do in it.
    - Scripts: `scripts/camp/camp_state.gd`, `camp_day.gd`, `camp_build.gd`, `camp_guests.gd`, `camp_pack.gd`,
-     `camp_gather.gd`, `camp_tasks.gd`, `camp_save.gd`, `wildlife.gd`, `clearing.gd`, `camper.gd`.
+     `camp_gather.gd`, `camp_tasks.gd`, `camp_projects.gd`, `camp_rating.gd`, `camp_save.gd`, `wildlife.gd`, `clearing.gd`, `camper.gd`.
    - In `scripts/camp/camp.gd` (shared with Interface): the netcode (`ask`, `_request`, `_decide`, `_share`,
      the RPCs), `action_for` and `interact`, build mode, the day tick (`_tick_day`, arrivals, `refresh_requests`),
      stays and tents (`_sync_stays`, `_pitch_tent`, `_tick_tents`, `enter_tent`, `leave_tent`), trees, forage,
      bundles, tools (`tool_of`, `has_tool`, `hold_tool`), wildlife and photos.
    - Data: `data/guests.json`, `build.json`, `craft.json`, `items.json`, `gather.json`, `tasks.json`,
-     `wildlife.json`, `day.json`, `fishing.json`, `save.json`, `net.json`, `clearing.json`, `models.json`,
+     `wildlife.json`, `projects.json`, `rating.json`, `day.json`, `fishing.json`, `save.json`, `net.json`, `clearing.json`, `models.json`,
      `palette.json`; its keys in `data/text.json`.
-   - Tests: `test_camp_rules`, `test_camp_save`, `test_day`, `test_gather`, `test_guests`, `test_net`, `test_couch`
+   - Tests: `test_camp_rules`, `test_camp_save`, `test_day`, `test_gather`, `test_guests`, `test_projects`, `test_rating`, `test_net`, `test_couch`
      (rules part), `test_stage_a`, the gameplay tests in `test_stage_b`.
 2. **State now:** Stage B is merged through round 4 (PR #18); round 5 (this hand-off's PR) adds bed open all day,
    guests who ask again (a growing daily share), odd jobs that pay but never gate anything, tents to sleep in and to
@@ -19,8 +19,9 @@
 3. **Open work, in order:**
    1. The owner plays round 5 and signs off Stage B (chat sign-off plus the merged PR; record it in the next PR's
       `docs/STATUS.md` and the `docs/PLAN.md` decision log). Approve or change the **Proposed** numbers.
-   2. Next round (owner's pick, 25 Oct): a sell crate, camp projects, the star rating; then the clipboard's map tab
-      (with Interface). The research report "Cozy inventory and crafting" in the project files ranks them.
+   2. Next: the clipboard's map tab with plan marks (with Interface). The star rating came in gameplay round 3
+      (`camp_rating.gd`, `data/rating.json`). The sell crate and camp projects came in gameplay round 2 (`camp_projects.gd`,
+      `data/projects.json`); a bigger Pack as a project reward waits on Interface growing the Pack grid.
    3. Gaps left on purpose: guests' requests have no walk-up animation. (Gameplay round 1 sent the tent visit and
       the tool in hand to the other PC and tucked sleepers into their bags; neither is saved.)
    4. Stage C (the autumn chapter) when the owner says go.
@@ -35,4 +36,9 @@
    - `_moved` carries the tool and "in the tent" as well as the position (protocol 6). Remote tent visits use
      `_lie_down`/`_get_up` (looks only); `enter_tent`/`leave_tent` are for players on this PC and send the bed vote.
      Two players both in the tent vote for bed and start the night: a test that only wants the look calls `_lie_down`.
+   - `action_for` order matters near shared spots: pick-up beats everything (a chair by the crate stole its press),
+     the crate and board come before the tent. Keep new interact spots more than 2 m from the camp tent's door.
+   - Projects: the sell crate (`state.projects.crate()`), `shipped`, and `projects` {given, done} are SHARED keys.
+     Recipes with a `project` show only via `state.build.known_recipes()`; never index `CampBuild.recipes()` from the
+     bench.
    - Tents swap meshes (`_tent_look`, the model's `_open` variant), so a tent node's child 0 must stay its mesh.

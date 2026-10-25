@@ -129,7 +129,7 @@ together actions. Never cut both input methods, two-player reliability, decorati
 save recovery.
 
 ## Later (not in v1)
-Next round (owner, 25 Oct 2026): a sell crate, camp projects, a field guide and the camp's star rating; then the
+Next round (owner, 25 Oct 2026): the sell crate, camp projects, field guide and the camp's star rating are built; next the
 clipboard's map tab with plan marks both players see. A free photo mode, text chat, separate remaps for each couch player, a credits page, walk-in interiors, weather that changes gameplay, more shops or worker roles, more than
 two players, a public release (itch.io or Steam), Steam's relay, consoles, voice acting.
 
@@ -204,6 +204,13 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   coins, the camp's tent and guest tents open like a doll's house, a camera tool and a field guide tab.
 - 25 Oct 2026, owner: after round 5, the work splits into three threads started from the hand-off files: Gameplay,
   Interface (HUD, Pack, cyclers, menus, settings) and Playtest/QA (`handoff/README.md`).
+- 25 Oct 2026, **Proposed** (gameplay round 2, built from the owner's next-round pick): a sell crate that pays in the
+  morning report at flat, low prices and gives back the last stack until night; three camp projects in order
+  (fireside stools, flower planters, a tidy woodpile) filled by either player from their Pack and the camp box, each
+  rewarding once (two new recipes, then coins); players stop at the clearing's edge.
+- 25 Oct 2026, **Proposed** (gameplay round 3): the camp's star rating, worked out each night from pitches, crafted
+  pieces, happy guests, photos and finished projects (each capped), never going down and with no mess penalty, with
+  one hint from Ranger Ada in the Today list.
 - 25 Oct 2026, owner: bring the models up to the original felt reference picture: an Art role pilots a few pieces
   beside the picture, then rolls out. **Proposed** (pilot built): a ribbed knit beanie without a pompom, hair under
   the hat, a stitched smile; scalloped pine tiers; a broadleaf crown with honey seams and leaf sprigs; a plumper
@@ -215,3 +222,6 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, owner: still off; the reference looks like a photo of real little knitted characters, a miniature
   look with real felt. **Proposed** (built): a tilt-shift blur focused on the players, fuzz shells on every model,
   finer fibres up close, soft sun shadows and deeper occlusion; blur and shells are off on the Light preset.
+- 25 Oct 2026, owner: try one camper made in Blender. **Proposed** (built): `knit_camper`, a sculpted model built by a
+  script in `art/characters/knit_camper/` and painted from the palette, shaped from the owner's "Beanie Camper"
+  turnaround (front, side and back); it sits beside the code camper until the owner decides.

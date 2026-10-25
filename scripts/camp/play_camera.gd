@@ -14,6 +14,8 @@ var aim: Variant = null
 var extra_distance := 0.0
 ## The camera whose turn and zoom this one copies (the couch view's second camera), or null.
 var leader: PlayCamera
+## How far the picture slides, in HUD pixels, so its player stands clear of an open panel (Camp._keep_in_view).
+var shift_px := Vector2.ZERO
 var _focus := Vector3.ZERO
 var _faders: Array[MeshInstance3D] = []
 var _fade: Dictionary = {}
@@ -69,6 +71,15 @@ func _process(delta: float) -> void:
 		_focus = _focus.lerp(want, 1.0 - exp(-_num("follow_rate", 6.0) * delta))
 	_place()
 	_update_fades(delta)
+
+
+## Slides the picture by `px` HUD pixels (y down) for a point `depth` metres in front, on a HUD `view_h` pixels tall,
+## with the lens offsets, so the camera's place and turn stay as they are.
+func slide(px: Vector2, depth: float, view_h: float) -> void:
+	shift_px = px
+	var per_px := 2.0 * depth * tan(deg_to_rad(fov) * 0.5) / maxf(view_h, 1.0)
+	h_offset = -px.x * per_px
+	v_offset = px.y * per_px
 
 
 ## Puts the camera at its pitch, yaw and distance from the focus point.

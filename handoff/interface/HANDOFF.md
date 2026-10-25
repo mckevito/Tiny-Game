@@ -42,5 +42,9 @@
    - A string with "Press" fails `test_prompts`; write "Choose" or name the glyph with `{action}`.
    - An autowrapped Label ignores `max_lines_visible` for its minimum height; to cut a long page, set `clip_text`
      and give it `custom_minimum_size.y` (`Clipboard.fit`).
+   - Tests that call `camp._unhandled_input` skip the GUI: a focused button can eat a key first (Tab did). Check
+     menu keys with `Input.parse_input_event` (`test_the_menu_key_closes_the_menu_it_opened`).
+   - `Camp._keep_in_view` slides a player's picture with the camera's `h_offset`/`v_offset` (`PlayCamera.slide`)
+     so an open panel never covers them; the camera's place and turn stay put.
    - At the biggest interface size (1280 x 720 of room) two clipboards and a prompt for each player don't fit side
      by side; the layout test lets the centre prompt and toasts pass under a clipboard there and nowhere else.

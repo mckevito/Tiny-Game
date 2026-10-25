@@ -29,3 +29,10 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
 - 25 Oct 2026: round 1: the tool in hand and tent visits reach the other PC on `_moved`; sleepers tucked into bags.
   Fault found: round 5's sleepers lay on top of the bag (why: the bag was part of the tent model, with nothing to
   cover a body; stops it: a sleeper is a holder with the body and a cover model, looked at before the PR).
+- 25 Oct 2026: round 2: sell crate and three camp projects; walking stops at the clearing's edge (Playtest's find).
+  Faults found by the button test: the crate's press picked up a chair and the board's crawled into the tent (why:
+  new spots were placed by eye near older ones; stops it: a from-the-buttons test per new interact spot, HANDOFF trap).
+- 25 Oct 2026: round 3: the camp star rating with Ranger Ada's hint. Faults found: the never-goes-down test passed
+  with the rule broken (why: what it packed away was too little to lose a star; stops it: break each rule once and
+  make the test take enough away); the report said the stars twice (why: the Today part already has them; seen in
+  the frame).

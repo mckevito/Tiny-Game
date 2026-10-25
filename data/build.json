@@ -8,12 +8,14 @@
     "pitch": {"model": "pitch", "size": [3.0, 3.0], "cost": 25, "free": true},
     "water_point": {"model": "water_point", "size": [1.0, 1.0], "improvement": true},
     "lantern_post": {"model": "lantern_post", "size": [1.0, 1.0], "improvement": true},
-    "log_bench": {"model": "log_bench", "size": [2.0, 1.0]}
+    "log_bench": {"model": "log_bench", "size": [2.0, 1.0]},
+    "stool": {"model": "stool", "size": [1.0, 1.0]},
+    "planter": {"model": "planter", "size": [1.0, 1.0]}
   },
   "blockers": {
     "tent": 1.4, "fire_pit": 1.0, "picnic_table": 1.1, "tree_pine": 0.7, "tree_round": 0.7, "tree_puff": 0.7,
     "rock": 0.5, "bush": 0.5, "pond": 2.6,
-    "workbench": 1.0, "camp_box": 0.7
+    "workbench": 1.0, "camp_box": 0.7, "sell_crate": 0.7, "project_board": 0.8
   },
   "ghost": {"fade": 0.35, "ok": "moss_felt", "blocked": "rust_canvas", "alpha": 0.65, "lift_m": 0.07, "thick_m": 0.02}
 }

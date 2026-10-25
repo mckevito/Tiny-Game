@@ -93,13 +93,15 @@ func _full_couch() -> Node:
 		camp.toggle_build(who)
 	for i in 4:
 		camp._toast(Tuning.text("toast.crafted") % ["Hana", Tuning.text("build.lantern_post")])
+	# The F1 fps line too (playtest: it sat over the clock).
+	camp.get_node("Hud/Dev").visible = true
 	return camp
 
 
 ## Every visible HUD piece of the couch camp, with what belongs to whom: [[piece, owner id or ""], ...].
 func _pieces(camp: Node) -> Array:
 	var out: Array = []
-	for path in ["Hud/Clock", "Hud/Hint", "Hud/Toast", "Hud/Prompt"]:
+	for path in ["Hud/Clock", "Hud/Hint", "Hud/Toast", "Hud/Prompt", "Hud/Dev"]:
 		out.append([camp.get_node(path), ""])
 	for who: String in camp._docks:
 		out.append([camp._docks[who], who])
@@ -153,6 +155,25 @@ func _couch_fits(camp: Node, what: String, may_meet: Array = []) -> String:
 	return "" if why == "" else what + ": " + why
 
 
+## Playtest: an open panel covered its own player's camper. "" when each player with an open panel stands clear of it
+## once their view has slid (a long step lets the easing finish).
+func _campers_clear(camp: Node, what: String) -> String:
+	camp._keep_in_view(10.0)
+	camp._keep_in_view(10.0)
+	var view: Rect2 = camp.get_viewport().get_visible_rect()
+	for who: String in camp.local_ids():
+		var panel: Control = camp._panel_of(who)
+		if panel == null or not panel.is_visible_in_tree():
+			continue
+		var cam: PlayCamera = camp.couch.second_camera() if camp.couch.split and who == camp.couch_id else camp.camera
+		var body: Vector3 = camp.campers[who].global_position + Vector3.UP * Tuning.num("tuning", "hud.keep_clear_height_m")
+		var at := cam.unproject_position(body) * (view.size.y / cam.get_viewport().get_visible_rect().size.y)
+		if panel.get_global_rect().has_point(at) or not view.has_point(at):
+			return "%s: %s's camper at %s should be in view and clear of their %s %s" % [what, who, at, panel.name,
+					panel.get_global_rect()]
+	return ""
+
+
 func test_couch_split_screen_hud_never_overlaps() -> String:
 	var was := _tree().root.size
 	var camp := _full_couch()
@@ -168,6 +189,8 @@ func test_couch_split_screen_hud_never_overlaps() -> String:
 		camp.toggle_clipboard(p1)
 		camp.toggle_clipboard(p2)
 		why = await _couch_fits(camp, "two clipboards")
+	if why == "":
+		why = _campers_clear(camp, "two clipboards")
 	for tab in Clipboard.tabs().size() if why == "" else 0:
 		camp._boards[p1].flip(1)
 		camp._boards[p2].flip(1)
@@ -179,6 +202,8 @@ func test_couch_split_screen_hud_never_overlaps() -> String:
 		camp.open_pack(p1)
 		camp.open_pack(p2)
 		why = await _couch_fits(camp, "two Packs")
+	if why == "":
+		why = _campers_clear(camp, "two Packs")
 	if why == "":
 		camp.close_pack(p2)
 		camp.toggle_clipboard(p2)
@@ -205,7 +230,7 @@ func test_couch_split_screen_hud_never_overlaps() -> String:
 		camp._refresh_boards()
 		for tab in Clipboard.tabs().size():
 			why = await _couch_fits(camp, "two clipboards at the biggest interface size on tab " + camp._boards[p1].tab_name(),
-					[["Toast", "Clipboard"], ["Prompt", "Clipboard"], ["Toast", "Prompt"]])
+					[["Toast", "Clipboard"], ["Prompt", "Clipboard"], ["Toast", "Prompt"], ["Dev", "Clipboard"]])
 			if why != "":
 				break
 			camp._boards[p1].flip(1)
@@ -240,9 +265,63 @@ func test_the_dock_shows_its_neighbours_and_the_pack_names_the_pick() -> String:
 	if why == "":
 		camp.state.pack.add("p_host", "sapling", 2)
 		camp.open_pack("p_host")
+		await _frames(2)
+		why = _campers_clear(camp, "the Pack alone")
 		var tag: String = camp._packs["p_host"]["panel"].tag_text()
 		if not (tag.to_lower().contains(Tuning.text("items.sapling")) and tag.contains(Tuning.text("pack.about.plant"))):
 			why = "the Pack's name tag should name the picked sapling and say what it is for, got " + tag
 		camp.close_pack("p_host")
+	await _done()
+	return why
+
+
+## Playtest: Tab opened the in-camp menu, but once a menu button had focus Godot's focus keys took the next Tab and the
+## menu stayed open. Real key presses through the viewport (the GUI sees them first), not a direct call.
+func test_the_menu_key_closes_the_menu_it_opened() -> String:
+	_fresh()
+	var camp := _camp("TabSide", "p_host", "Hana")
+	camp.start_solo(1)
+	await _frames(2)
+	var why := ""
+	for want: bool in [true, false, true, false]:
+		for pressed: bool in [true, false]:
+			var ev := InputEventKey.new()
+			ev.keycode = KEY_TAB
+			ev.physical_keycode = KEY_TAB
+			ev.pressed = pressed
+			Input.parse_input_event(ev)
+			await _frames(2)
+		if camp.menu.visible != want:
+			why = "Tab should %s the menu" % ("open" if want else "close")
+			break
+		if want and camp.get_viewport().gui_get_focus_owner() == null:
+			why = "the open menu should have a button in focus (that is what took Tab)"
+			break
+	await _done()
+	return why
+
+
+## Playtest: the hint wrapped inside a control ("Tab for the / menu"), and a toast that came with the morning report
+## drew under it and was never read.
+func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> String:
+	_fresh()
+	var camp := _camp("WrapSide", "p_host", "Hana")
+	camp.start_solo(1)
+	await _frames(2)
+	var why := ""
+	var hint: String = camp.get_node("Hud/Hint").text.get_slice("\n", 0)
+	for part in hint.split(" · "):
+		if part.contains(" "):
+			why = "the hint should only break between controls, but %s can break inside" % part
+	if why == "":
+		camp._welcome_report()
+		camp._toast(Tuning.text("toast.dropped_in") % "Clover")
+		await _frames(1)
+		if not camp.report.visible or camp.get_node("Hud/Toast").text.contains("Clover"):
+			why = "a toast should wait while the morning report is up"
+		camp.report.visible = false
+		await _frames(2)
+		if why == "" and not camp.get_node("Hud/Toast").text.contains("Clover"):
+			why = "the toast should show once the report is put away, got " + camp.get_node("Hud/Toast").text
 	await _done()
 	return why
