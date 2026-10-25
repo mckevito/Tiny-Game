@@ -23,8 +23,12 @@ SUDO=""; [ "$(id -u)" = "0" ] || SUDO="sudo -n"
   echo "ready $(date -u +%H:%M:%S): $(godot --version 2>/dev/null | head -1)"
   # Software Vulkan (lavapipe), so review captures render with the game's own Forward+ renderer under xvfb.
   if ! dpkg -s mesa-vulkan-drivers >/dev/null 2>&1; then
-    $SUDO apt-get install -y -q mesa-vulkan-drivers >/dev/null 2>&1 \
-      || { $SUDO apt-get update -q >/dev/null 2>&1 && $SUDO apt-get install -y -q mesa-vulkan-drivers >/dev/null 2>&1; } \
+    # Say so first: a session once had Godot but no lavapipe and no line saying why (the hook stopped mid-install).
+    # Another repo's start-up script may hold apt's lock while it installs: wait for it, within the hook's time.
+    echo "installing lavapipe $(date -u +%H:%M:%S)"
+    APT="$SUDO apt-get -o DPkg::Lock::Timeout=300"
+    $APT install -y -q mesa-vulkan-drivers >/dev/null 2>&1 \
+      || { $APT update -q >/dev/null 2>&1 && $APT install -y -q mesa-vulkan-drivers >/dev/null 2>&1; } \
       || echo "lavapipe install failed: captures need --rendering-driver opengl3"
   fi
   echo "renderer ready $(date -u +%H:%M:%S)"
