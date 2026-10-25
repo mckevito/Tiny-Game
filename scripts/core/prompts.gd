@@ -50,6 +50,7 @@ static func _keycap(name: String, paper := false) -> String:
 	var face := Color(FeltBuilder.swatch(str(Tuning.value("tuning", face_key, "warm_cream"))).linear_to_srgb())
 	var ink := Color(FeltBuilder.swatch(str(Tuning.value("tuning", "glyphs.key_ink_swatch", "ink_brown"))).linear_to_srgb())
 	# A one-letter key gets wider padding (text: glyphs.key_pad_one), so a thin letter such as I still reads as a key.
+	# Both paddings are no-break spaces, so a line never wraps inside a keycap or between it and its words.
 	var pad := Tuning.text("glyphs.key_pad_one" if name.length() == 1 else "glyphs.key_pad")
 	return "[bgcolor=#%s][color=#%s][outline_size=0]%s%s%s[/outline_size][/color][/bgcolor]" % [face.to_html(),
 			ink.to_html(), pad, name, pad]

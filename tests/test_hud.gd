@@ -434,4 +434,9 @@ func test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages() -> String:
 	await _done()
 	if why == "" and not Prompts.rich("{pack}", false).contains(Tuning.text("glyphs.key_pad_one") + "I"):
 		why = "a one-letter key should get the wider keycap padding"
+	# Playtest: an en space (a breaking space) let the hint wrap between "E" and "use or pick up" at 150%.
+	for key in ["glyphs.key_pad", "glyphs.key_pad_one", "glyphs.join"]:
+		for c in Tuning.text(key):
+			if why == "" and not ["\u00a0", "\u2007", "\u202f"].has(c):
+				why = "%s should only hold no-break spaces, so a keycap never wraps from its words" % key
 	return why

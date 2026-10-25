@@ -393,7 +393,7 @@ Playtest's findings on round 3 (fixed in the same PR):
 |---|---|---|
 | A morning or welcome report too tall for the screen (three guests, or the biggest interface size) splits into pages that fit: interact turns them ("Next page (1 of 2)"), the last page's interact closes it, and cancel or the menu button still close it at once | `test_hud.test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages` | Passing (fails with paging off) |
 | At 120% and 150% interface size, alone on the PC, an open clipboard no longer covers the prompt: the prompt and toast column moves into the room beside it; toasts start below the hint and the clock, however many lines they wrap to; the clipboard moves down as soon as the hint grows | same test | Passing (fails without the column move) |
-| A one-letter key's cap is wider (text: glyphs.key_pad_one), so a thin I or J reads as a key | same test | Passing |
+| A one-letter key's cap is wider (text: glyphs.key_pad_one, a no-break figure space, so the hint never wraps between a key and its words) | same test | Passing (an en space let "E" end a line at 150%) |
 
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
