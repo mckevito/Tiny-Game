@@ -2,10 +2,12 @@ class_name HudDock
 extends VBoxContainer
 ## A player's corner dock, like Animal Crossing's: the tool in hand and the build piece picked, each on a felt chip
 ## that shows the one before and the one after it either side (smaller and faded, so the player sees what the next
-## press brings) and a row of dots for where it sits in its cycle, with a Pack line under them. Player one's sits
+## press brings) and a row of dots for where it sits in its cycle, with a Pack line under them, and above them the
+## player's legend: icons for what they can do now (Camp.legend). Player one's sits
 ## bottom right (bottom left while someone is on the couch); the couch player's bottom right. Sizes and colours:
 ## data/tuning.json "dock".
 
+var _legend := UiLook.rich_label(true)
 var _tool_caption := UiLook.rich_label(true)
 var _tool := Label.new()
 var _tool_prev := Label.new()
@@ -76,6 +78,9 @@ func _chip(label: Label, prev: Label, next: Label, dots: Label) -> void:
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_theme_constant_override("separation", int(_n("row_gap_px", 4)))
+	_caption(_legend)
+	_legend.custom_minimum_size.x = _n("width_px", 320)
+	_legend.add_theme_constant_override("line_separation", int(_n("legend_gap_px", 6)))
 	_caption(_tool_caption)
 	_chip(_tool, _tool_prev, _tool_next, _tool_dots)
 	_caption(_build_caption)
@@ -107,7 +112,8 @@ static func dots(count: int, at: int) -> String:
 
 ## Shows the tool in hand and the build piece (each a list of names and the place of the one in hand; the piece in
 ## hand shows as `piece_label`, which adds how many the kit holds), the captions and the Pack line. The names either
-## side are the previous and next ones, round the cycle (only the next with two, none with one).
+## side are the previous and next ones, round the cycle (only the next with two, none with one). Captions: the tool,
+## build and Pack lines, then the legend.
 func show_dock(tool_names: Array[String], tool_at: int, piece_names: Array[String], piece_at: int,
 		piece_label: String, captions: Array[String]) -> void:
 	_cycle(_tool, _tool_prev, _tool_next, _tool_dots, tool_names, tool_at)
@@ -116,6 +122,8 @@ func show_dock(tool_names: Array[String], tool_at: int, piece_names: Array[Strin
 	_tool_caption.text = captions[0]
 	_build_caption.text = captions[1]
 	_pack.text = captions[2]
+	_legend.text = captions[3] if captions.size() > 3 else ""
+	_legend.visible = _legend.text != ""
 
 
 static func _cycle(label: Label, prev: Label, next: Label, dots_label: Label, names: Array[String], at: int) -> void:
@@ -125,6 +133,10 @@ static func _cycle(label: Label, prev: Label, next: Label, dots_label: Label, na
 	prev.text = Tuning.text("dock.prev") % names[posmod(at - 1, n)] if n > 2 else ""
 	next.text = Tuning.text("dock.next") % names[posmod(at + 1, n)] if n > 1 else ""
 	dots_label.text = dots(n, at)
+
+
+func legend_text() -> String:
+	return _legend.text
 
 
 func tool_text() -> String:

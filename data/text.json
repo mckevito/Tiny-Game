@@ -19,7 +19,6 @@
     "need_tool": "Take out the %s ({next_tool})",
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
-    "controls": "{move} to walk · {camera} turn the camera · {interact} use or pick up · {build} build · {clipboard} clipboard · {pack} Pack · {menu} for the menu",
     "drop_in": "A friend can drop in: {menu} on a second controller",
     "for_player": "%s: %s",
     "build_here": "{interact} Put a %s here (%s) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
@@ -584,6 +583,7 @@
     "on": "On",
     "off": "Off"
   },
+  "legend": {"move": "Walk", "interact": "Use", "camera": "Look", "clipboard": "Clipboard", "menu": "Menu"},
   "glyphs": {
     "join": " ",
     "key_pad": " ",

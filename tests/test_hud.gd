@@ -301,7 +301,7 @@ func test_the_menu_key_closes_the_menu_it_opened() -> String:
 	return why
 
 
-## Playtest: the hint wrapped inside a control ("Tab for the / menu") or left a lone dot at a line's end, and a toast that came with the morning report
+## Playtest: the controls wrapped inside a control ("Tab for the / menu") or left a lone dot at a line's end, and a toast that came with the morning report
 ## drew under it and was never read.
 func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> String:
 	_fresh()
@@ -309,13 +309,16 @@ func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> St
 	camp.start_solo(1)
 	await _frames(2)
 	var why := ""
-	var hint: String = camp.get_node("Hud/Hint").text.get_slice("\n", 0)
-	# The only breakable spaces come after a dot, so a wrapped line ends on its dot and never starts with one.
-	if hint.contains(" ·"):
-		why = "a dot in the hint should stay on the line before it: " + hint
-	for part in hint.split("\u00a0· "):
+	# The owner's pick (26 Oct 2026): the always-on controls line became a legend in each player's dock. Entries sit
+	# apart by a wide space, the only place it can break, so no key is parted from its word and no dot is left over.
+	var legend: String = camp._docks[camp.local_ids()[0]].legend_text()
+	if legend == "" or str(camp.get_node("Hud/Hint").text).contains(legend.get_slice(Tuning.text("glyphs.gap"), 0)):
+		why = "the controls should be a legend in the dock, not the top line, got " + legend
+	if why == "" and legend.contains("·"):
+		why = "the legend should part its entries with space, not dots: " + legend
+	for part in legend.split(Tuning.text("glyphs.gap")):
 		if why == "" and part.contains(" "):
-			why = "the hint should only break between controls, but %s can break inside" % part
+			why = "the legend should only break between entries, but %s can break inside" % part
 	if why == "":
 		camp._welcome_report()
 		camp._toast(Tuning.text("toast.dropped_in") % "Clover")
@@ -439,4 +442,42 @@ func test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages() -> String:
 		for c in Tuning.text(key):
 			if why == "" and not ["\u00a0", "\u2007", "\u202f"].has(c):
 				why = "%s should only hold no-break spaces, so a keycap never wraps from its words" % key
+	return why
+
+
+## The owner's pick (26 Oct 2026): a context legend instead of the always-on controls line. Each player's dock shows
+## icons for what they can do now, in their own device's buttons: walking on day 1, not after; the build buttons'
+## legend while placing. On the couch each half shows its own player's legend.
+func test_each_dock_has_a_legend_for_now() -> String:
+	var camp := _full_couch()
+	await _frames(2)
+	var why := ""
+	var p1: String = camp.local_ids()[0]
+	var p2: String = camp.couch_id
+	var walk_word := Tuning.text("legend.move")
+	for who in [p1, p2]:
+		camp.toggle_build(who)
+	camp._refresh_docks()
+	var one: String = camp._docks[p1].legend_text()
+	var two: String = camp._docks[p2].legend_text()
+	if not (one.contains("[bgcolor=") and not one.contains("[img=")):
+		why = "player one is on the keyboard, so their legend should show keycaps, got " + one
+	elif not (two.contains("[img=") and not two.contains("[bgcolor=")):
+		why = "the couch player is on a pad, so their legend should show pad icons, got " + two
+	elif not one.contains(walk_word):
+		why = "on day 1 the legend should say how to walk, got " + one
+	if why == "":
+		camp.toggle_build(p1)
+		camp._refresh_docks()
+		var building: String = camp._docks[p1].legend_text()
+		if building.contains(Tuning.text("legend.interact")) or building.split(Tuning.text("glyphs.gap")).size() != \
+				(Tuning.value("tuning", "legend.build", []) as Array).size():
+			why = "while building the legend should show only the build mode's entries, got " + building
+		camp.toggle_build(p1)
+	if why == "":
+		camp.state.camp["calendar"]["day"] = 2
+		camp._refresh_docks()
+		if camp.state.day.today() == 2 and camp._docks[p1].legend_text().contains(walk_word):
+			why = "after day 1 the legend should leave walking out"
+	await _done()
 	return why
