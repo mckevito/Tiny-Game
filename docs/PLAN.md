@@ -262,3 +262,5 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   from the shared day, so both PCs agree without new netcode; they pay nothing yet (they show the camp being used).
 - 26 Oct 2026, owner merged first-minutes round 4 (PR #41, guest activities) and Art's knitted clipboard (PR #38). The
   camper now reads the knitted clipboard; the felt stand-in is gone.
+- 26 Oct 2026, owner's pick from the opening case study: a tool ring (hold the tool button, point, let go; a tap still
+  steps to the next tool), per player and per view on the couch. Built as Interface round 5.

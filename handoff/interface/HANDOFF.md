@@ -2,14 +2,15 @@
 
 1. **Owns:** everything the player reads and presses.
    - Scripts: `scripts/ui/options_screen.gd`, `ui_look.gd`; `scripts/camp/camp_menu.gd`, `clipboard.gd`,
-     `pack_panel.gd`, `hud_dock.gd`, `camp_report.gd`, `couch_view.gd`, `play_camera.gd`; `scripts/core/settings.gd`,
+     `pack_panel.gd`, `hud_dock.gd`, `tool_ring.gd`, `camp_report.gd`, `couch_view.gd`, `play_camera.gd`; `scripts/core/settings.gd`,
      `prompts.gd`, `input_setup.gd`, `player_input.gd`, `quality.gd`.
    - In `scripts/camp/camp.gd` (shared with Gameplay): the HUD (`_process` prompt and clock lines, `today_lines`,
      `guest_wants`, `_update_hint`, `_show_hud`, `_toast`, `_flash`), the docks and Pack panels (`_refresh_docks`,
-     `open_pack`, `close_pack`, `_refresh_packs`), the clipboard and workbench panels (`toggle_clipboard`,
+     `open_pack`, `close_pack`, `_refresh_packs`), the tool ring (`_start_ring`, `_ring_input`, `_end_ring`,
+     `_tick_rings`, `screen_of`), the clipboard and workbench panels (`toggle_clipboard`,
      `clipboard_text`, `field_guide`, `open_bench`, `bench_text`), `_hold_camera`, `_unhandled_input` routing.
    - `scenes/camp.tscn` (the Hud nodes), `project.godot` window and stretch settings.
-   - Data: `data/settings.json`, `input.json`, `graphics.json`, the `hud`, `clipboard`, `dock`, `pack_panel` and
+   - Data: `data/settings.json`, `input.json`, `graphics.json`, the `hud`, `clipboard`, `dock`, `ring`, `pack_panel` and
      `camera` sections of `data/tuning.json`; its keys in `data/text.json`.
    - Tests: `test_hud` (couch layout and the dock and Pack; its static `hud_fits` is shared), `test_settings`,
      `test_prompts`, `test_input_map`, `test_play_feel`, the HUD test in `test_stage_b`

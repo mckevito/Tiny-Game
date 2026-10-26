@@ -432,6 +432,24 @@ so the build prompt is now one short line ("E Put a tent pitch here (2 wood)"), 
 Clipboard, Menu; building Turn, Undo, Done, Look and Menu (the dock's build line has pick, and the build prompt says
 what Use does there).
 
+### Interface round 5: the tool ring (26 Oct 2026)
+The owner's pick from the opening case study (26 Oct 2026): a tool ring like Animal Crossing's. Hold the tool button
+(T, or D-pad up) and every tool sits in a ring of felt buttons round the camper; point with the mouse, the right stick,
+the left stick or the walking keys, and let go to take the pointed tool out. A tap still steps to the next tool, and
+cancel closes the ring as it was. The camper stands still while the ring is open. On the couch each player's ring
+opens round their own camper in their own half, and only their own devices point it.
+
+| Proof | Test | Result |
+|---|---|---|
+| A tap steps to the next tool with no ring; a hold opens the ring round the camper with every tool and stops them walking; pointing left with the walking keys and letting go takes the left tool; cancel keeps the tool | `test_hud.test_holding_the_tool_button_opens_a_ring_round_each_camper` | Passing |
+| On the couch both rings open at once, each on its own player's half; the couch player's right stick points only their ring | same test | Passing |
+| The ring alone and both rings on the couch, to look at | `tools/capture.gd --hud` (hud_ring.png, couch_rings.png) | Looked at (cloud frames) |
+| Holding and pointing feels quick and clear on the owner's mouse and DualSense | Owner's play | Waiting on the owner |
+
+**Proposed** (data/tuning.json `ring`): the ring opens after 0.25 s held; slot 0 (Hands) at the top and the rest
+clockwise in the tools' order; tool names in the buttons until the item icons round; no empty "still to earn" slots
+yet (nothing is earned yet). The dock's tool line now reads "Tool · T next, hold for all".
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.
