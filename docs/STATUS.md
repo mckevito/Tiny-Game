@@ -587,7 +587,7 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
 
 ### Still open
 - **Proposed** (arrival evening): Burl's lines, the letter and the fire's needs (3 sticks, 1 wood) in
-  `data/ranger.json` and `data/text.json`; Burl is `ranger_stand_in` (a recoloured guest) until Art's knitted `ranger_burl` (PR #49); the walk
+  `data/ranger.json` and `data/text.json`; Burl is Art's knitted `ranger_burl` (PR #49), raising an arm (`ranger_burl_talk`) and turning to the player while he talks; the walk
   in through the gate waits for Stage C's road; the ranger's own name is kept in the save but has no rename spot yet.
 - **Proposed** numbers (data/guests.json, data/fishing.json, data/build.json): tips 4 for a fish, 6 for a grilled fish,
   3 for a chair, plus 2 coins per satisfaction point; things count as near within 6 m of a pitch (3.2 m for a chair,

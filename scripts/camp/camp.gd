@@ -2909,7 +2909,7 @@ func story_text(line: String) -> String:
 func _spawn_ranger() -> void:
 	ranger = Camper.new()
 	ranger.name = "Ranger"
-	ranger.model_id = str(Tuning.value("ranger", "model", "ranger_stand_in"))
+	ranger.model_id = str(Tuning.value("ranger", "model", "ranger_burl"))
 	ranger.display_name = Tuning.text("ranger.tag") % state.story.ranger_name()
 	ranger.transform = Clearing.placement_transform({"pos": Tuning.value("ranger", "pos", [0, 0]),
 			"face": Tuning.value("ranger", "face", [0, 0])})
@@ -2968,6 +2968,7 @@ func _open_talk(who: String, kind: String) -> void:
 	_talk_kind = kind
 	campers[who].controlled = false
 	campers[who].velocity = Vector3.ZERO
+	_ranger_talks(who)
 	talk.say(Tuning.text("ranger.tag") % state.story.ranger_name(), lines,
 			Prompts.rich(Tuning.text("prompt.talk_next"), _glyph(who)),
 			Prompts.rich(Tuning.text("prompt.talk_end"), _glyph(who)))
@@ -2987,10 +2988,22 @@ func _end_talk(skip: bool = false) -> void:
 	talk.close()
 	_talker = ""
 	_talk_kind = ""
+	_ranger_talks("")
 	if campers.has(who) and _menu_for != who and not _busy.has(who):
 		campers[who].controlled = true
 	if not skip and kind == "done" and not _boards.has(who):
 		toggle_clipboard(who)
+
+
+## Ranger Burl takes his talking pose and turns to the player he talks to ("" puts him back as he stands).
+func _ranger_talks(who: String) -> void:
+	if ranger == null:
+		return
+	var stand := str(Tuning.value("ranger", "model", "ranger_burl"))
+	ranger.set_look(str(Tuning.value("ranger", "talk_model", stand)) if who != "" else stand)
+	if who != "" and campers.has(who):
+		var at: Vector3 = campers[who].position
+		ranger.rotation.y = atan2(-(at.x - ranger.position.x), -(at.z - ranger.position.z))
 
 
 ## The bubble asks a player on this PC for the camp's name, starting from the one it has.

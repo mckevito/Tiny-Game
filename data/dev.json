@@ -13,7 +13,7 @@
     "box": [-2.4, 1.0],
     "entry": [0.8, 10.5]
   },
-  "previews": ["camper_a", "camper_b", "guest_a", "guest_b", "guest_c", "ranger_stand_in", "ranger_burl"],
+  "previews": ["camper_a", "camper_b", "guest_a", "guest_b", "guest_c", "ranger_burl", "ranger_burl_talk"],
   "preview_ahead_m": 1.8,
   "rows": [
     {"id": "hour", "kind": "pick", "live": true, "host": true},

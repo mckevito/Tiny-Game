@@ -76,7 +76,6 @@
   "guest_a": {"base": "knit_guest_bea"},
   "guest_b": {"base": "knit_guest_olive"},
   "guest_c": {"base": "knit_guest_walt"},
-  "ranger_stand_in": {"base": "knit_guest_walt", "slots": {"skin": "skin_felt", "shirt": "olive_felt", "pants": "bark_brown", "mitten": "honey_thread", "hat": "moss_felt", "hair": "silver_yarn", "hair_shade": "silver_shadow", "trim": "honey_thread"}},
   "camper_b": {"base": "knit_camper_b"},
 
   "tent": {

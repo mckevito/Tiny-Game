@@ -29,8 +29,7 @@
    ("Welcome to Thimble Hollow", linked in project memory) ranked a guide, an opening story, stamps and a smoother UI.
    Picks: Ranger Burl is the guide (Ada stays the seasonal district ranger), a ranger stamp card for personal upgrades,
    the arrival evening first. Built: `CampStory` (`scripts/camp/camp_story.gd`, camp keys `story` and `names`,
-   `data/ranger.json`), Burl as an uncontrolled `Camper` (`Camp._spawn_ranger`, a recoloured stand-in until Art's
-   `ranger_burl`), his bubble `TalkBubble` (`scripts/ui/talk_bubble.gd`, which also takes the camp's name), the cold
+   `data/ranger.json`), Burl as an uncontrolled `Camper` (`Camp._spawn_ranger`, Art's knitted `ranger_burl`, swapped to `ranger_burl_talk` by `Camp._ranger_talks` while he speaks), his bubble `TalkBubble` (`scripts/ui/talk_bubble.gd`, which also takes the camp's name), the cold
    fire (`fire_pit_cold`, `_sync_fire`), the camp sign (`_sync_sign`), `capture.gd --opening`.
 4. **Open work, in order:**
    0. Next from the case study, one PR each: ranger jobs (Burl hands out one story job at a time, reusing the firsts,

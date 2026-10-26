@@ -181,12 +181,16 @@ func test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_button
 			why = "his first line should be his hello: " + camp.talk.line()
 		elif camp.campers["p_host"].controlled:
 			why = "the player should stand still while he talks"
+		elif camp.ranger.model_id != str(Tuning.value("ranger", "talk_model")):
+			why = "Burl should take his talking pose while he speaks"
 	if why == "":
 		var keys: Array = Tuning.value("ranger", "lines.fire")
 		for i in keys.size():
 			_press(camp, "interact")
 		if camp.talk.visible or not camp.campers["p_host"].controlled:
 			why = "pressing through his lines should close the bubble and free the player"
+		elif camp.ranger.model_id != str(Tuning.value("ranger", "model")):
+			why = "Burl should stand as before once he stops talking"
 	if why == "":
 		var cold_hint: String = camp.state.camp["story"]["step"]
 		camp.state.pack.add("p_host", "stick", 9)
