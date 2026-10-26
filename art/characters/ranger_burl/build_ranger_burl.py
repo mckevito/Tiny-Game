@@ -17,7 +17,7 @@ GIRTH, SCALE = 1.07, 1.05     # older, a little rounder and taller than the play
 TALK = "--pose=talk" in ARGS
 # talking: the left arm lifts forward and out, as if showing the way; the right hand keeps the stick
 POSES = {-1: (math.radians(10.0), math.radians(42.0))} if TALK else None
-# the badge on his chest: --badge=avocado (the default), cookie or shield
+# the badge on his chest: --badge=avocado (the default), cookie, shield, thimble, spool, button, pine or acorn
 BADGE = next((a.split("=", 1)[1] for a in ARGS if a.startswith("--badge=")), "avocado")
 
 body(GIRTH, smile=True, cheeks=True, arm_poses=POSES)
@@ -150,7 +150,58 @@ def torso_front(x, z):
 def badge():
     p, n = torso_front(-0.15, 0.645)   # out to the side, clear of the beard
     b = basis_from(n) @ Matrix.Diagonal((1.3, 1.3, 1.0))   # a third bigger than it is drawn below, so its shape reads
-    if BADGE == "avocado":
+
+    def plate(shapes, lift, slot, thick=0.007):
+        """Flat felt shapes [(x, y, rx, ry)] on the badge's face, fused into one piece."""
+        blobs = [(p + n * lift + b @ Vector((x, y, 0.0)), (rx, ry, thick), b) for x, y, rx, ry in shapes]
+        append_mesh("badge", fused("badge", blobs, voxel=0.003, smooth=0.5, repeat=3, decimate=0.15), slot)
+
+    def dot(x, y, r, lift, slot, depth=0.004):
+        ellipsoid("badge", p + n * lift + b @ Vector((x, y, 0.0)), (r, r, depth), slot, cols=8, rings=5, basis=b,
+                weave=BEAD)
+
+    if BADGE == "thimble":
+        # a brass thimble seen side on: a rounded cap over a rolled rim, dimpled all over
+        plate([(0.0, 0.016, 0.022, 0.016), (0.0, -0.004, 0.026, 0.018), (0.0, -0.02, 0.028, 0.012)], 0.004, THREAD)
+        plate([(x, -0.032, 0.012, 0.007) for x in (-0.018, 0.0, 0.018)], 0.008, THREAD)
+        for row, (y, half) in enumerate(((0.018, 0.012), (0.006, 0.018), (-0.006, 0.021), (-0.018, 0.022))):
+            for k in range(3 + row):
+                dot(-half + 2 * half * k / (2 + row), y, 0.0035, 0.011, TRIM, 0.003)
+    elif BADGE == "spool":
+        # a wooden spool of honey thread, the thread wound in bands, with a loose end curling off
+        plate([(0.0, 0.0, 0.019, 0.022)], 0.006, THREAD)
+        for y in (-0.012, 0.0, 0.012):
+            plate([(x, y, 0.004, 0.0025) for x in (-0.014, -0.005, 0.005, 0.014)], 0.012, TRIM, 0.003)
+        plate([(x, y, 0.009, 0.006) for x in (-0.018, 0.0, 0.018) for y in (0.027, -0.027)], 0.004, STICK)
+        tube("badge", [p + n * 0.012 + b @ Vector((0.019 + 0.012 * math.sin(f * 2.4), -0.004 - 0.026 * f, 0.0))
+                       for f in [k / 6 for k in range(7)]], 0.0028, THREAD, sides=5)
+    elif BADGE == "button":
+        # a big four-hole sewing button with a raised rim, stitched on with a cross of thread
+        plate([(0.0, 0.0, 0.036, 0.036)], 0.004, THREAD)
+        for k in range(14):
+            a = math.tau * k / 14
+            dot(0.03 * math.cos(a), 0.03 * math.sin(a), 0.0075, 0.009, THREAD, 0.004)
+        for x, y in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
+            dot(0.009 * x, 0.009 * y, 0.0045, 0.011, TRIM, 0.003)
+        for sx in (-1, 1):
+            tube("badge", [p + n * 0.013 + b @ Vector((0.009 * sx * t, 0.009 * t, 0.0)) for t in (-1.2, 0.0, 1.2)],
+                    0.0022, HAIR, sides=5)
+    elif BADGE == "pine":
+        # a round ranger patch: a honey disc with an olive pine and a little trunk, ringed by a stitched edge
+        plate([(0.0, 0.0, 0.036, 0.036)], 0.004, THREAD)
+        plate([(0.0, y, w, 0.009) for y, w in ((0.018, 0.009), (0.006, 0.015), (-0.008, 0.021))], 0.009, HAT, 0.005)
+        plate([(0.0, -0.022, 0.0045, 0.006)], 0.008, TRIM, 0.004)
+        for k in range(16):
+            a = math.tau * k / 16
+            dot(0.031 * math.cos(a), 0.031 * math.sin(a), 0.003, 0.011, TRIM, 0.002)
+    elif BADGE == "acorn":
+        # an acorn: a honey nut under a rough brown cap with a stalk
+        plate([(0.0, -0.008, 0.021, 0.024)], 0.004, THREAD)
+        plate([(0.0, 0.014, 0.026, 0.012)], 0.008, TRIM)
+        for k in range(7):
+            dot(-0.019 + 0.038 * k / 6, 0.012 + 0.004 * math.sin(k * 1.7), 0.004, 0.015, STICK, 0.003)
+        plate([(0.003, 0.03, 0.004, 0.007)], 0.008, TRIM, 0.004)
+    elif BADGE == "avocado":
         # half an avocado: a pear of dark skin, a pale flesh face a little inside it and a round bead stone
         def pear(grow, lift):
             return [(p + n * lift + b @ Vector((0.0, y, 0.0)), (r + grow, (r + grow) * 1.05, 0.007), b)
