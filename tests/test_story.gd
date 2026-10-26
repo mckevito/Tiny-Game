@@ -98,6 +98,18 @@ func test_the_fire_lights_from_both_packs_and_the_box_then_the_camp_takes_a_name
 	return ""
 
 
+func test_nothing_is_built_over_the_camp_sign() -> String:
+	var s := _state()
+	var at := CampStory.sign_pos()
+	for kind: String in ["pitch", "log_bench"]:
+		for yaw: float in [0.0, 90.0]:
+			if s.build.check(kind, at, yaw) == "":
+				return "a %s should not go over the camp sign (data/build.json blockers camp_sign)" % kind
+	if s.build.check("log_bench", at + Vector2(0.0, 0.5), 0.0) == "":
+		return "a bench half a metre from the sign should be refused"
+	return ""
+
+
 func _camp(side_name: String, profile_id: String, display_name: String) -> Node:
 	var side := Node3D.new()
 	side.name = side_name
