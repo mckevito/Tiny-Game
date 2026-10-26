@@ -456,7 +456,7 @@
     "need": "%d %s",
     "and": " and ",
     "name_title": "Name your campground",
-    "name_hint": "Type a name · {interact} paint it on the sign · {cancel} keep it as it is"
+    "name_hint": "Type a name · {type_done} paint it on the sign · {cancel} keep it as it is"
   },
   "ranger": {
     "hello": "Well now, there you both are! I'm Ranger $ranger. I looked after this place for thirty-odd years.",

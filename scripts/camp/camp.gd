@@ -2525,8 +2525,11 @@ func _show_hud() -> void:
 	var covered := menu.visible or report.visible
 	$Hud/Hint.visible = not covered
 	$Hud/Toast.visible = not menu.visible
+	# Ranger Burl's bubble sits low in the middle: the docks and the prompt line make way while he talks (Playtest,
+	# couch at 150%).
+	$Hud/Prompt.visible = not talk.visible
 	for who: String in _docks:
-		_docks[who].visible = not covered and not (_packs.has(who) or _boards.has(who) or _bench.has(who))
+		_docks[who].visible = not covered and not talk.visible and not (_packs.has(who) or _boards.has(who) or _bench.has(who))
 	for who: String in _boards:
 		_boards[who].visible = not menu.visible
 	for panels: Dictionary in [_packs, _bench]:
