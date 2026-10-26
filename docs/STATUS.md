@@ -622,8 +622,9 @@ saves find theirs there.
 | A snapshot is a WebP at photo.width_px x height_px under max_bytes, kept in the camp's own folder; not-pictures, too-big files and non-animal pages are turned away | `test_scrapbook.test_a_snapshot_is_a_small_photo_kept_in_the_camps_folder` | Passing |
 | From the buttons: a new page's card, the scrapbook button opens the book and holds the player, tabs and picks turn, unknown pages show "?", the button closes it, the pages are saved | `test_scrapbook.test_the_book_opens_from_its_button_and_turns_its_tabs` | Passing |
 | A snapshot reaches the other PC both ways, including a guest's first photo before its PC has the book's id | `test_scrapbook.test_a_snapshot_reaches_the_other_pc_both_ways` | Passing |
+| The book fits the screen at 150% alone, and on the couch each player's book keeps to its own half (Playtest, PR #62) | `test_scrapbook.test_the_book_fits_the_screen_at_big_sizes_and_on_the_couch` | Passing |
 | The camera photo still fills the animal's page (the field guide's old proof) | `test_stage_b` (the camera step) | Passing |
-| Review frames: the snap with its card, then each tab with the rabbit snapshot taped in | `capture.gd --scrapbook` (`scrapbook-r1/` in the project files) | Looked at |
+| Review frames: the snap with its card, then each tab with the rabbit snapshot taped in; after Playtest, the photo is taken from the camper's eye (no hat or name tag in it) | `capture.gd --scrapbook` (`scrapbook-r1/`, then `scrapbook-r1-fix/` in the project files) | Looked at |
 
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
@@ -643,9 +644,10 @@ saves find theirs there.
   `data/text.json` `job.*`; the camera's turn while he talks (`camera.talk_side_deg` 55, `turn_rate` 5).
 - **Replaced** (owner, 26 Oct 2026): the ranger stamp card became the scrapbook (picks recorded in `docs/PLAN.md`).
 - **Proposed** (scrapbook round 1): the 25 pages and their words (`data/scrapbook.json`, `data/text.json` `scrap.*`),
-  the book's look, the K / L2 button, the photo's size (320 x 240 WebP, zoomed to 30% of the camera's view) and the
+  the book's look, the K / L2 button, the photo's size (320 x 240 WebP, taken from the camper's eye at a 38 degree view) and the
   card's 3 s. Fish and meals have no knitted model yet, so their pages show a felt token in the Pack's colour; the
-  berries picture is small. Round 2 adds people and places, round 3 Burl's rewards per category.
+  berries picture is small. A new photo of an animal replaces its page's snapshot and credit on both PCs (the latest
+  photo wins). Round 2 adds people and places, round 3 Burl's rewards per category.
 - **Proposed** (arrival evening): Burl's lines, the letter and the fire's needs (3 sticks, 1 wood) in
   `data/ranger.json` and `data/text.json`; Burl is Art's knitted `ranger_burl` (PR #49), raising an arm (`ranger_burl_talk`) and turning to the player while he talks; the walk
   in through the gate waits for Stage C's road; the ranger's own name is kept in the save but has no rename spot yet.

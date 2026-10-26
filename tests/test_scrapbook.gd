@@ -207,6 +207,44 @@ func test_the_book_opens_from_its_button_and_turns_its_tabs() -> String:
 	return why
 
 
+## Playtest (PR #62): at 150% the two couch books overlapped, and alone the book ran off the top of the screen.
+func test_the_book_fits_the_screen_at_big_sizes_and_on_the_couch() -> String:
+	_clean()
+	var was := _tree().root.size
+	_tree().root.size = Vector2i(1920, 1080)
+	Settings.set_value("ui_scale", 150)
+	Settings.apply("ui_scale")
+	var camp := _camp("BigSide", "p_host", "Hana")
+	var why: String = camp.start_solo(1)
+	camp.report.visible = false
+	var view: Rect2 = camp.get_viewport().get_visible_rect()
+	if why == "":
+		camp.open_book("p_host")
+		await _tree().process_frame
+		await _tree().process_frame
+		var alone: ScrapBook = camp._books["p_host"]["panel"]
+		if not view.grow(1.0).encloses(alone.shown_rect()):
+			why = "alone at 150%% the book should fit the screen: %s in %s" % [alone.shown_rect(), view]
+		camp.close_book("p_host")
+	if why == "" and camp.drop_in(1) != "":
+		why = "a couch player should drop in"
+	if why == "":
+		var two: Array[String] = camp.local_ids()
+		for who in two:
+			camp.open_book(who)
+		await _tree().process_frame
+		await _tree().process_frame
+		var a: Rect2 = (camp._books[two[0]]["panel"] as ScrapBook).shown_rect()
+		var b: Rect2 = (camp._books[two[1]]["panel"] as ScrapBook).shown_rect()
+		if a.intersects(b) or not view.grow(1.0).encloses(a) or not view.grow(1.0).encloses(b):
+			why = "on the couch at 150%% each book should keep to its half: %s and %s in %s" % [a, b, view]
+	Settings.reset_page("access")
+	Settings.apply("ui_scale")
+	_tree().root.size = was
+	await _done()
+	return why
+
+
 func test_a_snapshot_reaches_the_other_pc_both_ways() -> String:
 	_clean()
 	var host := _camp("HostSide", "p_host", "Hana")

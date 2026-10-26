@@ -3711,8 +3711,8 @@ func _show_page_card(card: PanelContainer, id: String) -> void:
 	_refresh_boards()
 
 
-## A player on this PC photographs an animal: a picture of the camp world from their camera, turned toward the animal
-## and zoomed in (data/scrapbook.json photo), with no HUD in it, kept as a snapshot and sent to the other PC; then the
+## A player on this PC photographs an animal: a picture of the camp world from the camper's eye toward the animal
+## (data/scrapbook.json photo; from the play camera when no animal is found), with no HUD in it, kept as a snapshot and sent to the other PC; then the
 ## white flash and the ask. (A headless run draws nothing, so it only flashes and asks.)
 func _snap(who: String, kind: String) -> void:
 	_flash()
@@ -3738,7 +3738,14 @@ func _snap(who: String, kind: String) -> void:
 	add_child(view)
 	lens.global_transform = eye.global_transform
 	if target != Vector3.INF:
-		lens.look_at(target + Vector3.UP * Tuning.num("scrapbook", "photo.aim_up_m", 0.3))
+		# From the camper's eye, a step toward the animal so their own hat and name stay out of the picture.
+		var aim := target + Vector3.UP * Tuning.num("scrapbook", "photo.aim_up_m", 0.3)
+		var from := me.global_position + Vector3.UP * Tuning.num("scrapbook", "photo.eye_m", 1.1)
+		var toward := Vector3(aim.x - from.x, 0.0, aim.z - from.z)
+		from += toward.limit_length(Tuning.num("scrapbook", "photo.step_m", 0.6))
+		lens.fov = Tuning.num("scrapbook", "photo.fov_deg", 38.0)
+		lens.global_position = from
+		lens.look_at(aim)
 	lens.current = true
 	ask("photo", [kind], who)
 	await RenderingServer.frame_post_draw
