@@ -613,12 +613,15 @@ func _menus(out: String) -> void:
 
 
 ## The interface: alone, the dock and the open Pack; then on the couch, split, both docks, both clipboards and both
-## Packs, with the HUD as full as play makes it (guests' wishes, a build prompt each, the bed line).
+## Packs, with the HUD as full as play makes it (guests' wishes, a build prompt each, the bed line), then both docks
+## again at the biggest interface size (couch_docks_big.png).
 func _hud(out: String) -> void:
 	CampSave.dir = "user://captures_save"
 	DirAccess.make_dir_recursive_absolute(CampSave.dir)
 	for f in DirAccess.get_files_at(CampSave.dir):
 		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://captures_settings.json"))
+	Settings.use_file("user://captures_settings.json")
 	var camp: Node = load("res://scenes/camp.tscn").instantiate()
 	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
 	root.add_child(camp)
@@ -678,6 +681,15 @@ func _hud(out: String) -> void:
 	camp.open_pack(two)
 	await _settle()
 	_save(out + "/couch_packs.png")
+	# Playtest (PR #47): the same couch at the biggest interface size, both building with the docks showing.
+	camp.close_pack("p_capture_one")
+	camp.close_pack(two)
+	Settings.set_value("ui_scale", 150)
+	Settings.apply("ui_scale")
+	await _settle()
+	_save(out + "/couch_docks_big.png")
+	Settings.reset_page("access")
+	Settings.apply("ui_scale")
 	camp.stop("")
 	CampSave.dir = ""
 

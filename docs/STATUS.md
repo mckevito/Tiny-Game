@@ -416,8 +416,21 @@ the end of a prompt line; the column now narrows to the room between the docks t
 (`test_hud.test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages`, fails without it). The pad's stick icon
 looked like the Circle button at legend size; it is now a honey thumb cap with four arrows (`art/ui/glyphs/make_glyphs.py`).
 
+Playtest's finding on that fix (fixed in the next PR): on the couch at 150%, with both players building, the room
+between the docks was only 344 px, so the two prompts and the bed line stacked 8 to 10 lines over both campers and into
+the clock. On the couch each player's prompt now sits on top of their own dock, without their name, and the centre
+column keeps only the bed line. So the dock grows no taller, a prompt takes the legend's place while walking, and while
+building the tool row steps aside. The build buttons (turn, undo, done) moved from the build prompt into the legend,
+so the build prompt is now one short line ("E Put a tent pitch here (2 wood)"), alone on the PC too.
+
+| Proof | Test | Result |
+|---|---|---|
+| On the couch at 150% with both building, each prompt is on its own dock, the column holds just the bed line (now short: "Evening: sleep in your tent, or {menu} Ready for bed.", at most 3 lines, Playtest on #48), and nothing overlaps (clock, docks, toasts) or covers a camper | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing (fails without it: the column ran into the clock) |
+| The same couch at 150%, to look at | `tools/capture.gd --hud` (couch_docks_big.png) | Looked at (cloud frames) |
+
 **Proposed** (data/tuning.json `legend`): day 1 shows Walk, Use, Look, Clipboard, Menu; later days Use, Look,
-Clipboard, Menu; building Look and Menu (the build prompt and the dock's own lines show the rest).
+Clipboard, Menu; building Turn, Undo, Done, Look and Menu (the dock's build line has pick, and the build prompt says
+what Use does there).
 
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers

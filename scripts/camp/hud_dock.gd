@@ -3,12 +3,15 @@ extends VBoxContainer
 ## A player's corner dock, like Animal Crossing's: the tool in hand and the build piece picked, each on a felt chip
 ## that shows the one before and the one after it either side (smaller and faded, so the player sees what the next
 ## press brings) and a row of dots for where it sits in its cycle, with a Pack line under them, and above them the
-## player's legend: icons for what they can do now (Camp.legend). Player one's sits
-## bottom right (bottom left while someone is on the couch); the couch player's bottom right. Sizes and colours:
-## data/tuning.json "dock".
+## player's legend: icons for what they can do now (Camp.legend). On the couch the player's own prompt sits on top
+## (show_prompt). Player one's sits bottom right (bottom left while someone is on the couch); the couch player's bottom
+## right. Sizes and colours: data/tuning.json "dock".
 
+var _prompt := UiLook.rich_label(true)
 var _legend := UiLook.rich_label(true)
 var _tool_caption := UiLook.rich_label(true)
+var _tool_chip: Control
+var _placing := false
 var _tool := Label.new()
 var _tool_prev := Label.new()
 var _tool_next := Label.new()
@@ -33,7 +36,7 @@ func _caption(label: RichTextLabel) -> void:
 	add_child(label)
 
 
-func _chip(label: Label, prev: Label, next: Label, dots: Label) -> void:
+func _chip(label: Label, prev: Label, next: Label, dots: Label) -> Control:
 	var chip := PanelContainer.new()
 	var felt := StyleBoxFlat.new()
 	felt.bg_color = FeltBuilder.swatch(str(Tuning.value("tuning", "dock.swatch", "warm_cream")))
@@ -73,16 +76,21 @@ func _chip(label: Label, prev: Label, next: Label, dots: Label) -> void:
 	dots.add_theme_color_override("font_color", ink)
 	box.add_child(dots)
 	add_child(chip)
+	return chip
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_theme_constant_override("separation", int(_n("row_gap_px", 4)))
+	_caption(_prompt)
+	_prompt.add_theme_font_size_override("normal_font_size", int(_n("prompt_px", 22)))
+	_prompt.custom_minimum_size.x = _n("width_px", 320)
+	_prompt.visible = false
 	_caption(_legend)
 	_legend.custom_minimum_size.x = _n("width_px", 320)
 	_legend.add_theme_constant_override("line_separation", int(_n("legend_gap_px", 6)))
 	_caption(_tool_caption)
-	_chip(_tool, _tool_prev, _tool_next, _tool_dots)
+	_tool_chip = _chip(_tool, _tool_prev, _tool_next, _tool_dots)
 	_caption(_build_caption)
 	_chip(_build, _build_prev, _build_next, _build_dots)
 	_caption(_pack)
@@ -123,7 +131,27 @@ func show_dock(tool_names: Array[String], tool_at: int, piece_names: Array[Strin
 	_build_caption.text = captions[1]
 	_pack.text = captions[2]
 	_legend.text = captions[3] if captions.size() > 3 else ""
-	_legend.visible = _legend.text != ""
+	_fit()
+
+
+## The couch: each player's prompt shows on their own dock, not in the shared column, so two prompts never squeeze
+## between the docks (Playtest, PR #47). To keep the dock no taller, a prompt takes the legend's place while walking,
+## and while `placing` (build mode) the tool row steps aside instead, so the build buttons stay in the legend.
+func show_prompt(text: String, placing: bool) -> void:
+	_prompt.text = text
+	_placing = placing
+	_fit()
+
+
+func _fit() -> void:
+	_prompt.visible = _prompt.text != ""
+	_legend.visible = _legend.text != "" and (_placing or not _prompt.visible)
+	_tool_caption.visible = not _placing
+	_tool_chip.visible = not _placing
+
+
+func prompt_text() -> String:
+	return _prompt.text
 
 
 static func _cycle(label: Label, prev: Label, next: Label, dots_label: Label, names: Array[String], at: int) -> void:
