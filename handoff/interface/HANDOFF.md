@@ -1,4 +1,4 @@
-# Interface hand-off, 25 Oct 2026 (new role, split from Build after Stage B round 5; rounds 1 and 2 done)
+# Interface hand-off, 25 Oct 2026 (new role, split from Build after Stage B round 5; rounds 1 to 3 done)
 
 1. **Owns:** everything the player reads and presses.
    - Scripts: `scripts/ui/options_screen.gd`, `ui_look.gd`; `scripts/camp/camp_menu.gd`, `clipboard.gd`,
@@ -27,14 +27,16 @@
    for Apply.
 3. **Open work, in order:**
    1. The owner plays round 5 and interface round 1; fix anything that overlaps or reads badly on their screen.
-   2. Round 3 (owner, 25 Oct): a knitted clipboard panel with a knitted paper sheet, and a clipboard the camper holds
-      while it is open (the prop is Art's; the hand pose is Gameplay's `camper.gd`). Keep `board.flip` for the camp
-      board, which opens Bookings. Round 4: item icons in the Pack and picture wish bubbles.
-   3. Waiting on the owner: swap the always-on controls hint for a short context legend (icons for what you can do now).
-   4. The clipboard's map tab with plan marks both players see (with Gameplay), after the next gameplay round.
-   5. Remaps: two actions can share a button only in different modes (D-pad left: undo in build mode). Settings
+   2. Round 4: item icons in the Pack and picture wish bubbles. The knitted clipboard prop is Art's (brief in the
+      project files, clipboard-prop/BRIEF.md); when it lands it replaces `clipboard_prop` in data/items.json
+      tools.held.clipboard (Gameplay's PR #37 holds a stand-in while a clipboard is open).
+   3. Cosmetic (Playtest on #40): a one-letter keycap that starts a wrapped line loses its left padding (Godot trims
+      a line's leading space, even a figure space); try a word joiner (U+2060) before the padding.
+   4. Waiting on the owner: swap the always-on controls hint for a short context legend (icons for what you can do now).
+   5. The clipboard's map tab with plan marks both players see (with Gameplay), after the next gameplay round.
+   6. Remaps: two actions can share a button only in different modes (D-pad left: undo in build mode). Settings
       swaps only an action's main binding.
-   6. Later ideas: item icons in the Pack (render each item's felt model once), per-player prompts inside each half
+   7. Later ideas: item icons in the Pack (render each item's felt model once), per-player prompts inside each half
       of the split; 2D panels use `FeltBuilder.swatch`, which is the linear colour (darker than the palette); the
       Pack tokens convert back with `linear_to_srgb()`, the panels were left as the owner has seen them.
 4. **Owner decisions:** Animal Crossing is the model for the Pack and the tool and build cyclers; prompts show the

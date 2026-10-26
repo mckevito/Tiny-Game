@@ -110,6 +110,9 @@ func _ready() -> void:
 	# The prompts keep to a centre column, clear of the clipboards and Packs at the sides (hud.prompt_width_px).
 	$Hud/Prompt.offset_left = -Tuning.num("tuning", "hud.prompt_width_px", 640.0) * 0.5
 	$Hud/Prompt.offset_right = -$Hud/Prompt.offset_left
+	# Panels sit below the hint and the clock: when either grows (a new interface size), they move at once.
+	for above: Control in [$Hud/Hint, $Hud/Clock]:
+		above.resized.connect(func() -> void: if state: _refresh_boards.call_deferred())
 	couch.main = camera
 	camera.set_faders(clearing.faders)
 	menu.chose.connect(_on_menu)
@@ -496,6 +499,7 @@ func _process(delta: float) -> void:
 	$Hud/Prompt.text = "\n".join(lines)
 	_update_clock()
 	_update_hint()
+	_place_centre()
 	_show_hud()
 	_keep_in_view(delta)
 	if $Hud/Dev.visible:
@@ -596,11 +600,12 @@ func _toast(text: String) -> void:
 
 
 func _update_hint() -> void:
-	# Spaces inside each control are non-breaking, so the line only wraps between controls ("Tab for the menu").
+	# Spaces inside each control are non-breaking, so the line only wraps between controls ("Tab for the menu"); the
+	# controls sit apart by a wide space (text: glyphs.gap) rather than a dot, so a wrapped line never ends on one.
 	var parts: PackedStringArray = []
 	for part in (Prompts.rich(Tuning.text("prompt.controls"), _pad) if state else "").split(" · "):
 		parts.append(part.replace(" ", "\u00a0"))
-	var text := " · ".join(parts)
+	var text := Tuning.text("glyphs.gap").join(parts)
 	if can_drop_in() == "":
 		text += "\n" + Prompts.rich(Tuning.text("prompt.drop_in"), true)
 	$Hud/Hint.text = text
@@ -732,7 +737,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if report.visible and not menu.visible:
-		if event.is_action_pressed("interact") or event.is_action_pressed("cancel") or event.is_action_pressed("menu"):
+		if event.is_action_pressed("interact") and report.next_page():
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("interact") or event.is_action_pressed("cancel") or event.is_action_pressed("menu"):
 			report.visible = false
 			get_viewport().set_input_as_handled()
 		return
@@ -1591,7 +1598,8 @@ func _show_night(summary: Dictionary) -> void:
 		leave_tent(who, false)
 	for who: String in _busy.keys():
 		_end_busy(who)
-	report.show_report(morning_report(summary), Prompts.rich(Tuning.text("prompt.report_close"), _pad))
+	report.show_report(morning_report(summary), Prompts.rich(Tuning.text("prompt.report_close"), _pad, true),
+			Prompts.rich(Tuning.text("prompt.report_next"), _pad, true))
 	_sync_stays(false)
 	_sync_forage()
 	_sync_trees()
@@ -1702,7 +1710,8 @@ func _welcome_report() -> void:
 		return
 	var lines: Array[String] = [Tuning.text("report.welcome"), ""]
 	lines.append_array(_today_report())
-	report.show_report("\n".join(lines), Prompts.rich(Tuning.text("prompt.report_close"), _pad))
+	report.show_report("\n".join(lines), Prompts.rich(Tuning.text("prompt.report_close"), _pad, true),
+			Prompts.rich(Tuning.text("prompt.report_next"), _pad, true))
 
 
 func _update_night(delta: float) -> void:
@@ -2050,9 +2059,9 @@ func _refresh_boards() -> void:
 			continue
 		var board: Clipboard = _boards[who]
 		# The button glyphs live on the hint line (a RichTextLabel): the bookings page's answer line goes there too.
-		var hint := Prompts.rich(Tuning.text("clipboard.hint"), _glyph(who))
+		var hint := Prompts.rich(Tuning.text("clipboard.hint"), _glyph(who), true)
 		if board.tab_name() == "bookings":
-			hint = Prompts.rich(Tuning.text("clipboard.answer"), _glyph(who)) + "\n" + hint
+			hint = Prompts.rich(Tuning.text("clipboard.answer"), _glyph(who), true) + "\n" + hint
 		board.show_text(clipboard_text(who, board.tab_name()), hint)
 		_fit_panel(board, who)
 
@@ -2221,8 +2230,49 @@ func _fit_panel(panel: Clipboard, who: String) -> void:
 	var above: Control = $Hud/Clock if who == couch_id else $Hud/Hint
 	var top := Tuning.num("tuning", "clipboard.top_px", 150.0)
 	if above.visible and str(above.get("text")) != "":
-		top = maxf(top, above.position.y + above.get_combined_minimum_size().y + gap)
+		top = maxf(top, above.position.y + maxf(above.get_combined_minimum_size().y, above.size.y) + gap)
 	panel.fit(top, get_viewport().get_visible_rect().size.y - gap)
+
+
+## The prompt and toast column (hud.prompt_width_px): centred, but when an open panel at a side would cover it (a big
+## interface size), it narrows to the room beside that panel, unless that leaves less than half of it (two panels on
+## the couch), when it stays centred. Toasts start below the hint and the clock where they reach over the column
+## (clipboard.gap_px), however many lines those wrap to.
+func _place_centre() -> void:
+	var view := get_viewport().get_visible_rect().size
+	var w := Tuning.num("tuning", "hud.prompt_width_px", 640.0)
+	var gap := Tuning.num("tuning", "clipboard.gap_px", 24.0)
+	var cx := view.x * 0.5
+	var room_left := -INF
+	var room_right := INF
+	for id in local_ids():
+		var panel := _panel_of(id)
+		if panel == null or not panel.visible:
+			continue
+		var rect := panel.get_global_rect()
+		if rect.get_center().x < cx - 1.0:
+			room_left = maxf(room_left, rect.end.x + gap)
+		elif rect.get_center().x > cx + 1.0:
+			room_right = minf(room_right, rect.position.x - gap)
+	var left := maxf(cx - w * 0.5, room_left)
+	var right := minf(cx + w * 0.5, room_right)
+	if left > cx - w * 0.5 and room_right == INF:
+		right = minf(left + w, view.x - gap)
+	elif right < cx + w * 0.5 and room_left == -INF:
+		left = maxf(right - w, gap)
+	if right - left < w * 0.5:
+		left = cx - w * 0.5
+		right = cx + w * 0.5
+	for node: Control in [$Hud/Prompt, $Hud/Toast]:
+		node.offset_left = left - cx
+		node.offset_right = right - cx
+	var top := Tuning.num("tuning", "hud.toast_top_px", 150.0)
+	for above: Control in [$Hud/Hint, $Hud/Clock]:
+		var r := above.get_global_rect()
+		if above.visible and str(above.get("text")) != "" and r.end.x > left and r.position.x < right:
+			top = maxf(top, r.end.y + gap)
+	$Hud/Toast.offset_top = top
+	$Hud/Toast.offset_bottom = top + $Hud/Toast.size.y
 
 
 ## A player's open panel: their Pack, workbench or clipboard, or null.
@@ -2349,7 +2399,7 @@ func _refresh_packs() -> void:
 			continue
 		var panel: PackPanel = _packs[who]["panel"]
 		panel.show_pack(Tuning.text("pack.title") % state.camp["profiles"][who]["name"], state.pack.slots(who),
-				int(_packs[who]["pick"]), Prompts.rich(Tuning.text("pack.hint"), _glyph(who)))
+				int(_packs[who]["pick"]), Prompts.rich(Tuning.text("pack.hint"), _glyph(who), true))
 
 
 ## Dropped bundles on screen follow the camp's. A loose piece new since the last look pops out of its tree in an arc
@@ -2638,7 +2688,7 @@ func _refresh_bench() -> void:
 			continue
 		var panel: Clipboard = _bench[who]["panel"]
 		panel.show_text(bench_text(who, int(_bench[who]["pick"])), Prompts.rich(Tuning.text("bench.hint"),
-				_glyph(who)))
+				_glyph(who), true))
 		_fit_panel(panel, who)
 
 
