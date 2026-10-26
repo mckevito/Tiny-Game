@@ -31,3 +31,12 @@ See `handoff/gameplay/LESSONS.md` "Who owns what".
     PR's tests.
   - Real fps can't be measured on lavapipe. Compare draw calls, objects and primitives against main on the Low preset
     instead, and leave the laptop fps to the owner.
+- 26 Oct 2026, pass 4: PRs #44-#58 and a combined pass on main; 10 faults logged, 8 fixed the same day.
+  - A text box eats letter keys. When a prompt names a key, press the real key with its unicode set, not a bare
+    keycode, or the probe misses that the key types instead.
+  - A rendered couch run at 150% takes 10 minutes or more on lavapipe. Two runs at once double that, so a "hang" is
+    usually slowness: run one at a time with a long timeout before calling it a freeze.
+  - `Input.warp_mouse` takes window pixels, but HUD controls use the scaled HUD size; at 150% convert first, or the
+    mouse points somewhere else.
+  - In a host and join run, keep the host up until the guest finishes, or the guest's later steps see no camp and
+    look broken.

@@ -6,7 +6,7 @@
    - The Result column of `docs/STATUS.md` proof rows, review sheets in the project files
      (`/mnt/project-files/tiny-game/stage-b/`), and turning each owner bug report into a failing test for the role
      that owns the fix. Playtest/QA does not change game code; it opens test-only PRs or hands the bug over.
-2. **State now:** pass 3 (PRs #31 to #42, 26 Oct 2026) is in `FAULTS.md`. Each PR is played on its own branch from
+2. **State now:** pass 4 (PRs #44 to #58 and main after #56, 26 Oct 2026) is in `FAULTS.md`. Each PR is played on its own branch from
    the title: solo, couch (keys plus pad) and, where netcode changed, host and join between two real copies. One bundled
    message goes to the owning thread, and frames go to `/mnt/project-files/tiny-game/playtest/pr<N>/`.
    `scripts/tools/playtest.gd` plays the real main scene through real key and pad presses (solo, then a couch drop-in
