@@ -612,9 +612,16 @@
       "stick_deadzone": "Stick deadzone",
       "camera_speed": "Camera turn speed",
       "ui_scale": "Interface size",
-      "still_trees": "Still trees (no swaying)"
+      "still_trees": "Still trees (no swaying)",
+      "colours": "Sign colours"
     },
     "choice": {
+      "colours": {
+        "harvest_camp": "Harvest Camp",
+        "picnic_basket": "Picnic Basket",
+        "sunny_days": "Sunny Days",
+        "twilight": "Twilight"
+      },
       "window_mode": {
         "windowed": "In a window",
         "borderless": "Full screen (borderless)",

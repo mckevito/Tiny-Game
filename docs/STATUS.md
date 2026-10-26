@@ -454,6 +454,22 @@ opens round their own camper in their own half, and only their own devices point
 clockwise in the tools' order; tool names in the buttons until the item icons round; no empty "still to earn" slots
 yet (nothing is earned yet). The dock's tool line now reads "Tool · T next, hold for all".
 
+### Interface round 6: Pinned Felt lettering and colour presets (26 Oct 2026)
+The owner's pick for the interface look: Pinned Felt lettering on the Ranger Station Wall, with four colour presets
+the player chooses, each with one scheme per season (data/look.json). This round adds the two fonts (Fredoka for felt
+lettering, Figtree for all reading text), the presets with a "Sign colours" choice in Options (Accessibility), and
+felt lettering (`FeltLetters`) for the game's name on the title and menus and the Options heading. The letters
+recolour when the season turns. The wood and cork panels, the clipboard home grid and item icons are the next rounds.
+
+| Proof | Test | Result |
+|---|---|---|
+| Every preset has a scheme for each of the four seasons with valid colours, and a name in Options | `test_look.test_every_preset_has_a_scheme_for_each_season_and_a_name` | Passing |
+| Options offers every preset; the default in autumn is Harvest; the letters change when the season turns; Twilight in winter is Northern Lights; an unknown preset falls back to the default | `test_look.test_the_colours_setting_picks_a_preset_and_the_season_picks_its_scheme` | Passing |
+| The title is one line when wide and wraps onto balanced lines (keeping every word) when narrow; a new season redraws it | `test_look.test_felt_lettering_recolours_when_the_season_turns_and_wraps_to_fit` | Passing |
+| Both fonts load; controls without a theme and the menu theme read in Figtree | `test_look.test_the_two_fonts_load_and_reading_text_uses_figtree` | Passing |
+| The title and Options, to look at | `tools/capture.gd --menus` (title.png, options_access.png) | Looked at (cloud frames) |
+| The letters look like the Pinned Felt page on the owner's screen, in every preset | Owner's play | Waiting on the owner |
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.

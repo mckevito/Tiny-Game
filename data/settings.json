@@ -1,5 +1,5 @@
 {
-  "_about": "This PC's settings (scripts/core/settings.gd), kept in user://settings.json and never sent to the other PC. pages lists the Options screen (scripts/ui/options_screen.gd) tab by tab: each row has a key, a kind (choice, slider or toggle) and a default; a choice lists its options (picture takes the presets in data/graphics.json), a slider its min, max and step. Labels are in data/text.json: options.row.<key>, options.choice.<key>.<option>, options.tab.<page>. The controls page also lists every action in data/input.json except fixed ones, to remap. pad_names names DualSense buttons by Godot's JoyButton number for remapped prompts. look is the shared menu look (scripts/ui/ui_look.gd). apply_on_button lists the rows whose change waits for the Apply button; leaving Options without it puts them back.",
+  "_about": "This PC's settings (scripts/core/settings.gd), kept in user://settings.json and never sent to the other PC. pages lists the Options screen (scripts/ui/options_screen.gd) tab by tab: each row has a key, a kind (choice, slider or toggle) and a default; a choice lists its options (picture takes the presets in data/graphics.json, colours the felt lettering presets in data/look.json), a slider its min, max and step. Labels are in data/text.json: options.row.<key>, options.choice.<key>.<option>, options.tab.<page>. The controls page also lists every action in data/input.json except fixed ones, to remap. pad_names names DualSense buttons by Godot's JoyButton number for remapped prompts. look is the shared menu look (scripts/ui/ui_look.gd). apply_on_button lists the rows whose change waits for the Apply button; leaving Options without it puts them back.",
   "version": 1,
   "apply_on_button": ["picture", "window_mode", "window_size", "vsync", "fps_cap", "ui_scale"],
   "pages": [
@@ -23,6 +23,7 @@
     ]},
     {"id": "access", "rows": [
       {"key": "ui_scale", "kind": "slider", "min": 80, "max": 150, "step": 10, "default": 100},
+      {"key": "colours", "kind": "choice", "from": "look", "default": "harvest_camp"},
       {"key": "still_trees", "kind": "toggle", "default": false}
     ]}
   ],
@@ -47,6 +48,7 @@
     "title_font_px": 56,
     "tagline_font_px": 26,
     "heading_font_px": 40,
+    "felt_heading_font_px": 56,
     "disabled_alpha": 0.45,
     "panel_swatch": "warm_cream",
     "panel_alpha": 0.96,
