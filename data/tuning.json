@@ -56,8 +56,7 @@
     "seam_swatch": "warm_cream"
   },
   "dev": {
-    "fps_refresh_s": 0.5,
-    "clock_scale": 30
+    "fps_refresh_s": 0.5
   },
   "hud": {
     "toast_s": 3.5,

@@ -262,3 +262,7 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   from the shared day, so both PCs agree without new netcode; they pay nothing yet (they show the camp being used).
 - 26 Oct 2026, owner merged first-minutes round 4 (PR #41, guest activities) and Art's knitted clipboard (PR #38). The
   camper now reads the knitted clipboard; the felt stand-in is gone.
+- 26 Oct 2026, owner asked for a developer menu for gameplay checks and QA (time of day, spawning guests and other
+  dev tools). **Proposed**: F1 or the DualSense's Create button opens it in a camp, only in a debug build (the editor)
+  or with `-- --dev`; elsewhere F1 still shows just the fps line. F1 no longer speeds the clock by itself: the menu's
+  clock speed row does (×1, ×10, ×30, ×120 on the host). Rows that change the camp go to the host, who decides.
