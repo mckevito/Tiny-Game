@@ -1989,13 +1989,13 @@ func _sync_stays(walk_in: bool) -> void:
 		c.display_name = guest_label(id)
 		c.walk_speed = Tuning.num("day", "stays.walk_speed_mps", 1.5)
 		var stand := state.day.stand_point(id)
+		add_child(c)
 		if walk_in:
 			c.position = Vector3(float(entry[0]), 0.0, float(entry[1]))
-			c.walk_target = Vector3(stand.x, 0.0, stand.y)
+			_route_guest(c, null, stand, stand)
 			c.arrived.connect(_pitch_tent.bind(id), CONNECT_ONE_SHOT)
 		else:
 			c.position = Vector3(stand.x, 0.0, stand.y)
-		add_child(c)
 		visitors[id] = c
 		if not walk_in:
 			_pitch_tent(id)
@@ -2042,9 +2042,9 @@ func _tick_guests(delta: float) -> void:
 			c.hold("hands")
 			if guests_asleep():
 				c.position = at
-				c.walk_target = null
+				c.walk_along([])
 			else:
-				c.walk_target = at
+				_route_guest(c, was.get("from") if was.get("settled", false) else null, want["from"], want["at"])
 		if c.walk_target == null and not _doing[id].get("settled", false):
 			_doing[id]["settled"] = true
 			var to: Vector2 = want["look"] - want["at"]
@@ -2095,6 +2095,21 @@ func _tick_frisbees(delta: float) -> void:
 			_discs.erase(key)
 
 
+## Sends a guest round the camp's things (GuestPath) to `to`: first off its seat the way it sat down (`leave`, that
+## seat's open ground, or null), and at the end onto a seat backwards from the open ground at `from` (`from` == `to`
+## for anything but a seat).
+func _route_guest(c: Camper, leave: Variant, from: Vector2, to: Vector2) -> void:
+	var start := Vector2(c.position.x, c.position.z)
+	var legs: Array[Vector2] = []
+	if leave is Vector2 and leave != start:
+		legs.append(leave)
+		start = leave
+	legs.append_array(GuestPath.route(start, from, GuestPath.footprints(state)))
+	if to != from:
+		legs.append(to)
+	c.walk_along(legs.map(func(p: Vector2) -> Vector3: return Vector3(p.x, 0.0, p.y)), to != from)
+
+
 func _send_home(id: String) -> void:
 	var c: Camper = visitors[id]
 	visitors.erase(id)
@@ -2104,7 +2119,9 @@ func _send_home(id: String) -> void:
 		_tents[id].queue_free()
 		_tents.erase(id)
 	var entry: Array = Tuning.value("day", "stays.entry", [0, 10])
-	c.walk_target = Vector3(float(entry[0]), 0.0, float(entry[1]))
+	var was: Dictionary = _doing.get(id, {})
+	_route_guest(c, was.get("from") if was.get("settled", false) else null, Vector2(float(entry[0]), float(entry[1])),
+			Vector2(float(entry[0]), float(entry[1])))
 	for link in c.arrived.get_connections():
 		c.arrived.disconnect(link["callable"])
 	c.arrived.connect(c.queue_free)
@@ -2913,6 +2930,10 @@ func _sync_fire() -> void:
 			up.set_meta("level", level)
 			for row: Dictionary in CampBuild.fire_levels().slice(0, level):
 				up.add_child(FeltBuilder.build(str(row.get("model", ""))))
+				# The ring's log seats are solid, like the stones (data/models.json fire_ring "collide").
+				var collide: Dictionary = FeltBuilder.resolve(str(row.get("model", ""))).get("collide", {})
+				if not collide.is_empty():
+					up.add_child(Clearing.collider(collide))
 			root.add_child(up)
 			scale = float(CampBuild.fire_levels()[level - 1].get("light_scale", 1.0))
 			radius = float(CampBuild.fire_levels()[level - 1].get("collide_m", -1.0))

@@ -116,6 +116,11 @@ For figures that appear several at a time, such as the camp's guests:
   the same script (`--pose=talk`) and a model row that only swaps the file (`{"base": "ranger_burl", "file": ...}`).
   `body(arm_poses={side: (drop, forward)})` lifts an arm. Something held (his stick) is placed from the hand's own
   matrix, so it follows the pose.
+- **Sitting** (guests, 26 Oct 2026): `--pose=sit` on a guest's build script folds every leg vertex forward about the
+  hip (`guest_body.sit_legs`: a quarter turn below the trousers' seat, easing to none at the waist), so the guest sits
+  like a plush doll, legs straight out and boot toes up; the seat's underside ends near 0.18 m. Save it beside the
+  standing GLB as `knit_guest_<name>_sit.glb`, add a `guest_<x>_sit` row that swaps the file, and point the look's
+  `sit_model` at it. A seat's sitting height (`data/guests.json` activities.sit `y`) is its top less that 0.18 m.
 - **A knitted beard:** a fused felt mass, then yarn locks laid on it by casting rays at the mass from in front
   (`surface_tree` and `hit`), each lifted half its radius off the hit and ending in a small curl.
 

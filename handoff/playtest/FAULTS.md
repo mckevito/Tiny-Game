@@ -27,14 +27,14 @@ Each PR's tests pass. Solo, couch (keys plus pad) and host and join play with no
 | PR #31 | After a keyboard start, a new pad could never become player one's | Couch (fixed by the Players page, PR #32) | A couch test that starts on keys, then plugs in a pad |
 | main | A DualSense's Cross never pressed a menu button: Godot 4.7's `ui_accept` is only Enter, Kp Enter and Space | Couch (fixed in PR #34: interact and cancel pad buttons copied into `ui_accept`/`ui_cancel`) | A test that presses a focused button with a pad event through `Input.parse_input_event` |
 | main | Refusal toasts were hidden while a menu page was open | Couch (fixed in PR #34) | The HUD layout test with the menu open |
-| PR #33 | The stone ring's log seats clip through the folding chairs at (±1.5, 1.0–1.1), and the ring has no collider | Gameplay | A test that no placed seat overlaps another model's footprint |
+| PR #33 | The stone ring's log seats clip through the folding chairs at (±1.5, 1.0–1.1), and the ring has no collider | Gameplay (fixed: logs moved behind the fire, then solid, chairs moved out, in the chair round) | A test that no placed seat overlaps another model's footprint |
 | PR #35 | Player two's `reference.json` is a copy of player one's (the Beanie Camper sheet, teal colour bands) | Art | `compare.py` refusing a reference whose sheet or swatches don't match the model's own slots |
 | main (#37) | The morning report with three guests is 1300–1380 px tall and runs off the screen; the welcome report does the same at 150% interface size | Interface (fixed in PR #40: long reports turn pages) | The HUD layout test with three guests' report, at 100% and 150% |
 | PR #36 | The D-pad icons looked alike at real size; "( Tab )" had gaps in the brackets | Interface (fixed in PR #40) | A look at the couch frame at 1600 × 900 |
 | PR #40 | At 120–150% the clipboard covered the action prompt; one-letter keycaps were thin; the hint wrapped between a keycap and its words | Interface (fixed in PR #40) | `test_hud.test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages` |
 | PR #40 | A one-letter keycap that starts a wrapped line loses its left padding (cosmetic) | Interface | A look at the hint at 150% |
-| PR #41 | Guests walk in straight lines through chairs and past the fire ring's logs | Gameplay | A test that a guest's path to its activity spot stays clear of placed models |
-| PR #39 | The edge woods add 18–56% more primitives at the edge (frame time up to a third more on lavapipe); laptop fps not yet measured | Gameplay, with the owner | Measuring fps on the Ryzen 7 5825U laptop on the Low preset |
+| PR #41 | Guests walk in straight lines through chairs and past the fire ring's logs | Gameplay (fixed in the chair round: guests walk round every collider; `test_guest_path`) | A test that a guest's path to its activity spot stays clear of placed models |
+| PR #39 | The edge woods add 18–56% more primitives at the edge (frame time up to a third more on lavapipe); laptop fps not yet measured | Gameplay, with the owner (measured 26 Oct 2026: 60+ fps on the low preset) | Measuring fps on the Ryzen 7 5825U laptop on the Low preset |
 
 ## Pass 2, 25 Oct 2026 (main with #22, #23, #24 and #26 merged)
 105 tests pass; solo, couch, host and join play with no script errors. Fixed since pass 1: Tab closes the menu, the

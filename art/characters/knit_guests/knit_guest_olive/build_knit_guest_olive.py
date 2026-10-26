@@ -1,6 +1,7 @@
 # Builds the second guest's knitted camper (Olive Ashby, a birdwatcher; look guest_b) in Blender, from code:
 #   blender --background --factory-startup --python art/characters/knit_guests/knit_guest_olive/build_knit_guest_olive.py -- OUT.glb
-# Add --pose=t for the review T-pose. The shared guest body (../guest_body.py) with Olive's own top: a felt bucket hat
+# Add --pose=t for the review T-pose, or --pose=sit for the sitting pose (knit_guest_olive_sit.glb).
+# The shared guest body (../guest_body.py) with Olive's own top: a felt bucket hat
 # with a ribbon band, a silver bob of yarn locks, round wire glasses and a cream cardigan with wooden buttons. She is
 # a little smaller than the players. Made by following art/RECIPE.md; the game paints it from the palette
 # (data/models.json "knit_guest_olive" file_slots). Original work, CC BY 4.0 (CREDITS.md).

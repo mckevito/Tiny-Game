@@ -25,7 +25,8 @@ static func roll(key: String) -> float:
 
 ## Stay id -> what that guest is doing: {"kind", "at" (Vector2, where they stand), "look" (Vector2, what they face),
 ## "prop" (a tools.held row in data/items.json, or "hands"), "sit_y" (seat height in metres, 0 when standing),
-## "pair" (the other frisbee player's stay id, or "")}.
+## "pair" (the other frisbee player's stay id, or ""), "from" (Vector2, the open ground a seat is sat down on from;
+## "at" for anything else)}.
 static func plan(state: CampState, asleep: bool) -> Dictionary:
 	var out := {}
 	var ids: Array = state.camp["stays"].keys()
@@ -69,8 +70,10 @@ static func home(state: CampState, stay_id: String) -> Dictionary:
 	return _spot("rest", state.day.stand_point(stay_id), _vec(pitch["pos"]), "hands", 0.0, "")
 
 
-static func _spot(kind: String, at: Vector2, look: Vector2, prop: String, sit_y: float, pair: String) -> Dictionary:
-	return {"kind": kind, "at": at, "look": look, "prop": prop, "sit_y": sit_y, "pair": pair}
+static func _spot(kind: String, at: Vector2, look: Vector2, prop: String, sit_y: float, pair: String,
+		from: Variant = null) -> Dictionary:
+	return {"kind": kind, "at": at, "look": look, "prop": prop, "sit_y": sit_y, "pair": pair,
+			"from": at if from == null else from}
 
 
 ## The first free spot for a kind, marked used; {} when there is none ("rest" is the guest's own pitch).
@@ -93,7 +96,8 @@ static func _pick(state: CampState, kind: String, used: Dictionary) -> Dictionar
 
 
 ## Every seat a guest can take, in a steady order: those on the camp's seats nobody is carrying (activities.sit.seats:
-## model -> spots in the seat's own space, facing its front), then the fire ring's log seats once the fire has grown.
+## model -> spots in the seat's own space, facing its front, sat down on from the open ground at "from"), then the fire
+## ring's log seats once the fire has grown.
 static func seats(state: CampState) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var by_model: Dictionary = _v("sit.seats", {})
@@ -107,10 +111,12 @@ static func seats(state: CampState) -> Array[Dictionary]:
 		var pos := _vec(row["pos"])
 		for s: Dictionary in by_model[str(row["model"])]:
 			var at := pos + _vec(s["at"]).rotated(-yaw)
-			out.append(_spot("sit", at, at + Vector2(0, -1).rotated(-yaw), "hands", float(s["y"]), ""))
+			var from := pos + _vec(s.get("from", s["at"])).rotated(-yaw)
+			out.append(_spot("sit", at, at + Vector2(0, -1).rotated(-yaw), "hands", float(s["y"]), "", from))
 	if state.build.fire_level() >= 1:
 		for s: Dictionary in _v("sit.fire_ring", []):
-			out.append(_spot("sit", _vec(s["at"]), _vec(_v("sit.fire_at", [0, 0])), "hands", float(s["y"]), ""))
+			out.append(_spot("sit", _vec(s["at"]), _vec(_v("sit.fire_at", [0, 0])), "hands", float(s["y"]), "",
+					_vec(s.get("from", s["at"]))))
 	return out
 
 

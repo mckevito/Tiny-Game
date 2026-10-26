@@ -92,3 +92,10 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   off the top (why: a panel sized for 100% was never checked at 150% or on the couch); the book now scales itself to
   its share of the screen, re-checked on every resize because wrapped text settles a frame late. Test every new panel
   at 150% alone and on the couch.
+- 26 Oct 2026: chair round (owner, with the Stage B sign-off). Guests walked straight through chairs and the ring's
+  logs, the logs had no collider, and a seated guest was a standing model lifted onto the seat, legs through it. Fixes:
+  grid routes round every `collide` row, a sitting pose per guest, solid logs. Faults on the way: the folding chairs
+  stood so close to the grown ring that nobody fit in front of them (why: the ring came later than the chairs; caught
+  by the new check that every seat has open ground in front, so the chairs moved out); new players spawned inside the
+  ring's logs once they turned solid (why: spawns predate the ring; check spawns against colliders); a net test walked
+  a camper onto the moved chair and never arrived (why: teleporting into a collider gets pushed out; pick clear spots).

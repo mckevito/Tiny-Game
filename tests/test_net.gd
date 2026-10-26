@@ -92,10 +92,10 @@ func test_movement_reaches_the_other_pc() -> String:
 	var host: Node = pair[0]
 	var guest: Node = pair[1]
 	var why: String = pair[2]
-	if why == "" and not await _walk(guest, "p_guest", 2.0, 1.5, 0.0, host):
+	if why == "" and not await _walk(guest, "p_guest", 2.4, 2.6, 0.0, host):
 		why = "the host never heard where the guest walked"
 	if why == "" and not await _until(func() -> bool:
-			return host.campers["p_guest"].position.distance_to(Vector3(2.0, 0, 1.5)) < 0.3):
+			return host.campers["p_guest"].position.distance_to(Vector3(2.4, 0, 2.6)) < 0.3):
 		why = "the guest's camper did not glide there on the host"
 	if why == "" and not await _walk(host, "p_host", -2.0, 0.5, 0.0, guest):
 		why = "the guest never heard where the host walked"

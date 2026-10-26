@@ -720,8 +720,7 @@ func _guests(out: String) -> void:
 		await process_frame
 		for id: String in camp.visitors:
 			var c: Camper = camp.visitors[id]
-			if c.walk_target is Vector3:
-				c.position = c.walk_target
+			c.skip_walk()
 		me.position = Vector3(0.5, 0, 3.5)
 		camp.camera._want_distance = Tuning.num("tuning", "camera.max_distance_m")
 		await _settle()

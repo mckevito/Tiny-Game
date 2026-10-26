@@ -686,8 +686,7 @@ func test_guests_go_fishing_sit_and_play_frisbee_on_both_pcs() -> String:
 		await _tree().process_frame
 		for id: String in camp.visitors:
 			var c: Camper = camp.visitors[id]
-			if c.walk_target is Vector3:
-				c.position = c.walk_target
+			c.skip_walk()
 		if not await _until(func() -> bool: return camp._doing.size() == 3 and camp._doing.values().all(
 				func(d: Dictionary) -> bool: return d.get("settled", false))):
 			why = "every guest should settle at what they are doing"
