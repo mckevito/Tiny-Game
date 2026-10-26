@@ -6,13 +6,15 @@
    - The Result column of `docs/STATUS.md` proof rows, review sheets in the project files
      (`/mnt/project-files/tiny-game/stage-b/`), and turning each owner bug report into a failing test for the role
      that owns the fix. Playtest/QA does not change game code; it opens test-only PRs or hands the bug over.
-2. **State now:** 93 tests pass headless on main; CI runs them on each push. Pass 1 (main after PR #19, PRs #20 and
-   #21) is in `FAULTS.md`; PR #22 is next. `scripts/tools/playtest.gd` plays the real main scene from the title through
-   real key and pad presses (solo, then a couch drop-in with a split screen), saving a frame per step and logging any HUD
-   piece off screen or overlapping ("BAD"); `scripts/tools/playtest_net.gd` does host and join between two real copies
-   (the commands are in each file's header). Frames of a pass go to `/mnt/project-files/tiny-game/playtest/pass-N/`. `capture.gd --stage-b` saves the Stage B frames
-   (camp day and dusk, chop, stump and clipboard, bench, pack and dock, menu, fishing, guest tent, home tent, field
-   guide, the morning report); `--menus` saves the title and Options pages; `--couch` a split-screen walk.
+2. **State now:** pass 3 (PRs #31 to #42, 26 Oct 2026) is in `FAULTS.md`. Each PR is played on its own branch from
+   the title: solo, couch (keys plus pad) and, where netcode changed, host and join between two real copies. One bundled
+   message goes to the owning thread, and frames go to `/mnt/project-files/tiny-game/playtest/pr<N>/`.
+   `scripts/tools/playtest.gd` plays the real main scene through real key and pad presses (solo, then a couch drop-in
+   with a split screen), saving a frame per step and logging any HUD piece off screen or overlapping ("BAD");
+   `scripts/tools/playtest_net.gd` does host and join between two real copies (the commands are in each file's
+   header). For a PR's own checks, write a throwaway probe that extends one of them, and delete it afterwards.
+   `capture.gd --stage-b` saves the Stage B frames, `--menus` the title and Options pages, and `--couch` a
+   split-screen walk.
 3. **Open work, in order:**
    1. With the owner, confirm the four Milestone 3 checks that were never confirmed: two DualSense controllers on the
       couch, a link code moving a couch character to its own PC, a Tailscale join, and fps on the Ryzen 7 5825U
