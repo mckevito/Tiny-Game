@@ -573,7 +573,7 @@ func _process(delta: float) -> void:
 		_place_dev()
 	# The dev menu's "hide the HUD" (for clean screenshots) gives way to the pause menu and the morning report.
 	$Hud.visible = not (dev.hud_off and state != null and not menu.visible and not report.visible)
-	if $Hud/Dev.visible:
+	if $Hud/Dev.visible or dev.visible:
 		_dev_clock -= delta
 		if _dev_clock <= 0.0:
 			_dev_clock = Tuning.num("tuning", "dev.fps_refresh_s", 0.5)
@@ -582,6 +582,7 @@ func _process(delta: float) -> void:
 					Tuning.text("quality." + Quality.current), "%dx%d" % [get_window().size.x,
 					get_window().size.y] if get_window() else "%dx%d" % [size.x, size.y],
 					roundi(get_viewport().scaling_3d_scale * 100.0), roundi(_clock_scale())]
+			dev.stats.text = $Hud/Dev.text
 
 
 ## The interact line for a player: what the button does now (action_for), or that they are fishing or grilling.
@@ -773,7 +774,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if state == null or who == "":
 		return
-	if not talk.visible and _ring_input(event, who):
+	if not (talk.visible and _talker == who) and _ring_input(event, who):
 		get_viewport().set_input_as_handled()
 		return
 	if _bench.has(who) and not menu.visible:
@@ -913,16 +914,20 @@ func toggle_dev(who: String) -> void:
 		if campers.has(who):
 			campers[who].controlled = false
 	_dev_clock = 0.0
-	$Hud/Dev.visible = dev.visible or dev.stats_on
+	# While the menu is open it shows the fps line itself, clear of both players' docks.
+	$Hud/Dev.visible = dev.stats_on and not dev.visible
 
 
-## The dev menu sits on its player's side: the left, or the right when their dock is on the right (the couch).
+## The dev menu sits on its player's side: the left, or the right when their dock is on the right (the couch). It
+## shows the fps line at its own foot and ends above the screen's foot, its rows scrolling when the text is large.
 func _place_dev() -> void:
-	var width := get_viewport().get_visible_rect().size.x
+	var view := get_viewport().get_visible_rect().size
 	var margin := Tuning.num("dev", "panel.side_px", 24)
+	var top := Tuning.num("dev", "panel.top_px", 96)
 	var dock: Control = _docks.get(dev.who)
-	var right := couch_id != "" and dock != null and dock.get_global_rect().get_center().x > width * 0.5
-	dev.position = Vector2(width - dev.size.x - margin if right else margin, Tuning.num("dev", "panel.top_px", 96))
+	var right := couch_id != "" and dock != null and dock.get_global_rect().get_center().x > view.x * 0.5
+	dev.fit(view.y - top - Tuning.num("dev", "panel.bottom_px", 24))
+	dev.position = Vector2(view.x - dev.size.x - margin if right else margin, top)
 
 
 func close_dev() -> void:
@@ -946,7 +951,7 @@ func _on_dev(who: String, id: String, value: Variant) -> void:
 			DevTools.run(self, who, id, value)
 		ask("dev", [id, value], who)
 	elif id == "stats":
-		$Hud/Dev.visible = true
+		$Hud/Dev.visible = not dev.visible
 	elif id != "hud":
 		DevTools.run_local(self, who, id, value)
 
@@ -2712,26 +2717,31 @@ func _ring_input(event: InputEvent, who: String) -> bool:
 	return _rings[who].visible and event.is_action_pressed("next_tool")
 
 
-func _end_ring(who: String, take: bool) -> void:
+## `give_back` false leaves the camper held, for a panel that opened over the ring and lets them walk when it closes.
+func _end_ring(who: String, take: bool, give_back: bool = true) -> void:
 	var ring: ToolRing = _rings[who]
 	_rings.erase(who)
 	if take and not ring.visible:
 		_tools[who] = posmod(ring.current + 1, tools().size())
 	elif take and ring.hover >= 0:
 		_tools[who] = ring.hover
-	if ring.froze and campers.has(who):
+	if give_back and ring.froze and campers.has(who):
 		campers[who].controlled = true
 	ring.queue_free()
 	_refresh_boards()
 
 
 ## Opens each held ring once it has been held long enough, keeps it round its camper (in that player's own view on a
-## split couch) and points it with the sticks or the walking keys. The menu or a lost camper closes it as it was.
+## split couch) and points it with the sticks or the walking keys. The menu or a lost camper closes it as it was, and so
+## does a talk, the Pack, the bench or the dev menu opening for that player (their release may never reach the ring).
 func _tick_rings(delta: float) -> void:
 	for who: String in _rings.keys():
 		var ring: ToolRing = _rings[who]
 		if menu.visible or report.visible or not campers.has(who):
 			_end_ring(who, false)
+			continue
+		if (talk.visible and _talker == who) or _packs.has(who) or _bench.has(who) or (dev.visible and dev.who == who):
+			_end_ring(who, false, false)
 			continue
 		if ring.tick(delta):
 			ring.froze = campers[who].controlled

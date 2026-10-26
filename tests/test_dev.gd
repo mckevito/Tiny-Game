@@ -132,8 +132,8 @@ func test_f1_opens_the_menu_and_holds_the_camper_and_closes_again() -> String:
 		why = "F1 did not open the dev menu for player one"
 	elif camp.campers["p_host"].controlled:
 		why = "the camper should stand still while the dev menu is open"
-	elif not camp.get_node("Hud/Dev").visible:
-		why = "the fps line should show while the dev menu is open"
+	elif camp.get_node("Hud/Dev").visible or not camp.dev.stats.is_visible_in_tree():
+		why = "the fps line should show in the dev menu, not on the HUD, while the menu is open"
 	if why == "":
 		_press(camp, _key("Escape"))
 		if camp.dev.visible or not camp.campers["p_host"].controlled:
@@ -436,4 +436,43 @@ func test_jump_to_each_step_of_the_arrival_evening() -> String:
 		if not camp.report.visible:
 			why = "show the letter should open Ranger Burl's letter"
 	await _done()
+	return why
+
+
+## At a large text size the menu fits the screen with its fps line at its foot, and the rows scroll so the last
+## row can still be chosen and seen.
+func test_at_150_percent_the_menu_fits_and_its_rows_scroll() -> String:
+	_fresh()
+	var root := _tree().root
+	var was_size := root.size
+	var was_scale := root.content_scale_factor
+	root.size = Vector2i(1920, 1080)
+	root.content_scale_factor = 1.5
+	var camp := _camp("BigSide", "p_host", "Hana")
+	camp.start_solo(1)
+	_press(camp, _key("F1"))
+	var why := "" if camp.dev.visible else "F1 did not open the dev menu"
+	for i in 3:
+		camp._place_dev()
+		await _tree().process_frame
+	var view: Rect2 = camp.get_viewport().get_visible_rect()
+	var menu_rect: Rect2 = camp.dev.get_global_rect()
+	if why == "" and not view.encloses(menu_rect):
+		why = "the menu %s should fit the screen %s" % [menu_rect, view]
+	elif why == "" and camp.get_node("Hud/Dev").visible:
+		why = "the HUD's fps line should give way to the menu's own"
+	if why == "":
+		for i in DevTools.rows().size() - 1:
+			_press(camp, _key("Down"))
+		for i in 3:
+			await _tree().process_frame
+		var last: Control = camp.dev._buttons[DevTools.rows().size() - 1]
+		var shown: Rect2 = camp.dev._scroll.get_global_rect()
+		if camp.dev.pick != DevTools.rows().size() - 1:
+			why = "Down should reach the last row"
+		elif not shown.grow(1.0).encloses(last.get_global_rect()):
+			why = "the last row %s should scroll into view %s" % [last.get_global_rect(), shown]
+	await _done()
+	root.content_scale_factor = was_scale
+	root.size = was_size
 	return why

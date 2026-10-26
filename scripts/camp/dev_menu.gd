@@ -21,6 +21,11 @@ var pad := false
 
 var _title: Label
 var _list: VBoxContainer
+## The rows scroll when the panel would run past the bottom of the screen (a large text size), keeping the chosen row in
+## view.
+var _scroll: ScrollContainer
+## The fps line, shown at the foot of the menu while it is open (the HUD's own line shows only once it closes).
+var stats: Label
 var _hint: RichTextLabel
 var _buttons: Array[Button] = []
 ## The stick direction last stepped on each axis (-1, 0 or 1), so one lean is one step.
@@ -44,9 +49,13 @@ func _ready() -> void:
 	_title = Label.new()
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_title)
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	box.add_child(_scroll)
 	_list = VBoxContainer.new()
+	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_list.add_theme_constant_override("separation", int(_n("row_pad_px", 4)))
-	box.add_child(_list)
+	_scroll.add_child(_list)
 	for i in DevTools.rows().size():
 		var b := Button.new()
 		b.focus_mode = Control.FOCUS_NONE
@@ -57,6 +66,11 @@ func _ready() -> void:
 		_buttons.append(b)
 	_hint = UiLook.rich_label(true, int(_n("font_px", 24)) - 4)
 	box.add_child(_hint)
+	stats = Label.new()
+	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stats.add_theme_font_size_override("font_size", int(_n("font_px", 24)) - 4)
+	box.add_child(stats)
 
 
 func open(for_who: String, on_pad: bool) -> void:
@@ -65,6 +79,23 @@ func open(for_who: String, on_pad: bool) -> void:
 	_stick.clear()
 	visible = true
 	refresh()
+
+
+## Fits the panel into `room` pixels of height: the rows get what the title and hint leave, and scroll when that is
+## less than they need (at least min_rows of them stay showing).
+func fit(room: float) -> void:
+	_scroll.custom_minimum_size.y = 0.0
+	var rest := get_combined_minimum_size().y
+	var rows := _list.get_combined_minimum_size().y
+	var least := (rows / maxf(_buttons.size(), 1.0)) * _n("min_rows", 4)
+	_scroll.custom_minimum_size.y = clampf(room - rest, minf(least, rows), rows)
+	size.y = 0.0
+	_show_pick()
+
+
+func _show_pick() -> void:
+	if not _buttons.is_empty():
+		_scroll.ensure_control_visible.call_deferred(_buttons[pick])
 
 
 func close() -> void:
@@ -147,6 +178,7 @@ func refresh() -> void:
 		else:
 			_buttons[i].remove_theme_stylebox_override("normal")
 	_hint.text = Prompts.rich(Tuning.text("dev.hint"), pad)
+	_show_pick()
 
 
 ## Steps the chosen row's value by `step`; a live row or a toggle says so at once.
