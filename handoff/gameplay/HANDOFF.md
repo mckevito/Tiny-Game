@@ -2,7 +2,7 @@
 
 1. **Owns:** the rules of the camp and what players can do in it.
    - Scripts: `scripts/camp/camp_state.gd`, `camp_day.gd`, `camp_build.gd`, `camp_guests.gd`, `camp_pack.gd`,
-     `camp_gather.gd`, `camp_tasks.gd`, `camp_projects.gd`, `camp_rating.gd`, `camp_save.gd`, `wildlife.gd`, `clearing.gd`, `camper.gd`.
+     `camp_gather.gd`, `camp_tasks.gd`, `camp_projects.gd`, `camp_rating.gd`, `camp_save.gd`, `guest_plans.gd`, `wildlife.gd`, `clearing.gd`, `camper.gd`.
    - In `scripts/camp/camp.gd` (shared with Interface): the netcode (`ask`, `_request`, `_decide`, `_share`,
      the RPCs), `action_for` and `interact`, build mode, the day tick (`_tick_day`, arrivals, `refresh_requests`),
      stays and tents (`_sync_stays`, `_pitch_tent`, `_tick_tents`, `enter_tent`, `leave_tent`), trees, forage,
@@ -22,8 +22,9 @@
    `hole`/`cleared`, `Camper.swing`, `Camp._strike`/`_struck`/`_swept`, `capture.gd --chop`); Gameplay 2 the fire grows
    in levels (`CampBuild.next_fire`/`upgrade_fire`, camp key `fire`, `Camp._sync_fire`, `capture.gd --fire`) and the
    camp board is a building from the kit (`CampProjects.near_board(state, pos)`, save version 7); Gameplay 3 up to 3 guests at once, 2 nights each
-   (owner's pick); Gameplay 4 guests fish, photograph animals, fly kites, play frisbee fetch with each other and sit on
-   chairs, the bench and logs. The Interface thread owns the icon and knitted-clipboard rounds (owner, 25 Oct 21:13). Stage B stays unsigned until the owner plays these.
+   (owner's pick; merged, PR #37, with the clipboard reading pose `Camp.held_by`); Gameplay 4 guests fish, photograph
+   animals, fly kites, play frisbee with each other and sit on chairs, the bench and the fire ring's logs
+   (`GuestPlans.plan`, `Camp._tick_guests`/`_tick_frisbees`, `Camper.sit`, `capture.gd --guests`). The Interface thread owns the icon and knitted-clipboard rounds (owner, 25 Oct 21:13). Stage B stays unsigned until the owner plays these.
 4. **Open work, in order:**
    1. The owner plays round 5 and signs off Stage B (chat sign-off plus the merged PR; record it in the next PR's
       `docs/STATUS.md` and the `docs/PLAN.md` decision log). Approve or change the **Proposed** numbers.
@@ -39,6 +40,10 @@
 6. **Traps:** all of `handoff/build/HANDOFF.md` section 6, plus:
    - Solo, anything that votes for bed (the tent, the menu) starts the night at once; a test that needs to stay in
      bed adds a second online player with `state.join` first.
+   - What guests do is `GuestPlans.plan(state, asleep)`, a pure function of shared keys (calendar, stays, objects,
+     fire, carriers): no RPC, both PCs work it out alike. Never feed it anything local (animals, cameras, time). A
+     guest with an open request is always "rest" at `stand_point`, because giving is checked there. Guest campers
+     (not controlled, no `remote_target`) skip physics between walks, so tents and seats never push them.
    - A guest who walks in only pitches their tent on arrival (`Camper.arrived`); tests call `_pitch_tent(stay)`.
    - Request kinds with `near` are met by the camp itself; `refresh_requests` skips ones that stay already had.
    - `_moved` carries the held thing (`held_by`: the tool, or "clipboard" while it is open) and "in the tent" as well as the position (protocol 6). Remote tent visits use

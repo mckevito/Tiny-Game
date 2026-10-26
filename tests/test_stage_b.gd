@@ -630,3 +630,74 @@ func test_guests_ask_again_tents_and_the_camera_from_the_buttons() -> String:
 			why = "alone, sleeping in the tent at midday should bring the next morning"
 	await _done()
 	return why
+
+
+## First-minutes round 4 in the scene, over ENet: free guests walk off to what GuestPlans says and settle there with
+## its prop or on their seat, the same on the guest PC as on the host; two frisbee players get a disc in the air.
+func test_guests_go_fishing_sit_and_play_frisbee_on_both_pcs() -> String:
+	_fresh()
+	var host := _camp("HostSide", "p_host", "Hana")
+	var why: String = host.start_host(1, 24732)
+	var s: CampState = host.state if why == "" else null
+	if why == "":
+		s.camp["coins"] = 500
+		for p: Vector2 in [Vector2(3, 5), Vector2(-4, 7), Vector2(4, 9)]:
+			why = s.build.build("p_host", "pitch", p, 0.0)
+			if why != "":
+				break
+			host._show_object(s.build.last_id)
+	if why == "":
+		_at_hour(host, Tuning.num("day", "stays.arrive_hour"))
+		for i in 3:
+			s.day.maybe_arrive()
+			s.camp["calendar"]["minute"] = float(s.camp["calendar"]["minute"]) + Tuning.num("day", "stays.gap_min")
+		for id: String in s.camp["stays"]:
+			s.camp["stays"][id]["request"] = {"kind": "fish", "done": true}
+			s.camp["stays"][id]["next_at"] = INF
+		# A slot with a frisbee pair and a seat taken, so every kind of settling shows.
+		var found := false
+		for day in 8:
+			s.camp["calendar"]["day"] = day + 1
+			for slot in int(CampDay.day_minutes() / Tuning.num("guests", "activities.slot_min")) - 3:
+				s.camp["calendar"]["minute"] = (slot + 0.5) * Tuning.num("guests", "activities.slot_min")
+				var kinds: Array = GuestPlans.plan(s, false).values().map(func(p: Dictionary) -> String: return p["kind"])
+				if kinds.has("frisbee") and (kinds.has("sit") or kinds.has("fish")):
+					found = true
+					break
+			if found:
+				break
+		if not found:
+			why = "no slot in 8 days had a frisbee pair with a seat or fishing"
+		host._sync_stays(false)
+		host._share()
+	var guest := _camp("GuestSide", "p_guest", "Gus")
+	if why == "":
+		guest.start_join("127.0.0.1", 24732)
+		if not await _until(func() -> bool: return guest.state != null and guest.visitors.size() == 3 \
+				and guest.state.day.minute() == s.day.minute()):
+			why = "the guest PC should see all three guests"
+	for camp: Node in [host, guest]:
+		if why != "":
+			break
+		await _tree().process_frame
+		for id: String in camp.visitors:
+			var c: Camper = camp.visitors[id]
+			if c.walk_target is Vector3:
+				c.position = c.walk_target
+		if not await _until(func() -> bool: return camp._doing.size() == 3 and camp._doing.values().all(
+				func(d: Dictionary) -> bool: return d.get("settled", false))):
+			why = "every guest should settle at what they are doing"
+			break
+		var plans := GuestPlans.plan(camp.state, false)
+		for id: String in plans:
+			var p: Dictionary = plans[id]
+			var c: Camper = camp.visitors[id]
+			if Vector2(c.position.x, c.position.z).distance_to(p["at"]) > 0.05 or c.held != p["prop"] \
+					or c.sitting() != (float(p["sit_y"]) > 0.0):
+				why = "%s should be at %s holding %s, is at %s holding %s" % [id, p, p["prop"], c.position, c.held]
+		if why == "" and camp._discs.size() != 1:
+			why = "%s: the frisbee pair should have a disc in the air, got %d: %s" % [camp.name, camp._discs.size(), camp._doing]
+	if why == "" and GuestPlans.plan(guest.state, false) != GuestPlans.plan(s, false):
+		why = "both PCs should agree on what every guest is doing"
+	await _done()
+	return why
