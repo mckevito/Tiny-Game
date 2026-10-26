@@ -27,10 +27,10 @@ var _apply := Button.new()
 
 func _ready() -> void:
 	custom_minimum_size.x = UiLook.num("options_width_px", 1040)
-	var title := Label.new()
+	var title := FeltLetters.new()
+	title.pins = false
+	title.font_px = int(UiLook.num("felt_heading_font_px", 56))
 	title.text = Tuning.text("options.title")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", int(UiLook.num("heading_font_px", 40)))
 	add_child(title)
 	add_child(_tabs)
 	_tabs.alignment = BoxContainer.ALIGNMENT_CENTER

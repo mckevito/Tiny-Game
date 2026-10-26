@@ -98,6 +98,18 @@ func test_the_fire_lights_from_both_packs_and_the_box_then_the_camp_takes_a_name
 	return ""
 
 
+func test_nothing_is_built_over_the_camp_sign() -> String:
+	var s := _state()
+	var at := CampStory.sign_pos()
+	for kind: String in ["pitch", "log_bench"]:
+		for yaw: float in [0.0, 90.0]:
+			if s.build.check(kind, at, yaw) == "":
+				return "a %s should not go over the camp sign (data/build.json blockers camp_sign)" % kind
+	if s.build.check("log_bench", at + Vector2(0.0, 0.5), 0.0) == "":
+		return "a bench half a metre from the sign should be refused"
+	return ""
+
+
 func _camp(side_name: String, profile_id: String, display_name: String) -> Node:
 	var side := Node3D.new()
 	side.name = side_name
@@ -260,8 +272,8 @@ func test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_button
 				_press(camp, "interact")
 			if not camp._boards.has("p_host"):
 				why = "the handover should end with the clipboard open"
-			elif camp.ranger.get_node("Mark").visible:
-				why = "the '!' should go once the evening is over"
+			elif not camp.ranger.get_node("Mark").visible:
+				why = "after the evening the '!' should stay up for Burl's first story job"
 	if why == "":
 		camp.toggle_clipboard("p_host")
 		_stand(camp, "p_host", _by_ranger())
@@ -269,8 +281,8 @@ func test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_button
 			why = "beside the ranger, interact should talk to him"
 		else:
 			camp.interact("p_host")
-			if not camp.talk.visible or camp.talk.line() == "":
-				why = "talking to him afterwards should give one of his everyday lines"
+			if not camp.talk.visible or not camp.talk.line().begins_with(Tuning.text("job.board.ask_1").left(20)):
+				why = "talking to him afterwards should give his first story job: " + camp.talk.line()
 			_press(camp, "cancel")
 	if why == "":
 		_stand(camp, "p_host", _by_sign())

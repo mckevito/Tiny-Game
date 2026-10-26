@@ -16,6 +16,8 @@ var extra_distance := 0.0
 var leader: PlayCamera
 ## How far the picture slides, in HUD pixels, so its player stands clear of an open panel (Camp._keep_in_view).
 var shift_px := Vector2.ZERO
+## A turn (yaw, radians) the camera eases to, at camera.turn_rate, then lets go of (Ranger Burl's talks use it), or null.
+var turn_to: Variant = null
 var _focus := Vector3.ZERO
 var _faders: Array[MeshInstance3D] = []
 var _fade: Dictionary = {}
@@ -64,6 +66,11 @@ func _process(delta: float) -> void:
 			_want_distance -= _num("zoom_step_m", 1.0)
 		if Input.is_action_just_pressed("zoom_out"):
 			_want_distance += _num("zoom_step_m", 1.0)
+		if turn_to is float:
+			yaw = lerp_angle(yaw, turn_to, 1.0 - exp(-_num("turn_rate", 5.0) * delta))
+			if absf(angle_difference(yaw, turn_to)) < 0.01:
+				yaw = turn_to
+				turn_to = null
 		_want_distance = clampf(_want_distance, _num("min_distance_m", 7.0), _num("max_distance_m", 15.0))
 		distance = lerpf(distance, _want_distance, 1.0 - exp(-_num("zoom_rate", 8.0) * delta))
 	var want: Variant = aim if aim is Vector3 else (target.global_position if target else null)

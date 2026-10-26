@@ -24,7 +24,9 @@
     "target_height_m": 0.7,
     "fade_radius_m": 1.6,
     "fade_amount": 0.6,
-    "fade_rate": 6.0
+    "fade_rate": 6.0,
+    "talk_side_deg": 55.0,
+    "turn_rate": 5.0
   },
   "carry": {
     "reach_m": 1.6,
@@ -112,8 +114,7 @@
     "tabs": [
       "today",
       "bookings",
-      "supplies",
-      "guide"
+      "supplies"
     ],
     "width_px": 544,
     "font_px": 22,
@@ -218,7 +219,7 @@
   "legend": {
     "_about": "Each player's legend, at the top of their dock (Camp.legend): the actions whose button icons it shows, by mode. first is day 1 (walking included), walk every other day, build while placing (turn, undo and done; the dock's build line has pick, and the build prompt says what Use does there). The dock's own lines already show the tool, build and Pack buttons. Words: data/text.json legend.<action>.",
     "first": ["move", "interact", "camera", "clipboard", "menu"],
-    "walk": ["interact", "camera", "clipboard", "menu"],
+    "walk": ["interact", "camera", "clipboard", "scrapbook", "menu"],
     "build": ["rotate", "grid", "undo", "build", "camera", "menu"]
   },
   "glyphs": {

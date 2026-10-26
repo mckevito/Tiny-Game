@@ -35,10 +35,23 @@
    the arrival evening first. Built: `CampStory` (`scripts/camp/camp_story.gd`, camp keys `story` and `names`,
    `data/ranger.json`), Burl as an uncontrolled `Camper` (`Camp._spawn_ranger`, Art's knitted `ranger_burl`, swapped to `ranger_burl_talk` by `Camp._ranger_talks` while he speaks), his bubble `TalkBubble` (`scripts/ui/talk_bubble.gd`, which also takes the camp's name), the cold
    fire (`fire_pit_cold`, `_sync_fire`), the camp sign (`_sync_sign`), `capture.gd --opening`.
+3c. **Burl's story jobs (owner go, 26 Oct 2026).** Seven jobs in `data/ranger_jobs.json`, kept in the story's `job`,
+   `asked` and `have`. `CampStory.talk_plan` says what he will say (thanks, then the next ask, chaining a job already
+   done), the host's `hear` (ask `ranger_job`) applies it and pays, `note` counts steps from `Camp._progress`.
+   `Camp.burl_line` is the HUD line and the morning word. `_ranger_pose` is the rpc that shows his talk on the other
+   PC; `_turn_for_talk` turns the play camera (`PlayCamera.turn_to`) and back. Frames 9 to 11 of `capture.gd --opening`.
+3d. **The scrapbook, round 1 (owner picks, 26 Oct 2026).** `data/scrapbook.json` (categories, pages, photo, card,
+   book), `CampScrapbook` (`scripts/camp/camp_scrapbook.gd`, camp key `scrapbook`: its `id` names the snapshot folder,
+   `pages` maps page id to day, by and shots). The host fills pages from `_decide` (`sweep`, after every ask) and
+   `_progress` (`note`); the camera's photo ask fills animal pages. `Camp._snap` draws the photo in a throwaway
+   SubViewport on the world (no HUD), `_keep_and_send` and the `_photo_file` rpc move the WebP between PCs
+   (`_send_photos` on join). The book is `ScrapBook` (`scripts/ui/scrap_book.gd`), knitted pictures come from
+   `ScrapStudio` (`scripts/ui/scrap_studio.gd`), and `open_book`, `_book_input`, `_refresh_books` and the `PageCard`
+   are in `camp.gd`'s scrapbook section. `capture.gd --scrapbook` for frames.
 4. **Open work, in order:**
-   0. Next from the case study, one PR each: ranger jobs (Burl hands out one story job at a time, reusing the firsts,
-      plus his morning word in the report); then the ranger stamp card (stamps from odd jobs and tiered badges, a
-      clipboard page, Burl's shop of personal upgrades); renaming Burl himself (`names.ranger` is saved, no spot yet).
+   0. The **scrapbook** (owner picks, 26 Oct 2026), round 1 built (see 3d). Next: round 2, people and places
+      (guests, Burl and sights like the falls need a real photo, `fill: "photo"` pages with a way to aim at them);
+      round 3, Burl's rewards per category. Then renaming Burl himself (`names.ranger` is saved, no spot yet).
       Interface owns the tool ring and the clipboard's home grid.
    1. Stage B is signed off (26 Oct 2026). The owner can still approve or change the **Proposed** numbers; three
       Milestone 3 hands-on checks (two DualSenses, link code, Tailscale) wait until later.

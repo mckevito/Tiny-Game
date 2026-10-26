@@ -447,11 +447,29 @@ opens round their own camper in their own half, and only their own devices point
 | A tap steps to the next tool with no ring; a hold opens the ring round the camper with every tool and stops them walking; pointing left with the walking keys and letting go takes the left tool; cancel keeps the tool | `test_hud.test_holding_the_tool_button_opens_a_ring_round_each_camper` | Passing |
 | On the couch both rings open at once, each on its own player's half; the couch player's right stick points only their ring | same test | Passing |
 | The ring alone and both rings on the couch, to look at | `tools/capture.gd --hud` (hud_ring.png, couch_rings.png) | Looked at (cloud frames) |
+| A talk that opens while the ring is held (E next to Burl) closes the ring; the camper walks again when the talk ends (Playtest on main, 26 Oct) | `test_hud.test_a_talk_that_opens_over_the_ring_closes_it` | Passing |
+| At 150% text the dev menu fits the screen: its rows scroll to the chosen one and it shows the fps line at its own foot, off both players' docks (Playtest on main, 26 Oct) | `test_dev.test_at_150_percent_the_menu_fits_and_its_rows_scroll` | Passing |
 | Holding and pointing feels quick and clear on the owner's mouse and DualSense | Owner's play | Waiting on the owner |
 
 **Proposed** (data/tuning.json `ring`): the ring opens after 0.25 s held; slot 0 (Hands) at the top and the rest
 clockwise in the tools' order; tool names in the buttons until the item icons round; no empty "still to earn" slots
 yet (nothing is earned yet). The dock's tool line now reads "Tool · T next, hold for all".
+
+### Interface round 6: Pinned Felt lettering and colour presets (26 Oct 2026)
+The owner's pick for the interface look: Pinned Felt lettering on the Ranger Station Wall, with four colour presets
+the player chooses, each with one scheme per season (data/look.json). This round adds the two fonts (Fredoka for felt
+lettering, Figtree for all reading text), the presets with a "Sign colours" choice in Options (Accessibility), and
+felt lettering (`FeltLetters`) for the game's name on the title and menus and the Options heading. The letters
+recolour when the season turns. The wood and cork panels, the clipboard home grid and item icons are the next rounds.
+
+| Proof | Test | Result |
+|---|---|---|
+| Every preset has a scheme for each of the four seasons with valid colours, and a name in Options | `test_look.test_every_preset_has_a_scheme_for_each_season_and_a_name` | Passing |
+| Options offers every preset; the default in autumn is Harvest; the letters change when the season turns; Twilight in winter is Northern Lights; an unknown preset falls back to the default | `test_look.test_the_colours_setting_picks_a_preset_and_the_season_picks_its_scheme` | Passing |
+| The title is one line when wide and wraps onto balanced lines (keeping every word) when narrow; a new season redraws it | `test_look.test_felt_lettering_recolours_when_the_season_turns_and_wraps_to_fit` | Passing |
+| Both fonts load; controls without a theme and the menu theme read in Figtree | `test_look.test_the_two_fonts_load_and_reading_text_uses_figtree` | Passing |
+| The title and Options, to look at | `tools/capture.gd --menus` (title.png, options_access.png) | Looked at (cloud frames) |
+| The letters look like the Pinned Felt page on the owner's screen, in every preset | Owner's play | Waiting on the owner |
 
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
@@ -570,8 +588,44 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
 | The cold fire takes what it needs (data/ranger.json fire) from either player's Pack and the camp box, and only that; nothing grills on it and it can't be upgraded until it burns | `test_story.test_only_a_new_camp_from_the_menu_starts_cold`, `test_story.test_the_fire_lights_from_both_packs_and_the_box_then_the_camp_takes_a_name` | Passing |
 | The first name, typed wherever the players stand when the fire catches, finishes the evening; after that the sign repaints it; names are tidied, capped and saved | `test_story.test_the_fire_lights_from_both_packs_and_the_box_then_the_camp_takes_a_name` | Passing |
 | From the buttons: the letter, Burl's hello with the player held still, feeding the fire, the naming line, the sign showing the name, the clipboard handover, his everyday line, cancel at the sign keeps the name | `test_story.test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_buttons` | Passing |
+| Nothing can be built over the camp sign (data/build.json blockers camp_sign); it stands at the foot of the path, clear of the usual pitch spots | `test_story.test_nothing_is_built_over_the_camp_sign` | Passing |
 | The guest PC reads the letter, sees the cold fire, lights it and names the camp through the host | `test_story.test_the_guest_pc_reads_the_letter_and_lights_the_fire_through_the_host` | Passing |
 | Review frames: letter, hello, cold fire, fire lit at dusk, naming, handover, clipboard, sign | `capture.gd --opening` (`opening-r1/` in the project files) | Looked at |
+
+### Burl's story jobs (26 Oct 2026)
+The owner said go on the second pick from the case study. After the arrival evening Ranger Burl gives one story job
+at a time, in person, that walks the players through the camp (`data/ranger_jobs.json`, `CampStory.talk_plan`,
+`hear`, `note`): put up the camp board, mark out a tent pitch, grant a guest's wish, build a bench by the fire, catch
+and grill supper, replant a stump, earn the second star. The odd jobs stay as the side list. Playtest's notes on the
+talk are in too: the camera turns while he talks so the player no longer hides him, he turns back to his own facing
+afterwards, and the other PC sees him talk.
+
+| Proof | Test | Result |
+|---|---|---|
+| One job at a time, given in person; done jobs are thanked for with their coins and the next is given; a job done before he asks is thanked for at once; steps that aren't the job don't count; older saves start at the first job; none before the evening is over | `test_jobs.test_burl_gives_one_job_at_a_time_and_thanks_each_in_person` | Passing |
+| From the buttons: the "!" and HUD line while he has a word, his job lines, the camera turning to show both and back, his pose and facing after, the HUD's job line, the "!" back once it is done, the morning word, his thanks and coins, the jobs saved | `test_jobs.test_talking_to_burl_from_the_buttons_gives_his_job_and_shows_him` | Passing |
+| The guest PC takes a job through the host, and the host PC sees Burl talk to the guest and stand again after | `test_jobs.test_the_guest_pc_takes_a_job_and_the_host_sees_burl_talk` | Passing |
+| Review frames: the first job head on, the "!" once it is done, his thanks | `capture.gd --opening` frames 9 to 11 (`jobs-r1/` in the project files) | Looked at |
+
+### The scrapbook, round 1 (26 Oct 2026)
+The owner replaced the ranger stamp card with a scrapbook and picked the real snapshot taped in, Burl's rewards per
+category and its own felt book. Round 1 is the book: four tabs (Animals, Tools, Builds, Finds; 25 pages in
+`data/scrapbook.json`). An animal's page fills when a player photographs it with the camera tool: the picture is drawn
+from that player's camera turned toward the animal, without the HUD, kept as a small WebP on that PC
+(`user://photos/<book id>/`) and sent to the other PC. Tool pages fill the first time the tool is used, build pages
+when one stands in the camp, find pages when one is in a Pack or the camp box; each new page shows a card at the top
+left with its knitted picture. The clipboard's Field guide tab is gone: its photos live in the book now, and older
+saves find theirs there.
+
+| Proof | Test | Result |
+|---|---|---|
+| Items, builds and steps fill their pages once and say who filled them; only animals fill by a photo, which counts; older saves' field-guide photos are found | `test_scrapbook.test_pages_fill_by_themselves_and_animals_need_a_photo` | Passing |
+| A snapshot is a WebP at photo.width_px x height_px under max_bytes, kept in the camp's own folder; not-pictures, too-big files and non-animal pages are turned away | `test_scrapbook.test_a_snapshot_is_a_small_photo_kept_in_the_camps_folder` | Passing |
+| From the buttons: a new page's card, the scrapbook button opens the book and holds the player, tabs and picks turn, unknown pages show "?", the button closes it, the pages are saved | `test_scrapbook.test_the_book_opens_from_its_button_and_turns_its_tabs` | Passing |
+| A snapshot reaches the other PC both ways, including a guest's first photo before its PC has the book's id | `test_scrapbook.test_a_snapshot_reaches_the_other_pc_both_ways` | Passing |
+| The book fits the screen at 150% alone, and on the couch each player's book keeps to its own half (Playtest, PR #62) | `test_scrapbook.test_the_book_fits_the_screen_at_big_sizes_and_on_the_couch` | Passing |
+| The camera photo still fills the animal's page (the field guide's old proof) | `test_stage_b` (the camera step) | Passing |
+| Review frames: the snap with its card, then each tab with the rabbit snapshot taped in; after Playtest, the photo is taken from the camper's eye (no hat or name tag in it) | `capture.gd --scrapbook` (`scrapbook-r1/`, then `scrapbook-r1-fix/` in the project files) | Looked at |
 
 ### Guests walk round things and sit like plush dolls (26 Oct 2026)
 The owner (26 Oct 2026, with the Stage B sign-off): fix the chair clipping. Playtest pass 3 had logged both halves:
@@ -586,6 +640,7 @@ Seated guests were their standing model lifted onto the seat, so their legs went
 | The stone ring's log seats stop a player, like its stones | `test_guest_path.test_the_rings_log_seats_stop_a_player` | Passing |
 | Guests still settle at their activities on both PCs | `test_stage_b.test_guests_go_fishing_sit_and_play_frisbee_on_both_pcs` | Passing |
 | Review frames: guests seated on both chairs, the bench, the stool and the ring's logs; three guests busy from the play camera | `capture.gd --guests` and a seat close-up (`chair-clipping/` in the project files) | Looked at |
+| The sitting pose looks right | Owner's verdict (the sitting sheet) | Signed off (owner, 26 Oct 2026: "it looks good") |
 
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
@@ -601,11 +656,19 @@ Seated guests were their standing model lifted onto the seat, so their legs went
    the bookings, and three goals for the day. E (Cross) starts the day.
 
 ### Still open
+- **Proposed** (story jobs): the seven jobs, their order, lines and coins (5 to 10) in `data/ranger_jobs.json` and
+  `data/text.json` `job.*`; the camera's turn while he talks (`camera.talk_side_deg` 55, `turn_rate` 5).
+- **Replaced** (owner, 26 Oct 2026): the ranger stamp card became the scrapbook (picks recorded in `docs/PLAN.md`).
+- **Proposed** (scrapbook round 1): the 25 pages and their words (`data/scrapbook.json`, `data/text.json` `scrap.*`),
+  the book's look, the K / L2 button, the photo's size (320 x 240 WebP, taken from the camper's eye at a 38 degree view) and the
+  card's 3 s. Fish and meals have no knitted model yet, so their pages show a felt token in the Pack's colour; the
+  berries picture is small. A new photo of an animal replaces its page's snapshot and credit on both PCs (the latest
+  photo wins). Round 2 adds people and places, round 3 Burl's rewards per category.
 - **Proposed** (chair round; data/guests.json path and sit, data/models.json, data/clearing.json, data/save.json): a
   guest keeps 0.3 m (a camper's own radius) from every solid model's collider, routes on a 0.2 m grid and goes round
   the pond as an oval; it sits down from 0.65 m in front of a chair, 0.6 m in front of a stool or the bench, and from
-  the fire's side of each ring log. The sitting pose (`guest_*_sit`, legs folded forward at the hip, boot toes up) is
-  new art and Proposed; seat heights are tuned for it (chairs and stool 0.3 m, bench 0.39 m, ring logs 0.14 m). A new
+  the fire's side of each ring log. The sitting pose (`guest_*_sit`, legs folded forward at the hip, boot toes up) was
+  approved by the owner (26 Oct 2026: "I sign off on the sitting. it looks good"); seat heights are tuned for it (chairs and stool 0.3 m, bench 0.39 m, ring logs 0.14 m). A new
   camp's chairs stand at (-1.8, 1.3) and (1.85, 1.2), and first-time players start at (-1.0, -2.6) and (1.1, -2.5),
   behind the ring's logs. Saves keep their chairs where they are; a guest heading for an old save's chair hard by
   the ring walks to the nearest open ground and steps in from there.

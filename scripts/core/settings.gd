@@ -88,10 +88,16 @@ static func set_value(key: String, v: Variant, apply_now: bool = true) -> void:
 		apply(key)
 
 
-## The options of a choice row (picture takes the presets in data/graphics.json).
+## The options of a choice row (picture takes the presets in data/graphics.json, colours the felt lettering presets
+## in data/look.json).
 static func choices(key: String) -> Array:
 	var row: Dictionary = rows().get(key, {})
-	return Quality.names() if row.get("from", "") == "graphics" else row.get("options", [])
+	match str(row.get("from", "")):
+		"graphics":
+			return Quality.names()
+		"look":
+			return (Tuning.value("look", "presets", {}) as Dictionary).keys()
+	return row.get("options", [])
 
 
 ## Puts every row of a page back to its default (the controls page also clears every remap).
@@ -226,6 +232,8 @@ static func apply(key: String) -> void:
 		"ui_scale":
 			if tree:
 				tree.root.content_scale_factor = num(key) / 100.0
+		"colours":
+			UiLook.refresh()
 		"still_trees":
 			FeltBuilder.material(true).set_shader_parameter("sway_amount",
 					0.0 if value(key) else Tuning.num("art", "felt.sway_amount_m", 0.0))

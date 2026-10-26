@@ -73,6 +73,25 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   keyboard E types a letter (why: a text field takes every key; a typing step needs its own glyph, now `type_done`,
   Enter or Cross); at 150% in couch play the docks covered Burl's bubble (why: two bottom panels never checked
   together; the docks and prompt line now step aside while he talks). Test with a real key press, not a set text.
+- 26 Oct 2026: a tent pitch could be built over the camp sign (Playtest, combined pass). New scenery needs a row in
+  data/build.json `blockers` (why: the build check only knows scenery listed there). The sign also sat inside the
+  spot every test pitches on, so it moved to the foot of the path, where guests arrive; check new scenery against
+  the test spots before placing it.
+- 26 Oct 2026: Burl's story jobs. A HUD element updated in `_process` (his "!") reads a frame late in tests: wait a
+  frame after an action before checking it. A job the players finished before he asks (a pitch already built) must
+  not make them do it twice, so builds count what stands (`has:<kind>`) and the talk chains straight to his thanks.
+- 26 Oct 2026: the scrapbook's snapshot. Grabbing the screen and hiding the HUD first still caught toasts and the new
+  page's card (why: the HUD re-shows itself each frame and the ask adds new parts after the hide); the photo is now
+  drawn by its own camera in a throwaway SubViewport on the same world, which has no HUD at all and can aim at the
+  animal. A guest's first photo can arrive before its PC knows the book's id, so a guest always sends its snapshot
+  to the host, which keeps it and sends it back. A new panel built visible counts as "showing" at once: hide it until
+  it has something to show.
+- 26 Oct 2026: Playtest of the scrapbook (PR #62). The photo from the play camera was mostly the photographer's own
+  hat and name tag (why: the play camera sits behind the player, and you walk up to an animal to photograph it); it is
+  now taken from the camper's eye, a step toward the animal. At 150% the couch books overlapped and the solo book ran
+  off the top (why: a panel sized for 100% was never checked at 150% or on the couch); the book now scales itself to
+  its share of the screen, re-checked on every resize because wrapped text settles a frame late. Test every new panel
+  at 150% alone and on the couch.
 - 26 Oct 2026: chair round (owner, with the Stage B sign-off). Guests walked straight through chairs and the ring's
   logs, the logs had no collider, and a seated guest was a standing model lifted onto the seat, legs through it. Fixes:
   grid routes round every `collide` row, a sitting pose per guest, solid logs. Faults on the way: the folding chairs

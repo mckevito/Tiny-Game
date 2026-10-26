@@ -8,7 +8,8 @@ extends RefCounted
 var camp: Dictionary
 ## The parts of the camp a guest PC mirrors besides objects and profiles: the day, the coins and the guests.
 const SHARED: Array[String] = ["calendar", "coins", "stays", "last_settled", "ledger", "reservations", "tasks",
-		"trees", "forage", "journal", "box", "kit", "bundles", "crate", "shipped", "projects", "rating", "fire", "story", "names"]
+		"trees", "forage", "journal", "box", "kit", "bundles", "crate", "shipped", "projects", "rating", "fire", "story", "names",
+		"scrapbook"]
 ## Object id -> profile id of whoever carries it. Not saved: a carried thing stays at its last spot in the save.
 var carriers := {}
 ## Profile ids of the players in the camp right now.
@@ -29,6 +30,7 @@ var projects: CampProjects
 var rating: CampRating
 ## The arrival evening with Ranger Burl, and the names the players chose (CampStory).
 var story: CampStory
+var scrapbook: CampScrapbook
 
 
 func _init(data: Dictionary) -> void:
@@ -50,6 +52,7 @@ func _init(data: Dictionary) -> void:
 	projects = CampProjects.new(self)
 	rating = CampRating.new(self)
 	story = CampStory.new(self)
+	scrapbook = CampScrapbook.new(self)
 
 
 static func _num(key: String) -> float:

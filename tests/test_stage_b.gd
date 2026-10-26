@@ -620,8 +620,8 @@ func test_guests_ask_again_tents_and_the_camera_from_the_buttons() -> String:
 		var photos: Dictionary = s.camp["journal"].get("photos", {})
 		if int(photos.get(str(rabbit["row"]["model"]), 0)) != 1 or int(s.camp["coins"]) != coins + int(Tuning.num("wildlife", "photo_bonus")):
 			why = "interact with the camera by an animal should photograph it for the guide and pay the bonus: %s" % [photos]
-		elif not "\n".join(camp.field_guide()).contains(Tuning.text("animal." + str(rabbit["row"]["model"])).capitalize()):
-			why = "the field guide should list the photographed animal"
+		elif not camp.state.scrapbook.has(str(rabbit["row"]["model"])):
+			why = "the photo should fill the animal's scrapbook page"
 	# Alone, crawling into the tent at midday sleeps the day away.
 	if why == "":
 		var day := s.day.today()

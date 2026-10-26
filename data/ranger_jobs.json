@@ -1,0 +1,19 @@
+{
+  "_about": "Ranger Burl's story jobs (scripts/camp/camp_story.gd; owner picks 26 Oct 2026, the cozy-games case study): after the arrival evening he gives the players one job at a time, in person, that walks them through the camp. Talking to him gives the next job; once it is done the '!' shows over him again, and talking to him thanks them, pays coins and gives the next one. need says what finishes a job: has:<kind> counts that build standing in the camp now (data/build.json kinds), stars the camp's star rating (data/rating.json), and anything else is a step the players take after he asks, matched like the odd jobs (data/tasks.json: give, cook, plant, build:<kind>...); count is how many. coins are paid when he thanks them. ask and thanks are his lines (text keys, data/text.json job.<id>.*), and goal is the short line on the HUD and in the morning report. Nothing is timed: a job waits for as long as it takes, and either player can do it. A camp that never played the arrival evening (older saves) starts at the first job.",
+  "jobs": [
+    {"id": "board", "need": "has:project_board", "count": 1, "coins": 5,
+      "ask": ["job.board.ask_1", "job.board.ask_2"], "thanks": ["job.board.thanks"]},
+    {"id": "pitch", "need": "has:pitch", "count": 1, "coins": 5,
+      "ask": ["job.pitch.ask_1", "job.pitch.ask_2"], "thanks": ["job.pitch.thanks"]},
+    {"id": "guest", "need": "give", "count": 1, "coins": 8,
+      "ask": ["job.guest.ask_1", "job.guest.ask_2"], "thanks": ["job.guest.thanks"]},
+    {"id": "bench", "need": "has:log_bench", "count": 1, "coins": 5,
+      "ask": ["job.bench.ask_1"], "thanks": ["job.bench.thanks"]},
+    {"id": "supper", "need": "cook", "count": 1, "coins": 5,
+      "ask": ["job.supper.ask_1", "job.supper.ask_2"], "thanks": ["job.supper.thanks"]},
+    {"id": "replant", "need": "plant", "count": 1, "coins": 5,
+      "ask": ["job.replant.ask_1"], "thanks": ["job.replant.thanks"]},
+    {"id": "star", "need": "stars", "count": 2, "coins": 10,
+      "ask": ["job.star.ask_1", "job.star.ask_2"], "thanks": ["job.star.thanks_1", "job.star.thanks_2"]}
+  ]
+}

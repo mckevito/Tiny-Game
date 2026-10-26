@@ -3,6 +3,22 @@
 One line per fault found by a playtest pass: where, what, who fixes it, and which check should have caught it (and
 now does, once the owning thread adds it). Newest pass first. Frames are in the project files, not the repo.
 
+## Pass 4, 26 Oct 2026 (PRs #44 to #58, each on its own branch, then main with #49 to #56 merged)
+Each PR's tests pass, 147 on #58. Solo, couch (keys plus pad), 150% interface size, Low at dusk, and host and join
+play with no script errors. Frames are in `playtest/pr<N>/` and `playtest/main-*`.
+| Where | Fault | Owner | Check that should have caught it |
+|---|---|---|---|
+| PR #44 | The held knitted clipboard sat too low, so reading did not show from the play camera | Gameplay (fixed in PR #46: held at chest height) | A look at a reading frame from the play camera |
+| PR #45 | At 150% the dock legend overlapped the action prompt, and the stick icon didn't read as a stick | Interface (fixed in PR #47) | `test_hud` at 150%, with the legend counted |
+| PR #47 | Couch prompts were squeezed between the two docks | Interface (fixed in PR #48: couch prompts sit on their docks) | The couch HUD test at 150% |
+| PR #50 | The name box hint said E paints the name, but on keys E types an "e" into the box (the box has focus) | Gameplay (fixed in PR #55: Enter on keys, Cross on a pad) | A test sending a real E key with its unicode through `Input.parse_input_event` while the box is open |
+| PR #50 | At 150% on the couch, both docks drew over Burl's talk bubble | Gameplay (fixed in PR #55: docks and prompt hide while he talks) | The HUD layout test with Talk against each Dock, at 150% on the couch |
+| PR #50 | A tent pitch could be built over the camp sign (`camp_sign` was not a build blocker) | Gameplay (fixed in PR #57; the sign moved to the foot of the path) | A test that no pitch fits within the sign's radius |
+| PR #54 | Talking to Burl from the path, your own camper hides him and the raised arm; it only reads from the side | Gameplay (open, a framing idea) | A look at the talk frame from the front |
+| main (#51) | Hold the tool key, press E by Burl, let go: the release was lost under the talk, and the ring stayed drawn round the walking camper until the next tap | Interface (fixed in PR #58) | A test that opens the ring, presses interact, releases, and finds no ring |
+| main (#52) | At 150% the dev menu ran off the bottom of the screen, and the fps line ran under it over the Pack line | Interface (fixed in PR #58: rows scroll, fps line at the menu's foot) | The HUD layout test with the dev menu open at 150% |
+| main (#51) | At 150% on the couch, each open ring covers its own player's legend | Interface (open, in its hand-off) | A look at both rings at 150% |
+
 ## Pass 3, 25–26 Oct 2026 (PRs #31 to #42, each played on its own branch)
 Each PR's tests pass. Solo, couch (keys plus pad) and host and join play with no script errors. Frames are in
 `playtest/pr<N>/`.

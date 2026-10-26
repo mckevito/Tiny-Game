@@ -276,10 +276,34 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   Burl's letter; the fire is cold until the players bring it 3 sticks and 1 wood; when it catches he talks about
   Lantern Night and asks for the camp's name, painted on a new camp sign by the path that can be repainted any time;
   then he hands over his clipboard. Older saves skip it. Burl gives the daily star hint from now on.
+- 26 Oct 2026, owner: go on Burl's story jobs. **Proposed** (built): after the arrival evening Burl gives seven jobs,
+  one at a time and in person (put up the camp board, mark out a pitch, grant a guest's wish, a bench by the fire,
+  catch and grill supper, replant a stump, earn the second star; `data/ranger_jobs.json`). A felt "!" over him, a HUD
+  line and his word at the top of the morning report say when he has something; talking to him thanks them, pays
+  5 to 10 coins and gives the next. Nothing is timed; a job already done when he gives it is thanked for at once.
+  Older saves start at the first job. While he talks the camera turns so he and the player stand side by side, he
+  turns back afterwards, and both PCs see him talk.
+- 26 Oct 2026, owner: **no ranger stamp card.** It is replaced by a **scrapbook**: photos the players take of animals,
+  people and places (waterfalls and other sights), and pages for tools, props, craftables and builds that fill in by
+  themselves when first got or placed, organised by category. Design options go to the owner before it is built.
+- 26 Oct 2026, owner picks for the scrapbook: **your real snapshot, taped in** (the camera keeps the actual picture
+  the player took, and a copy goes to the other PC), **Burl's rewards per category** (a small personal thing every few
+  pages of a category, round 3) and **its own felt book** on its own button (K, or L2 on the DualSense), with the
+  clipboard's Field guide tab moved into it. Built in three rounds: the book with animal snapshots and pages that fill
+  by themselves for tools, builds and finds (round 1); people and places (round 2); Burl's rewards (round 3).
 - 26 Oct 2026, owner asked for a developer menu for gameplay checks and QA (time of day, spawning guests and other
   dev tools). **Proposed**: F1 or the DualSense's Create button opens it in a camp, only in a debug build (the editor)
   or with `-- --dev`; elsewhere F1 still shows just the fps line. F1 no longer speeds the clock by itself: the menu's
   clock speed row does (×1, ×10, ×30, ×120 on the host). Rows that change the camp go to the host, who decides.
+- 26 Oct 2026, owner (interface look, after six rounds of options): the "Ranger Station Wall" look (routed wood signs,
+  cards pinned to cork) with colours that change by season; the wood and cork stay, the pins, cards and letters
+  change. Lettering is **Pinned Felt**: fat felt letters taking turns in the season's colours on a felt back, stitched
+  just inside each letter's edge, with push pins. The owner then asked for player-chosen colour presets, each a full
+  year, and approved all four (data/look.json): Harvest Camp (default: Blossom, Lake Day, Harvest, Snowy Pine),
+  Picnic Basket (Fresh Shoots, Watermelon, Apple Orchard, Cocoa & Mittens), Sunny Days (Robin's Egg, Sunflower, Maple
+  Leaf, Frost) and Twilight (Lilac & Daffodil, Campfire Sunset, Plum & Ember, Northern Lights). Fonts: Fredoka for
+  felt lettering, Figtree for reading (both SIL OFL). **Proposed**: the title shows autumn before a camp is loaded;
+  the preset is a per-PC setting ("Sign colours", Accessibility page).
 - 26 Oct 2026, owner: **Stage B is signed off** ("I think i want to sign off on stage b"); anything else can come back
   later. **The knitted guests are approved** ("i approve of the guests"): Bea, Olive and Walt and their swatches
   `plum_knit`, `ginger_yarn`, `ginger_shadow`, `silver_yarn`, `silver_shadow`, `pewter_yarn`, `cocoa_felt` and
@@ -293,3 +317,5 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   `guest_c_sit`) instead of a standing body pushed through the seat; the stone ring's log seats stop players like
   its stones do. A new camp's two folding chairs stand about 0.4 m further from the fire, so there is room to stand in
   front of them once the ring is built, and a player joining for the first time starts behind the ring's logs.
+- 26 Oct 2026, owner: "I sign off on the sitting. it looks good." **Decided**: the guests' legs-out sitting pose
+  (`guest_a_sit`, `guest_b_sit`, `guest_c_sit`) is approved, no longer Proposed.

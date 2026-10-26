@@ -14,7 +14,10 @@ extends SceneTree
 ## clipboard open on Supplies). Round 3 adds bench.png (the workbench panel and a dropped bundle); round 4 adds
 ## pack_dock.png (the open Pack and the corner dock with a tool in hand) and menu.png (the in-camp menu over the HUD);
 ## round 5 adds guest_tent.png (a guest asleep in their opened tent with its name bubble, at night), home_tent.png (the
-## player in the camp's tent) and guide.png (the clipboard's field guide).
+## player in the camp's tent) and guide.png (the scrapbook's animals).
+## --scrapbook takes a real photo of a rabbit with the camera tool (scrap_1_snap.png: the flash and the new page's
+## card), then opens the scrapbook on each tab: the rabbit's snapshot taped in (scrap_2_animals.png), the tools
+## (scrap_3_tools.png), the builds (scrap_4_builds.png) and the finds (scrap_5_finds.png); a throwaway save.
 ## --chop plays the first-minutes loop at 30 fps and saves chop_###.png frames: the camper chops a tree three times
 ## (the swing, the shudder and puff, wood popping onto the grass), the tree topples, the camper walks over the wood
 ## to sweep it up (+1 tags), then digs the stump with the shovel; a throwaway save.
@@ -59,6 +62,7 @@ func _run() -> void:
 	var chop := false
 	var fire := false
 	var opening := false
+	var scrapbook := false
 	var line_up := false
 	var edge := false
 	var swap := {}
@@ -79,6 +83,7 @@ func _run() -> void:
 		chop = chop or arg == "--chop"
 		fire = fire or arg == "--fire"
 		opening = opening or arg == "--opening"
+		scrapbook = scrapbook or arg == "--scrapbook"
 		line_up = line_up or arg == "--line-up"
 		edge = edge or arg == "--edge"
 		if arg.begins_with("--turn="):
@@ -114,6 +119,10 @@ func _run() -> void:
 		return
 	if opening:
 		await _opening(out)
+		quit(0)
+		return
+	if scrapbook:
+		await _scrapbook(out)
 		quit(0)
 		return
 	if chop:
@@ -442,12 +451,11 @@ func _stage_b(out: String) -> void:
 	s.camp["journal"]["photos"] = {"rabbit": 2, "deer": 1}
 	if not (s.camp["journal"]["wildlife"] as Array).has("squirrel"):
 		s.camp["journal"]["wildlife"].append("squirrel")
-	camp.toggle_clipboard("p_capture_one")
-	camp._boards["p_capture_one"].tab = Clipboard.tabs().find("guide")
-	camp._refresh_boards()
+	s.scrapbook.sweep("p_capture_one")
+	camp.open_book("p_capture_one")
 	await _settle()
 	_save(out + "/guide.png")
-	camp.toggle_clipboard("p_capture_one")
+	camp.close_book("p_capture_one")
 	s.camp["calendar"]["minute"] = (Tuning.num("day", "clock.evening_hour") - start) * 60.0
 	s.day.vote("p_capture_one", true)
 	camp._check_bed()
@@ -531,7 +539,8 @@ func _fire(out: String) -> void:
 
 
 ## The arrival evening on a new camp, from the menu: the letter, Ranger Burl's hello, the cold fire, the fire lit at
-## dusk, naming the camp, the clipboard handover and the painted sign (opening_<n>_<what>.png).
+## dusk, naming the camp, the clipboard handover, the painted sign, then Burl's first story job, the '!' once it is
+## done and his thanks (opening_<n>_<what>.png).
 func _opening(out: String) -> void:
 	CampSave.dir = "user://captures_save"
 	DirAccess.make_dir_recursive_absolute(CampSave.dir)
@@ -592,6 +601,76 @@ func _opening(out: String) -> void:
 	s.camp["calendar"]["minute"] = (11.0 - Tuning.num("day", "clock.start_hour")) * 60.0
 	await _settle()
 	_save(out + "/opening_8_sign.png")
+	var head_on := CampStory.ranger_pos() + Vector2(0.0, 1.2)
+	me.position = Vector3(head_on.x, 0, head_on.y)
+	me.rotation.y = 0.0
+	s.set_player_pos("p_capture_one", head_on, 0.0)
+	camp.camera.yaw = 0.0
+	camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m") + 1.5
+	camp.interact("p_capture_one")
+	await _settle()
+	await _settle()
+	_save(out + "/opening_9_first_job.png")
+	for i in (CampStory.jobs()[0]["ask"] as Array).size():
+		camp._unhandled_input(press)
+	camp.ask("build", ["project_board", Vector2(-3.2, 7.9), 0.0], "p_capture_one")
+	await _settle()
+	await _settle()
+	_save(out + "/opening_10_job_done.png")
+	camp.interact("p_capture_one")
+	await _settle()
+	_save(out + "/opening_11_thanks.png")
+
+
+func _scrapbook(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	CampScrapbook.photo_root = "user://captures_photos"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.start_solo(1)
+	camp.report.visible = false
+	var s: CampState = camp.state
+	var me: Camper = camp.campers["p_capture_one"]
+	s.camp["calendar"]["day"] = 3
+	s.camp["calendar"]["minute"] = (12.0 - Tuning.num("day", "clock.start_hour")) * 60.0
+	await _settle()
+	var rabbit: Dictionary = camp.wildlife.animals[0]
+	camp.wildlife.set_process(false)
+	var at: Vector3 = (rabbit["node"] as Node3D).position
+	me.position = Vector3(at.x + 1.5, 0, at.z)
+	me.rotation.y = PI * 0.5
+	s.set_player_pos("p_capture_one", Vector2(at.x + 1.5, at.z), 90.0)
+	camp.hold_tool("p_capture_one", "camera")
+	camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m")
+	await _settle()
+	camp.interact("p_capture_one")
+	for f in 6:
+		await process_frame
+	_save(out + "/scrap_1_snap.png")
+	s.pack.add("p_capture_one", "berries", 2)
+	s.pack.add("p_capture_one", "perch", 1)
+	camp.ask("build", ["project_board", Vector2(-3.2, 7.9), 0.0], "p_capture_one")
+	camp._progress("chop")
+	camp._progress("fish:perch")
+	await _settle()
+	camp.open_book("p_capture_one")
+	await _settle()
+	_save(out + "/scrap_2_animals.png")
+	var turn := InputEventAction.new()
+	turn.action = "camera_right"
+	turn.pressed = true
+	for tab in ["tools", "builds", "finds"]:
+		camp._unhandled_input(turn)
+		await _settle()
+		_save(out + "/scrap_%d_%s.png" % [3 + ["tools", "builds", "finds"].find(tab), tab])
+	camp.close_book("p_capture_one")
+	camp.stop("")
+	CampSave.dir = ""
 
 
 func _guests(out: String) -> void:
