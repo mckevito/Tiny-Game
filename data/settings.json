@@ -49,6 +49,7 @@
     "tagline_font_px": 26,
     "heading_font_px": 40,
     "felt_heading_font_px": 56,
+    "felt_menu_font_px": 52,
     "disabled_alpha": 0.45,
     "panel_swatch": "warm_cream",
     "panel_alpha": 0.96,

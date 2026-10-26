@@ -128,7 +128,7 @@ func _show(which: Control, message: String, focus: Control) -> void:
 	for p in [_title, _start, _pause, _players, options]:
 		p.visible = p == which
 	var big := which == _title
-	_heading.font_px = int(UiLook.num("title_font_px", 56)) if big else int(Tuning.num("tuning", "hud.title_font_px", 40))
+	_heading.font_px = int(UiLook.num("title_font_px", 56)) if big else int(UiLook.num("felt_menu_font_px", 52))
 	_heading.pins = big
 	_heading.visible = which != options
 	_tagline.visible = big

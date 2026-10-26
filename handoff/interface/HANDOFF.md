@@ -37,6 +37,9 @@
       (`UiLook.felt_colours()`). Then the clipboard home grid.
    3. Round 5: item icons in the Pack and picture wish bubbles.
    4. Small (Playtest on main, 26 Oct): at 150% on the couch, an open tool ring covers its own player's legend.
+      Also at 150% (Playtest on #60, same rects on main): solo, the open Pack's top right sits under the clock's task
+      lines; on the couch, the in-camp menu covers the start of the clock line ("ter, day 1"). Hide or shorten the
+      clock's task lines while a centre panel is open, as the couch clipboard already does (`_right_panel_open`).
    5. Cosmetic (Playtest on #40): a one-letter keycap that starts a wrapped line loses its left padding (Godot trims
       a line's leading space, even a figure space); try a word joiner (U+2060) before the padding.
    6. The clipboard's map tab with plan marks both players see (with Gameplay), after the next gameplay round.
