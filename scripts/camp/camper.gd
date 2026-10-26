@@ -39,6 +39,13 @@ var _sit_y := 0.0
 var _sway_t := 0.0
 
 
+## Swaps the camper's model for another look of the same body, such as a talking pose (data/ranger.json talk_model).
+func set_look(id: String) -> void:
+	model_id = id
+	if _body is MeshInstance3D:
+		(_body as MeshInstance3D).mesh = FeltBuilder.mesh(id)
+
+
 func _ready() -> void:
 	_body = FeltBuilder.build(model_id)
 	add_child(_body)
