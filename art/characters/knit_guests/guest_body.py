@@ -15,6 +15,8 @@ from knit_kit import *  # the shapes, the mesh BM, OUT, T_POSE and finish()
 # buttons)
 SKIN, SHIRT, PANTS, HAT, HAIR, MITTEN, BOOTS, INK, BLUSH, SHINE, THREAD, HAIR_SHADE, TRIM = range(13)
 
+SIT = "--pose=sit" in ARGS     # sitting like a plush doll: legs straight out in front, boot toes up (--pose=sit)
+HIP = Vector((0.0, 0.0, 0.34))  # the line the legs fold forward about when sitting
 HEAD_C = Vector((0.0, 0.035, 1.0))
 HEAD_R = (0.295, 0.27, 0.24)
 HAIR_OFF = 0.012          # a felt hair cap's distance off the skin (at least 10 mm, art/RECIPE.md)
@@ -261,11 +263,25 @@ def body(girth=1.0, smile=True, cheeks=False, arm_poses=None):
     torso(girth)
     collar()
     arms(girth, arm_poses)
+    first_leg = len(BM.verts)
     pants = trousers(girth)
     append_mesh("trousers", pants, PANTS)
     rolled_cuffs()
     append_mesh("boots", boots(), BOOTS)
     side_seams(pants)
+    if SIT:
+        sit_legs(first_leg)
+
+
+def sit_legs(first):
+    """Folds every leg vertex from `first` on forward about the hip, a quarter turn below the seat of the trousers and
+    easing to none at the waist, so the guest sits with legs straight out (the bottom of the seat ends near 0.2 m)."""
+    BM.verts.ensure_lookup_table()
+    for v in BM.verts[first:]:
+        a = math.radians(90.0) * smoothstep(0.40, 0.28, v.co.z)
+        rel = v.co - HIP
+        c, s = math.cos(a), math.sin(a)
+        v.co = HIP + Vector((rel.x, rel.y * c - rel.z * s, rel.y * s + rel.z * c))
 
 
 def guest_finish(name, scale=1.0):

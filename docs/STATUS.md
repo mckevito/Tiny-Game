@@ -74,7 +74,7 @@ and the recipe as the quality bar for the whole game (25 Oct 2026): both players
 | A guest costs at most two thirds of a player's vertices (three guests and two players on the laptop floor) | `test_felt_models.test_guests_are_lighter_than_the_players` | Passing |
 | Ranger Burl (`ranger_burl`, `ranger_burl_talk`) reads apart from players and guests and stays within a guest's budget | `test_felt_models.test_guests_read_apart_from_the_players_and_each_other`, `..._are_lighter_than_the_players` | Passing |
 | Ranger Burl matches the knitted cast's quality | Owner's verdict (turnaround, in camp from the play camera) | Waiting |
-| The knitted guests (Bea, Olive, Walt) match the players' quality | Owner's verdict (turnaround sheet, in camp day, dusk and play camera) | Waiting |
+| The knitted guests (Bea, Olive, Walt) match the players' quality | Owner's verdict (turnaround sheet, in camp day, dusk and play camera) | Approved (owner, 26 Oct 2026), swatches included |
 | The pilot matches the reference closely enough to roll out | Owner's verdict (sheet beside the reference, day and dusk, walk GIF) | Waiting |
 
 How to look: the capture's `--hero` mode (`handoff/art/HANDOFF.md`), or F5 the sandbox.
@@ -135,7 +135,7 @@ not each confirmed by name; they stay open under "Still open".
 | Link codes avoid look-alike letters and ignore case and the dash | `test_couch.test_link_codes_are_easy_to_read_and_type` | Passing |
 | Picture presets: a low preset for the weakest PC reaches every view; the split screen draws its second view only while split, at a lower render scale | `test_couch.test_picture_presets_apply_to_every_view`, `test_split_screen_splits_apart_and_merges_together` | Passing |
 | The owner tries the milestone | Owner's verdict | Passed: "works and looks good" (owner, 25 Oct 2026) |
-| Couch play with two DualSenses, a link code to the second PC, a Tailscale join, and at least 30 fps on the weakest PC (F1 shows the fps) | Owner's hands-on try | Not confirmed one by one; see "Still open" |
+| Couch play with two DualSenses, a link code to the second PC, a Tailscale join, and at least 30 fps on the weakest PC (F1 shows the fps) | Owner's hands-on try | Fps passed: 60+ on the low preset on the Ryzen 7 5825U laptop (owner, 26 Oct 2026); the other three wait until later (owner) |
 
 ### How to try it
 1. Press F5 and play alone or host a camp, with the keyboard or the first DualSense.
@@ -156,9 +156,9 @@ not each confirmed by name; they stay open under "Still open".
    laptop, and split the screen there to see the slowest case.
 
 ### Still open
-- Not confirmed by name at sign-off: couch play with two DualSenses, a link code to the second PC, a Tailscale join,
-  and the fps on the weakest laptop (Light preset, split screen). Still not confirmed at Stage A's sign-off; check them
-  before Stage B's sign-off. A low fps there means tuning `data/graphics.json`.
+- Not confirmed by name: couch play with two DualSenses, a link code to the second PC and a Tailscale join. The owner
+  signed off Stage B without them and will come back to them later (26 Oct 2026). The laptop fps passed: 60+ on the
+  low preset (owner, 26 Oct 2026).
 - **Proposed:** controllers are told apart by use: player one owns the keyboard, the mouse and every controller they
   have touched; a controller they haven't touched drops in with Options. If player one uses only the keyboard, the
   first controller to press Options drops in rather than opening player one's menu.
@@ -209,8 +209,9 @@ mentioned; they stay open under Milestone 3's "Still open".
 - Frame rate on the weakest laptop is still unmeasured; Stage A adds a few models and one ghost, nothing heavy.
 
 ## Stage B: Three-day fun test
-Signed off: not yet. Built 25 Oct 2026 from the owner's approved picks (decision log). After the first play the owner
-found days 1 to 3 blank (decision log), so round 2 below fills them; sign-off waits on playing round 2.
+Signed off: yes, 26 Oct 2026 (the owner in chat, with the build PRs up to #62 merged: "I think i want to sign off on
+stage b"; anything else comes back later). Built 25 Oct 2026 from the owner's approved picks (decision log). After the
+first play the owner found days 1 to 3 blank (decision log), so the rounds below filled them.
 
 | Proof | Test | Result |
 |---|---|---|
@@ -225,7 +226,7 @@ found days 1 to 3 blank (decision log), so round 2 below fills them; sign-off wa
 | Bookings and pockets survive save and load; a Stage A save (version 2) upgrades | `test_guests.test_stage_b_survives_save_and_load` | Passing |
 | A test that hits a script error fails (it used to pass) | `tests/run_tests.gd` (engine log listener) | Checked by breaking a test on purpose |
 | Review frames: pitches with guests and their requests (day and dusk), fishing, the morning report | `tools/capture.gd --stage-b` | Looked at |
-| Both players want a fourth day and can explain the next booking | Owner's play | Waiting on the owner |
+| Both players want a fourth day and can explain the next booking | Owner's play | Passed: signed off (owner, 26 Oct 2026) |
 
 ### Round 2: fuller first days (25 Oct 2026)
 From the owner's feedback and the research report (Cozy first days and clipboard, in the project files), scope
@@ -572,6 +573,20 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
 | The guest PC reads the letter, sees the cold fire, lights it and names the camp through the host | `test_story.test_the_guest_pc_reads_the_letter_and_lights_the_fire_through_the_host` | Passing |
 | Review frames: letter, hello, cold fire, fire lit at dusk, naming, handover, clipboard, sign | `capture.gd --opening` (`opening-r1/` in the project files) | Looked at |
 
+### Guests walk round things and sit like plush dolls (26 Oct 2026)
+The owner (26 Oct 2026, with the Stage B sign-off): fix the chair clipping. Playtest pass 3 had logged both halves:
+guests walked in straight lines through chairs and past the ring's logs, and the ring's log seats had no collider.
+Seated guests were their standing model lifted onto the seat, so their legs went through it.
+
+| Proof | Test | Result |
+|---|---|---|
+| Guests walk round every solid thing (chairs, the bench, the stool, tents, the fire and its ring, the picnic table, standing trees) and the pond, between any two of: the entry, each seat, each tent and each activity spot; no walk goes far out of its way; walking straight would have hit something on many of them | `test_guest_path.test_guests_walk_round_chairs_seats_tents_and_the_fire` | Passing |
+| No seat or solid model overlaps another, with the fire at its biggest; each seat has open ground in front of it to sit down from | `test_guest_path.test_no_seat_or_model_overlaps_another`, `..._walk_round_chairs_seats_tents_and_the_fire` | Passing |
+| A guest backs onto its seat (ending up facing where it looks), shows its sitting pose while seated and its own look standing, and gets up forward the way it sat down | `test_guest_path.test_a_guest_backs_onto_a_seat_sits_with_legs_out_and_steps_off_forward` | Passing |
+| The stone ring's log seats stop a player, like its stones | `test_guest_path.test_the_rings_log_seats_stop_a_player` | Passing |
+| Guests still settle at their activities on both PCs | `test_stage_b.test_guests_go_fishing_sit_and_play_frisbee_on_both_pcs` | Passing |
+| Review frames: guests seated on both chairs, the bench, the stool and the ring's logs; three guests busy from the play camera | `capture.gd --guests` and a seat close-up (`chair-clipping/` in the project files) | Looked at |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -586,6 +601,14 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
    the bookings, and three goals for the day. E (Cross) starts the day.
 
 ### Still open
+- **Proposed** (chair round; data/guests.json path and sit, data/models.json, data/clearing.json, data/save.json): a
+  guest keeps 0.3 m (a camper's own radius) from every solid model's collider, routes on a 0.2 m grid and goes round
+  the pond as an oval; it sits down from 0.65 m in front of a chair, 0.6 m in front of a stool or the bench, and from
+  the fire's side of each ring log. The sitting pose (`guest_*_sit`, legs folded forward at the hip, boot toes up) is
+  new art and Proposed; seat heights are tuned for it (chairs and stool 0.3 m, bench 0.39 m, ring logs 0.14 m). A new
+  camp's chairs stand at (-1.8, 1.3) and (1.85, 1.2), and first-time players start at (-1.0, -2.6) and (1.1, -2.5),
+  behind the ring's logs. Saves keep their chairs where they are; a guest heading for an old save's chair hard by
+  the ring walks to the nearest open ground and steps in from there.
 - **Proposed** (arrival evening): Burl's lines, the letter and the fire's needs (3 sticks, 1 wood) in
   `data/ranger.json` and `data/text.json`; Burl is Art's knitted `ranger_burl` (PR #49), raising an arm (`ranger_burl_talk`) and turning to the player while he talks; the walk
   in through the gate waits for Stage C's road; the ranger's own name is kept in the save but has no rename spot yet.
@@ -594,14 +617,14 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
   8 m for the pond); a water point costs 30 and a lantern post 20; the Fern family (2 pitches) is offered on day 1
   for day 3 with extras +10 (water point) and +8 (lantern post), the birdwatching club (3 pitches) on day 3 for day 5;
   pockets hold 6; a cast takes 2.5 s and grilling 2 s; next kind is C or D-pad right.
-- The four Milestone 3 hands-on checks (two DualSense couch, a link code, a Tailscale join, fps on the weakest
-  laptop) are still unconfirmed; ask at this stage's sign-off.
+- Three Milestone 3 hands-on checks (two DualSense couch, a link code, a Tailscale join) wait until later (owner, 26
+  Oct 2026); the laptop fps passed (60+ on the low preset).
 - **Proposed** round 2 numbers (data/gather.json, data/tasks.json, data/wildlife.json, data/build.json): a tree gives
   3 wood and regrows 2 mornings after planting; a chop takes 0.8 s; 4 stick piles a day and 3 berry bushes from day 2;
   grilling burns 1 wood; the log bench costs 5 wood and no coins; the long log gives 6 wood, goes at 45% pace alone
   and full pace with a friend within 2.2 m; up to 4 Today tasks, bonuses 3 to 5 coins; at most 10 animals, spotted
   within 5 m; the clipboard is J or the Touchpad. A new berries request (tip 4) opens on day 2.
-- Guests still walk in a straight line. The clipboard's map tab with plan marks is the next round.
+- The clipboard's map tab with plan marks is a later round. Guests walk round things since the chair round above.
 - **Proposed** round 3 numbers (data/items.json, data/craft.json, data/build.json, data/tuning.json): the Pack has 8
   slots of up to 99; a log bench takes 4 wood and 2 sticks, a lantern post 2 wood, 3 sticks and 10 coins, a water
   point 5 wood and 15 coins (crafted pieces cost no coins to place); the tent pitch stays 25 coins and is always in
@@ -641,7 +664,7 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
   (3 coins); an older camp's board goes up at (-6, 0). The fire is upgraded at the fire, after every other action
   there (a fish to grill, chairs and the camp box come first). The bigger light is one shadowed light made brighter,
   not a new light.
-- Frame rate on the weakest laptop is still unmeasured; the first-minutes round adds at most a few short-lived pieces,
+- Frame rate on the weakest laptop: 60+ fps on the low preset (owner, 26 Oct 2026). The first-minutes round adds at most a few short-lived pieces,
   12-bit puffs (CPU particles) and tweens per chop. Round 2 adds up to 10 animals (no lights or physics), stump,
   sapling, stick and berry models, and the clipboard panel.
 - **Proposed** first-minutes round 3 numbers and choices (data/day.json, data/guests.json, data/items.json): up to 3
@@ -653,8 +676,7 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
   data/models.json): a guest changes activity every 60 game minutes (80 real seconds); 3 fishing spots on the pond's
   bank, 3 photo spots facing where the rabbits, squirrels and deer live, 3 kite spots, seats on the two folding
   chairs, log benches (2 each), stools and the stone ring's two logs; with two free guests, half of the hours have two
-  of them throwing a frisbee 5.2 m apart; a spot within 1.1 m of anything built is skipped. Guests still walk in
-  straight lines. Activities pay nothing and the frisbee is seen by each PC alone (a look, not a camp change).
+  of them throwing a frisbee 5.2 m apart; a spot within 1.1 m of anything built is skipped. Activities pay nothing and the frisbee is seen by each PC alone (a look, not a camp change).
   The kite, raised camera and frisbee are plain felt stand-ins for Art. The cost is a disc and up to three held
   props; no lights or physics.
 

@@ -69,7 +69,7 @@ func place(row: Dictionary) -> Node3D:
 		faders.append(mesh)
 	var collide: Dictionary = model.get("collide", {})
 	if not collide.is_empty():
-		root.add_child(_collider(collide))
+		root.add_child(collider(collide))
 	if model.has("light"):
 		var light := OmniLight3D.new()
 		light.name = "FireLight"
@@ -81,19 +81,23 @@ func place(row: Dictionary) -> Node3D:
 	return root
 
 
-func _collider(collide: Dictionary) -> StaticBody3D:
+## A solid model's collider (data/models.json "collide": one box or cylinder, or several in "shapes", each turned by its
+## own yaw). GuestPath reads the same rows, so what stops a player also turns a guest.
+static func collider(collide: Dictionary) -> StaticBody3D:
 	var body := StaticBody3D.new()
-	var shape := CollisionShape3D.new()
-	if collide.has("box"):
-		var box := BoxShape3D.new()
-		box.size = FeltBuilder.vec3(collide["box"], Vector3.ONE)
-		shape.shape = box
-		shape.position = FeltBuilder.vec3(collide.get("offset"))
-	else:
-		var cyl := CylinderShape3D.new()
-		cyl.radius = float(collide.get("radius", 0.3))
-		cyl.height = float(collide.get("height", 1.0))
-		shape.shape = cyl
-		shape.position = Vector3(0, cyl.height * 0.5, 0)
-	body.add_child(shape)
+	for row: Dictionary in collide.get("shapes", [collide]):
+		var shape := CollisionShape3D.new()
+		if row.has("box"):
+			var box := BoxShape3D.new()
+			box.size = FeltBuilder.vec3(row["box"], Vector3.ONE)
+			shape.shape = box
+			shape.position = FeltBuilder.vec3(row.get("offset"))
+		else:
+			var cyl := CylinderShape3D.new()
+			cyl.radius = float(row.get("radius", 0.3))
+			cyl.height = float(row.get("height", 1.0))
+			shape.shape = cyl
+			shape.position = Vector3(0, cyl.height * 0.5, 0)
+		shape.rotation.y = deg_to_rad(float(row.get("yaw", 0.0)))
+		body.add_child(shape)
 	return body

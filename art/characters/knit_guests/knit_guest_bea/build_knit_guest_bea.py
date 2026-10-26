@@ -1,6 +1,7 @@
 # Builds the first guest's knitted camper (Bea Thistle, the Acorn Club's leader; look guest_a) in Blender, from code:
 #   blender --background --factory-startup --python art/characters/knit_guests/knit_guest_bea/build_knit_guest_bea.py -- OUT.glb
-# Add --pose=t for the review T-pose. The shared guest body (../guest_body.py, a lighter copy of player one's) with
+# Add --pose=t for the review T-pose, or --pose=sit for the sitting pose (knit_guest_bea_sit.glb).
+# The shared guest body (../guest_body.py, a lighter copy of player one's) with
 # Bea's own top: a striped bobble beanie with a big felt pompom, a ginger fringe and two plaits over the shoulders, so
 # she reads apart from both players (no pompom on player one's beanie, a bun on player two). Made by following
 # art/RECIPE.md. The game paints it from the palette (data/models.json "knit_guest_bea" file_slots). Original work,

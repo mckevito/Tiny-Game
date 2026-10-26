@@ -15,8 +15,8 @@ var remote_target: Variant = null
 var remote_yaw := 0.0
 ## The devices this camper listens to on a shared PC (couch play); null reads every device.
 var input: PlayerInput
-## A visiting guest walks here at `walk_speed` (data/day.json stays.walk_speed_mps), in its parent's space, then
-## emits `arrived`; null when it is not walking anywhere.
+## A visiting guest walks here at `walk_speed` (data/day.json stays.walk_speed_mps), in its parent's space, then on
+## through `_path` (walk_along), then emits `arrived`; null when it is not walking anywhere.
 var walk_target: Variant = null
 var walk_speed := 1.5
 ## A player's walking pace as a share of the usual (a long log carried alone is slow; CampGather.carry_speed).
@@ -37,6 +37,11 @@ var _wind := 0.0
 ## How high a sitting guest's body is lifted onto its seat (0 standing), and the clock for a held model's sway.
 var _sit_y := 0.0
 var _sway_t := 0.0
+## The standing look while a sitting pose is shown, or "" (sit).
+var _stand_id := ""
+## The rest of a guest's walk after walk_target, and whether it takes the last leg backwards (onto a seat).
+var _path: Array[Vector3] = []
+var _back_in := false
 
 
 ## Swaps the camper's model for another look of the same body, such as a talking pose (data/ranger.json talk_model).
@@ -103,16 +108,51 @@ func swinging() -> bool:
 	return _swing >= 0.0
 
 
-## Sits a guest down with its body lifted `height` metres onto a seat, or stands it up again with 0. A guest (steered
-## by nobody) stays put between walks: nothing pushes it off its seat or its spot.
+## Sits a guest down with its body lifted `height` metres onto a seat, or stands it up again with 0. A look with a
+## sitting pose (data/models.json "sit_model") swaps to it while seated, legs out in front instead of through the seat.
+## A guest (steered by nobody) stays put between walks: nothing pushes it off its seat or its spot.
 func sit(height: float) -> void:
 	_sit_y = maxf(height, 0.0)
+	if _sit_y > 0.0 and _stand_id == "":
+		var seated := str(FeltBuilder.resolve(model_id).get("sit_model", ""))
+		if seated != "":
+			_stand_id = model_id
+			set_look(seated)
+	elif _sit_y == 0.0 and _stand_id != "":
+		set_look(_stand_id)
+		_stand_id = ""
 	if _body:
 		_body.position.y = _sit_y
 
 
 func sitting() -> bool:
 	return _sit_y > 0.0
+
+
+## Walks a guest through `points` (Vector3, in its parent's space) one after another, then emits `arrived`. With
+## `back_in`, the last leg is taken backwards, facing away from where it goes, as when sitting down on a seat.
+func walk_along(points: Array, back_in := false) -> void:
+	_path.clear()
+	for p: Vector3 in points:
+		_path.append(p)
+	_back_in = back_in
+	walk_target = _path.pop_front() if not _path.is_empty() else null
+
+
+## Where the current walk ends, or null when there is none.
+func walk_end() -> Variant:
+	if not walk_target is Vector3:
+		return null
+	return _path.back() if not _path.is_empty() else walk_target
+
+
+## Jumps to the end of the current walk (a test or a capture skipping ahead); `arrived` still comes on the next step.
+func skip_walk() -> void:
+	var end: Variant = walk_end()
+	if end is Vector3:
+		_path.clear()
+		position = end
+		walk_target = end
 
 
 func _process(delta: float) -> void:
@@ -216,7 +256,8 @@ func _glide(delta: float) -> void:
 	_waddle(delta)
 
 
-## A guest's stroll: straight to its target at walking pace, facing the way it goes.
+## A guest's stroll: straight to its target at walking pace, facing the way it goes (backwards onto a seat), then on to
+## the next point of its path.
 func _walk(delta: float) -> void:
 	var target: Vector3 = walk_target
 	target.y = position.y
@@ -224,10 +265,14 @@ func _walk(delta: float) -> void:
 	position = position.move_toward(target, walk_speed * delta)
 	var step := position - before
 	if step.length() > 0.0001:
-		rotation.y = lerp_angle(rotation.y, atan2(-step.x, -step.z), Tuning.num("tuning", "movement.turn_speed_rad_s") * delta)
+		var face := atan2(step.x, step.z) if _back_in and _path.is_empty() else atan2(-step.x, -step.z)
+		rotation.y = lerp_angle(rotation.y, face, Tuning.num("tuning", "movement.turn_speed_rad_s") * delta)
 	velocity = step / maxf(delta, 0.0001)
 	_waddle(delta)
 	if position.distance_to(target) < 0.01:
+		if not _path.is_empty():
+			walk_target = _path.pop_front()
+			return
 		walk_target = null
 		velocity = Vector3.ZERO
 		arrived.emit()

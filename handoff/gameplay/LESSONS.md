@@ -73,3 +73,10 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   keyboard E types a letter (why: a text field takes every key; a typing step needs its own glyph, now `type_done`,
   Enter or Cross); at 150% in couch play the docks covered Burl's bubble (why: two bottom panels never checked
   together; the docks and prompt line now step aside while he talks). Test with a real key press, not a set text.
+- 26 Oct 2026: chair round (owner, with the Stage B sign-off). Guests walked straight through chairs and the ring's
+  logs, the logs had no collider, and a seated guest was a standing model lifted onto the seat, legs through it. Fixes:
+  grid routes round every `collide` row, a sitting pose per guest, solid logs. Faults on the way: the folding chairs
+  stood so close to the grown ring that nobody fit in front of them (why: the ring came later than the chairs; caught
+  by the new check that every seat has open ground in front, so the chairs moved out); new players spawned inside the
+  ring's logs once they turned solid (why: spawns predate the ring; check spawns against colliders); a net test walked
+  a camper onto the moved chair and never arrived (why: teleporting into a collider gets pushed out; pick clear spots).

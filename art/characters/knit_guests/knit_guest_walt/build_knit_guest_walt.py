@@ -1,6 +1,7 @@
 # Builds the third guest's knitted camper (Walt Hollis, an old fisherman; look guest_c) in Blender, from code:
 #   blender --background --factory-startup --python art/characters/knit_guests/knit_guest_walt/build_knit_guest_walt.py -- OUT.glb
-# Add --pose=t for the review T-pose. The shared guest body (../guest_body.py), rounder and a little taller than the
+# Add --pose=t for the review T-pose, or --pose=sit for the sitting pose (knit_guest_walt_sit.glb).
+# The shared guest body (../guest_body.py), rounder and a little taller than the
 # players, with Walt's own top: a felt flat cap with a short peak and a button, short grey hair, a full felt beard
 # with a yarn moustache and bushy brows. Made by following art/RECIPE.md; the game paints it from the palette
 # (data/models.json "knit_guest_walt" file_slots). Original work, CC BY 4.0 (CREDITS.md).

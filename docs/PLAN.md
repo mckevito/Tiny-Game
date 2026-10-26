@@ -238,7 +238,8 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026: **Proposed** (built): the guests are knitted by the recipe too, as the three fall visitors: Bea Thistle
   (`guest_a`), Olive Ashby (`guest_b`) and Walt Hollis (`guest_c`, a third look added to the walk-in and booking
   looks). A shared, lighter body keeps each near half a player's vertices. New swatches `plum_knit`, `ginger_yarn`,
-  `ginger_shadow`, `silver_yarn`, `silver_shadow`, `pewter_yarn`, `cocoa_felt` and `cranberry_knit` are Proposed.
+  `ginger_shadow`, `silver_yarn`, `silver_shadow`, `pewter_yarn`, `cocoa_felt` and `cranberry_knit` are Proposed
+  (approved with the guests by the owner on 26 Oct 2026, below).
 - 26 Oct 2026: **Proposed** (built): Ranger Burl, the guide the owner picked for the opening, knitted by the recipe
   (`ranger_burl` and a talking pose, `ranger_burl_talk`). New swatches `ranger_khaki`, `ranger_olive` and `snow_yarn`
   are Proposed.
@@ -279,3 +280,16 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   dev tools). **Proposed**: F1 or the DualSense's Create button opens it in a camp, only in a debug build (the editor)
   or with `-- --dev`; elsewhere F1 still shows just the fps line. F1 no longer speeds the clock by itself: the menu's
   clock speed row does (×1, ×10, ×30, ×120 on the host). Rows that change the camp go to the host, who decides.
+- 26 Oct 2026, owner: **Stage B is signed off** ("I think i want to sign off on stage b"); anything else can come back
+  later. **The knitted guests are approved** ("i approve of the guests"): Bea, Olive and Walt and their swatches
+  `plum_knit`, `ginger_yarn`, `ginger_shadow`, `silver_yarn`, `silver_shadow`, `pewter_yarn`, `cocoa_felt` and
+  `cranberry_knit` are no longer Proposed. **The laptop check passed**: the Ryzen 7 5825U laptop runs at 60+ fps on
+  the low picture preset. The other Milestone 3 hands-on checks (two DualSenses on the couch, a link code, a Tailscale
+  join) wait until later (owner). Next stage: C.
+- 26 Oct 2026, owner: fix the guests clipping through the chairs. **Proposed** (built): guests walk round every solid
+  thing (chairs, benches, stools, tents, the fire and its ring, the picnic table, standing trees) and round the pond
+  instead of in straight lines; they back onto a seat from the open ground in front of it and step off it forward;
+  seated, each guest shows a sitting pose with legs straight out like a plush doll (`guest_a_sit`, `guest_b_sit`,
+  `guest_c_sit`) instead of a standing body pushed through the seat; the stone ring's log seats stop players like
+  its stones do. A new camp's two folding chairs stand about 0.4 m further from the fire, so there is room to stand in
+  front of them once the ring is built, and a player joining for the first time starts behind the ring's logs.

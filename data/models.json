@@ -1,5 +1,5 @@
 {
-  "_about": "Felt models built by code (scripts/art/felt_builder.gd). Metres, +Y up, -Z is the front, origin at the ground centre. A part is a shape with a size (its bounding box in metres), pos, rot (degrees) and a palette swatch name, or a $slot filled by the model or its variant. Shapes: sphere, cone, cylinder (taper = top/bottom radius), capsule, prism (tip 0..1), box (round = edge radius), stitch (dashes from -> to, in the part's frame), ring (stitched ellipse of size [x, _, z]), seam (count stitched meridians on an ellipsoid of size, from_lat..to_lat degrees, turn). Optional per part: glow 0..1, repeat (copies spun round Y), option (built only when the variant shows it). Per model: base (variant of another model), slots, show, sway, fade (dithers away when it hides a player), collide {box, offset} or {radius, height}, light {pos}, carry (a player can pick it up and put it down).",
+  "_about": "Felt models built by code (scripts/art/felt_builder.gd). Metres, +Y up, -Z is the front, origin at the ground centre. A part is a shape with a size (its bounding box in metres), pos, rot (degrees) and a palette swatch name, or a $slot filled by the model or its variant. Shapes: sphere, cone, cylinder (taper = top/bottom radius), capsule, prism (tip 0..1), box (round = edge radius), stitch (dashes from -> to, in the part's frame), ring (stitched ellipse of size [x, _, z]), seam (count stitched meridians on an ellipsoid of size, from_lat..to_lat degrees, turn). Optional per part: glow 0..1, repeat (copies spun round Y), option (built only when the variant shows it). Per model: base (variant of another model), slots, show, sway, fade (dithers away when it hides a player), collide {box, offset} or {radius, height}, or {shapes: [those, each with an optional yaw in degrees]} for a model made of several solid parts (a fire ring's log seats), light {pos}, sit_model (a guest look's sitting pose, swapped in while it sits; Camper.sit), carry (a player can pick it up and put it down).",
 
   "camper": {
     "slots": {"shirt": "teal_felt", "pants": "denim_felt", "mitten": "warm_cream", "hat": "teal_felt", "hair": "bark_brown", "strand": "ink_brown", "boots": "bark_brown"},
@@ -73,9 +73,12 @@
   },
   "ranger_burl_talk": {"base": "ranger_burl", "file": "res://art/characters/ranger_burl/ranger_burl_talk.glb"},
   "camper_a": {"base": "knit_camper"},
-  "guest_a": {"base": "knit_guest_bea"},
-  "guest_b": {"base": "knit_guest_olive"},
-  "guest_c": {"base": "knit_guest_walt"},
+  "guest_a": {"base": "knit_guest_bea", "sit_model": "guest_a_sit"},
+  "guest_b": {"base": "knit_guest_olive", "sit_model": "guest_b_sit"},
+  "guest_c": {"base": "knit_guest_walt", "sit_model": "guest_c_sit"},
+  "guest_a_sit": {"base": "knit_guest_bea", "file": "res://art/characters/knit_guests/knit_guest_bea/knit_guest_bea_sit.glb"},
+  "guest_b_sit": {"base": "knit_guest_olive", "file": "res://art/characters/knit_guests/knit_guest_olive/knit_guest_olive_sit.glb"},
+  "guest_c_sit": {"base": "knit_guest_walt", "file": "res://art/characters/knit_guests/knit_guest_walt/knit_guest_walt_sit.glb"},
   "camper_b": {"base": "knit_camper_b"},
 
   "tent": {
@@ -515,6 +518,7 @@
     ]
   },
   "fire_ring": {
+    "collide": {"shapes": [{"box": [1.4, 0.32, 0.3], "offset": [1.35, 0.16, -1.45], "yaw": -43}, {"box": [1.4, 0.32, 0.3], "offset": [-1.35, 0.16, -1.45], "yaw": 43}]},
     "parts": [
       {"shape": "sphere", "size": [0.34, 0.24, 0.3], "pos": [0, 0.1, 0.78], "repeat": 12, "segments": 16, "color": "stone_grey"},
       {"shape": "ring", "size": [1.9, 0.0, 1.9], "pos": [0, 0.03, 0], "color": "sand_felt"},

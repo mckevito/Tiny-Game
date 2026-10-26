@@ -2,7 +2,7 @@
 
 1. **Owns:** the rules of the camp and what players can do in it.
    - Scripts: `scripts/camp/camp_state.gd`, `camp_day.gd`, `camp_build.gd`, `camp_guests.gd`, `camp_pack.gd`,
-     `camp_gather.gd`, `camp_tasks.gd`, `camp_projects.gd`, `camp_rating.gd`, `camp_save.gd`, `guest_plans.gd`, `wildlife.gd`, `clearing.gd`, `camper.gd`.
+     `camp_gather.gd`, `camp_tasks.gd`, `camp_projects.gd`, `camp_rating.gd`, `camp_save.gd`, `guest_plans.gd`, `wildlife.gd`, `clearing.gd`, `camper.gd`, `guest_path.gd`.
    - In `scripts/camp/camp.gd` (shared with Interface): the netcode (`ask`, `_request`, `_decide`, `_share`,
      the RPCs), `action_for` and `interact`, build mode, the day tick (`_tick_day`, arrivals, `refresh_requests`),
      stays and tents (`_sync_stays`, `_pitch_tent`, `_tick_tents`, `enter_tent`, `leave_tent`), trees, forage,
@@ -11,7 +11,7 @@
      `wildlife.json`, `projects.json`, `rating.json`, `day.json`, `fishing.json`, `save.json`, `net.json`, `clearing.json`, `models.json`,
      `palette.json`; its keys in `data/text.json`.
    - Tests: `test_camp_rules`, `test_camp_save`, `test_day`, `test_gather`, `test_guests`, `test_projects`, `test_rating`, `test_net`, `test_couch`
-     (rules part), `test_stage_a`, the gameplay tests in `test_stage_b`.
+     (rules part), `test_stage_a`, `test_guest_path`, the gameplay tests in `test_stage_b`.
 2. **State now:** Stage B is merged through round 4 (PR #18); round 5 (this hand-off's PR) adds bed open all day,
    guests who ask again (a growing daily share), odd jobs that pay but never gate anything, tents to sleep in and to
    see guests asleep in, a camera tool and a field guide. Stage B is NOT signed off yet. The architecture (CampState
@@ -24,7 +24,11 @@
    camp board is a building from the kit (`CampProjects.near_board(state, pos)`, save version 7); Gameplay 3 up to 3 guests at once, 2 nights each
    (owner's pick; merged, PR #37, with the clipboard reading pose `Camp.held_by`); Gameplay 4 guests fish, photograph
    animals, fly kites, play frisbee with each other and sit on chairs, the bench and the fire ring's logs
-   (`GuestPlans.plan`, `Camp._tick_guests`/`_tick_frisbees`, `Camper.sit`, `capture.gd --guests`). The Interface thread owns the icon and knitted-clipboard rounds (owner, 25 Oct 21:13). Stage B stays unsigned until the owner plays these.
+   (`GuestPlans.plan`, `Camp._tick_guests`/`_tick_frisbees`, `Camper.sit`, `capture.gd --guests`). The Interface thread owns the icon and knitted-clipboard rounds (owner, 25 Oct 21:13).
+   **Stage B is signed off** (owner, 26 Oct 2026), with the knitted guests approved and the laptop at 60+ fps on Low.
+   The chair round then made guests walk round things (`GuestPath.route` over `GuestPath.footprints`, called from
+   `Camp._route_guest`; `Camper.walk_along`), back onto seats from each seat's open ground (`from` in
+   `activities.sit`) and sit in a sitting pose (`sit_model` in `data/models.json`, swapped by `Camper.sit`).
 3b. **Arrival evening (owner, 26 Oct 2026).** The owner asked for the part that "sucks you in"; a case study
    ("Welcome to Thimble Hollow", linked in project memory) ranked a guide, an opening story, stamps and a smoother UI.
    Picks: Ranger Burl is the guide (Ada stays the seasonal district ranger), a ranger stamp card for personal upgrades,
@@ -36,8 +40,8 @@
       plus his morning word in the report); then the ranger stamp card (stamps from odd jobs and tiered badges, a
       clipboard page, Burl's shop of personal upgrades); renaming Burl himself (`names.ranger` is saved, no spot yet).
       Interface owns the tool ring and the clipboard's home grid.
-   1. The owner plays round 5 and signs off Stage B (chat sign-off plus the merged PR; record it in the next PR's
-      `docs/STATUS.md` and the `docs/PLAN.md` decision log). Approve or change the **Proposed** numbers.
+   1. Stage B is signed off (26 Oct 2026). The owner can still approve or change the **Proposed** numbers; three
+      Milestone 3 hands-on checks (two DualSenses, link code, Tailscale) wait until later.
    2. Next: the clipboard's map tab with plan marks (with Interface). The star rating came in gameplay round 3
       (`camp_rating.gd`, `data/rating.json`). The sell crate and camp projects came in gameplay round 2 (`camp_projects.gd`,
       `data/projects.json`); a bigger Pack as a project reward waits on Interface growing the Pack grid.
@@ -58,6 +62,11 @@
      fire, carriers): no RPC, both PCs work it out alike. Never feed it anything local (animals, cameras, time). A
      guest with an open request is always "rest" at `stand_point`, because giving is checked there. Guest campers
      (not controlled, no `remote_target`) skip physics between walks, so tents and seats never push them.
+   - Guests never pass through things because their walks go round colliders (`GuestPath`), not because of
+     physics. A new solid model needs a `collide` row (several parts: `collide.shapes`) and nothing else; a new seat
+     needs a `from` on open ground (the test checks it). Send a guest anywhere with `Camp._route_guest`, never by
+     setting `walk_target`; tests and captures skip a walk with `Camper.skip_walk()`. A spot or spawn inside a
+     collider pushes a player out (or never arrives in a test that teleports there).
    - A guest who walks in only pitches their tent on arrival (`Camper.arrived`); tests call `_pitch_tent(stay)`.
    - Request kinds with `near` are met by the camp itself; `refresh_requests` skips ones that stay already had.
    - `_moved` carries the held thing (`held_by`: the tool, or "clipboard" while it is open) and "in the tent" as well as the position (protocol 6). Remote tent visits use

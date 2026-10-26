@@ -3,8 +3,8 @@
   "player": {"model": "camper_a", "pos": [-1.1, -1.4], "yaw": 200},
   "friend": {"model": "camper_b", "pos": [1.2, -1.3], "yaw": 160},
   "objects": [
-    {"id": "chair_teal_1", "model": "chair_teal", "pos": [-1.5, 1.1], "face": [0, 0]},
-    {"id": "chair_honey_1", "model": "chair_honey", "pos": [1.5, 1.0], "face": [0, 0]}
+    {"id": "chair_teal_1", "model": "chair_teal", "pos": [-1.8, 1.3], "face": [0, 0]},
+    {"id": "chair_honey_1", "model": "chair_honey", "pos": [1.85, 1.2], "face": [0, 0]}
   ],
   "border": {"_about": "The woods round the walking edge (data/tuning.json movement.edge_m), so the edge shows and the sky band never does. Each ring puts count models (taking turns from models) evenly round the camp's middle at radius_m, each nudged up to jitter_m and turned at random (seed), at scale. Rings start past edge_m, and tree rings past edge_m + trees.reach_m (data/gather.json), so nobody can chop them; they are not placements and are never saved.",
     "seed": 7,
