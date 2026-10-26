@@ -33,6 +33,8 @@ extends SceneTree
 ## data/art.json "turnaround"). --glb=PATH shows that .glb, painted as model ID, instead of the model's own file (a
 ## camper built with --pose=t to match a T-pose sheet; it needn't be imported).
 ## --zoom=K brings that studio camera K times closer, for a model K times smaller than the camper (a prop: about 4).
+## --edge saves the play camera looking out from the walking edge to the north, east, south and west (edge_<dir>.png):
+## the woods round the camp should fill the top of each frame, with no sky band.
 ## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
 
 const SETTLE_FRAMES := 30
@@ -53,6 +55,7 @@ func _run() -> void:
 	var hero := false
 	var chop := false
 	var fire := false
+	var edge := false
 	var guests := false
 	var swap := {}
 	var turn := ""
@@ -70,6 +73,7 @@ func _run() -> void:
 		hero = hero or arg == "--hero"
 		chop = chop or arg == "--chop"
 		fire = fire or arg == "--fire"
+		edge = edge or arg == "--edge"
 		guests = guests or arg == "--guests"
 		if arg.begins_with("--turn="):
 			turn = arg.trim_prefix("--turn=")
@@ -126,6 +130,10 @@ func _run() -> void:
 	root.add_child(sandbox)
 	await process_frame
 	var cam: PlayCamera = sandbox.camera
+	if edge:
+		await _edge(sandbox, out)
+		quit(0)
+		return
 	for i in LightMoods.names().size():
 		sandbox.set_mood(i)
 		var mood: String = LightMoods.names()[i]
@@ -140,6 +148,23 @@ func _run() -> void:
 	if clip:
 		await _clip(sandbox, out)
 	quit(0)
+
+
+## The player stands at the walking edge facing out, with the camera behind them, at each compass point.
+func _edge(sandbox: Node, out: String) -> void:
+	sandbox.set_mood(0)
+	var cam: PlayCamera = sandbox.camera
+	var at := Tuning.num("tuning", "movement.edge_m") - 0.2
+	for dir: String in ["north", "east", "south", "west"]:
+		var d: Vector2 = {"north": Vector2(0, -1), "east": Vector2(1, 0), "south": Vector2(0, 1), "west": Vector2(-1, 0)}[dir]
+		sandbox.player.position = Vector3(d.x * at, 0, d.y * at)
+		sandbox.player.rotation.y = atan2(-d.x, -d.y)
+		cam.yaw = atan2(-d.x, -d.y)
+		cam._want_distance = Tuning.num("tuning", "camera.distance_m")
+		cam.distance = cam._want_distance
+		cam.snap()
+		await _settle()
+		_save(out + "/edge_%s.png" % dir)
 
 
 func _settle() -> void:

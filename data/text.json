@@ -113,6 +113,7 @@
   },
   "deny": {
     "nothing_to_sell": "Nothing in your Pack the sell crate takes.",
+    "project_needs_it": "The camp project still needs those, so they stay in your Pack.",
     "crate_empty": "The sell crate is empty.",
     "pack_full": "Your Pack is full.",
     "projects_done": "Every camp project is finished. Thank you!",

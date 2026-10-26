@@ -562,8 +562,8 @@ func _carry_prompt(id: String) -> String:
 			return Tuning.text("prompt.deposit")
 		"ship":
 			var item := str(act["arg"])
-			return Tuning.text("prompt.ship") % [Tuning.text("items." + item), state.pack.count(id, item),
-					CampProjects.price(item) * state.pack.count(id, item)]
+			var n := state.projects.spare(id, item)
+			return Tuning.text("prompt.ship") % [Tuning.text("items." + item), n, CampProjects.price(item) * n]
 		"take_back":
 			return Tuning.text("prompt.take_back") % Tuning.text("items." + str(act["arg"]))
 		"project":

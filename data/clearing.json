@@ -6,6 +6,14 @@
     {"id": "chair_teal_1", "model": "chair_teal", "pos": [-1.5, 1.1], "face": [0, 0]},
     {"id": "chair_honey_1", "model": "chair_honey", "pos": [1.5, 1.0], "face": [0, 0]}
   ],
+  "border": {"_about": "The woods round the walking edge (data/tuning.json movement.edge_m), so the edge shows and the sky band never does. Each ring puts count models (taking turns from models) evenly round the camp's middle at radius_m, each nudged up to jitter_m and turned at random (seed), at scale. Rings start past edge_m, and tree rings past edge_m + trees.reach_m (data/gather.json), so nobody can chop them; they are not placements and are never saved.",
+    "seed": 7,
+    "rings": [
+      {"models": ["bush"], "radius_m": 15.0, "count": 30, "jitter_m": 0.5, "scale": 1.3},
+      {"models": ["tree_pine", "tree_round", "tree_puff"], "radius_m": 16.6, "count": 30, "jitter_m": 0.5, "scale": 1.0},
+      {"models": ["tree_round", "tree_pine", "tree_puff"], "radius_m": 18.8, "count": 34, "jitter_m": 0.6, "scale": 1.35},
+      {"models": ["tree_pine", "tree_puff", "tree_round"], "radius_m": 21.0, "count": 44, "jitter_m": 0.4, "scale": 1.15}
+    ]},
   "placements": [
     {"model": "ground", "pos": [0, 0]},
     {"model": "meadow", "pos": [0, -0.5]},

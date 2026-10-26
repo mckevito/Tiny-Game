@@ -9,11 +9,11 @@ F1 line sits at the bottom, split-screen Packs sit beside their campers, the wal
 threads had closed, so these wait for the next Gameplay and Interface threads.
 | Where | Fault | Owner | Check that should have caught it |
 |---|---|---|---|
-| main | The project board gives no prompt when you carry nothing it needs, so a player walking up can't tell what it wants | Gameplay | A test that the board's prompt names the open project's needs |
-| main | The sell crate takes your first priced stack, even sticks or berries the open camp project needs; two presses can sell a project's materials | Gameplay | A test that the crate skips items the open project still needs, or asks first (owner's call) |
-| main | The walking edge (14 m) is invisible and lies past the meadow, so you still walk out into bare grass with the sky band showing | Gameplay | A look at a frame from the edge; trees or a fence at the edge would show it |
-| main | In split screen, player two's open clipboard still covers part of their camper and name | Interface | The couch HUD test, with each clipboard checked against its own camper |
-| main | The hint still wraps with a dangling "·" at the end of its first line | Interface | A look at the camp HUD frame at 1600 × 900 |
+| main | The project board gives no prompt when you carry nothing it needs, so a player walking up can't tell what it wants | Gameplay (fixed in PR #33: "Read the camp board") | A test that the board's prompt names the open project's needs |
+| main | The sell crate takes your first priced stack, even sticks or berries the open camp project needs; two presses can sell a project's materials | Gameplay (fixed: the crate keeps back what the project needs) | A test that the crate skips items the open project still needs, or asks first (owner's call) |
+| main | The walking edge (14 m) is invisible and lies past the meadow, so you still walk out into bare grass with the sky band showing | Gameplay (fixed: woods ring the edge; `capture.gd --edge`) | A look at a frame from the edge; trees or a fence at the edge would show it |
+| main | In split screen, player two's open clipboard still covers part of their camper and name | Interface (fixed in PR #36: the picture slides clear) | The couch HUD test, with each clipboard checked against its own camper |
+| main | The hint still wraps with a dangling "·" at the end of its first line | Interface (fixed in PR #36: wraps between controls) | A look at the camp HUD frame at 1600 × 900 |
 
 ## Pass 1, 25 Oct 2026 (main after PR #19, PRs #20 and #21)
 | Where | Fault | Owner | Check that should have caught it |

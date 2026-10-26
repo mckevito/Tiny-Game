@@ -1,6 +1,6 @@
 class_name Clearing
 extends Node3D
-## The clearing: places felt models from data/clearing.json, gives solid models a collider
+## The clearing: places felt models from data/clearing.json (and the woods round its edge), gives solid models a collider
 ## (data/models.json "collide") and fire pits a light (data/models.json "light"; colour and strength by mood).
 
 ## Also place the starting camp objects (data/clearing.json "objects"). The sandbox does; the camp scene builds its
@@ -17,6 +17,8 @@ var placed: Array[Node3D] = []
 func _ready() -> void:
 	for row: Dictionary in Tuning.table("clearing").get("placements", []):
 		placed.append(place(row))
+	for row: Dictionary in border_rows():
+		place(row)
 	if include_objects:
 		for row: Dictionary in Tuning.table("clearing").get("objects", []):
 			place(row)
@@ -35,12 +37,32 @@ static func placement_transform(row: Dictionary) -> Transform3D:
 	return Transform3D(Basis(Vector3.UP, yaw), origin)
 
 
+## The woods round the walking edge as placement rows (data/clearing.json "border"), the same every run.
+static func border_rows() -> Array:
+	var border: Dictionary = Tuning.table("clearing").get("border", {})
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(border.get("seed", 0))
+	var out: Array = []
+	for ring: Dictionary in border.get("rings", []):
+		var models: Array = ring.get("models", [])
+		var count := int(ring.get("count", 0))
+		var jitter := float(ring.get("jitter_m", 0.0))
+		for i in count:
+			var a := TAU * (i + rng.randf_range(-0.3, 0.3)) / count
+			var r := float(ring.get("radius_m", 0.0)) + rng.randf_range(-jitter, jitter)
+			out.append({"model": models[i % models.size()], "pos": [sin(a) * r, cos(a) * r],
+					"yaw": rng.randf_range(0.0, 360.0), "scale": float(ring.get("scale", 1.0))})
+	return out
+
+
 func place(row: Dictionary) -> Node3D:
 	var id := str(row.get("model", ""))
 	var model := FeltBuilder.resolve(id)
 	var root := Node3D.new()
 	root.name = "%s_%d" % [id, get_child_count()]
 	root.transform = placement_transform(row)
+	if row.has("scale"):
+		root.scale = Vector3.ONE * float(row["scale"])
 	var mesh := FeltBuilder.build(id)
 	root.add_child(mesh)
 	if model.get("fade", false):
