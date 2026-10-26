@@ -609,14 +609,10 @@ func _toast(text: String) -> void:
 
 
 func _update_hint() -> void:
-	# Spaces inside each control are non-breaking, so the line only wraps between controls ("Tab for the menu"); the
-	# controls sit apart by a wide space (text: glyphs.gap) rather than a dot, so a wrapped line never ends on one.
-	var parts: PackedStringArray = []
-	for part in (Prompts.rich(Tuning.text("prompt.controls"), _pad) if state else "").split(" · "):
-		parts.append(part.replace(" ", "\u00a0"))
-	var text := Tuning.text("glyphs.gap").join(parts)
+	# The controls live in each player's dock as a short legend (legend()); the top line only invites a couch friend.
+	var text := ""
 	if can_drop_in() == "":
-		text += "\n" + Prompts.rich(Tuning.text("prompt.drop_in"), true)
+		text = Prompts.rich(Tuning.text("prompt.drop_in"), true)
 	$Hud/Hint.text = text
 
 
@@ -2281,7 +2277,19 @@ func _refresh_docks() -> void:
 		dock.show_dock(tool_names, posmod(int(_tools.get(who, 0)), tools().size()), piece_names, kinds.find(kind), label,
 				[Prompts.rich(Tuning.text("dock.tool"), pad),
 				Prompts.rich(Tuning.text("dock.build"), pad), Prompts.rich(Tuning.text("dock.pack"), pad)
-				% [state.pack.slots(who).size(), int(Tuning.num("items", "pack_slots", 8))]])
+				% [state.pack.slots(who).size(), int(Tuning.num("items", "pack_slots", 8))], legend(who)])
+
+
+## A player's legend: a few button icons for what they can do now (data/tuning.json legend.<mode>, words in
+## data/text.json legend.<action>): walking adds walk on day 1, building swaps in the build buttons. Spaces inside an
+## entry are non-breaking and entries sit apart by glyphs.gap, so it wraps only between entries.
+func legend(who: String) -> String:
+	var mode := "build" if _building.has(who) else ("first" if state and state.day.today() == 1 else "walk")
+	var parts: PackedStringArray = []
+	for action: String in Tuning.value("tuning", "legend." + mode, []):
+		var entry := "{%s} %s" % [action, Tuning.text("legend." + action)]
+		parts.append(Prompts.rich(entry, _glyph(who)).replace(" ", "\u00a0"))
+	return Tuning.text("glyphs.gap").join(parts)
 
 
 ## Shows or hides the HUD's parts: the menu and the morning report cover the hint and the docks, and an open Pack,
