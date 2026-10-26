@@ -3,8 +3,8 @@
 # Add --pose=t for the review T-pose, or --pose=talk for his talking pose (his free hand raised, as if pointing the
 # way). The shared guest body (../knit_guests/guest_body.py), a little taller and rounder than the players, with Burl's
 # own top: a big olive campaign hat with a pinched crown and a wide brim, a grey knitted beard of yarn locks, bushy
-# brows, a honey badge on a khaki ranger sweater and a knobbly walking stick. Made by following art/RECIPE.md; the game
-# paints it from the palette (data/models.json "ranger_burl" file_slots). Original work, CC BY 4.0 (CREDITS.md).
+# brows, a felt badge (an avocado; --badge=cookie or shield for the others) on a khaki ranger sweater and a knobbly
+# walking stick. Made by following art/RECIPE.md; the game paints it from the palette (data/models.json "ranger_burl" file_slots). Original work, CC BY 4.0 (CREDITS.md).
 import math, os, random, sys
 from mathutils import Matrix, Vector
 
@@ -12,10 +12,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from guest_body import *  # the kit, the head helpers, the slots and body()
 
 STICK = 13                    # a fixed swatch after the guests' thirteen slots (data/models.json)
+AVO_SKIN, AVO_FLESH = 14, 15  # fixed swatches for the avocado badge
 GIRTH, SCALE = 1.07, 1.05     # older, a little rounder and taller than the players
 TALK = "--pose=talk" in ARGS
 # talking: the left arm lifts forward and out, as if showing the way; the right hand keeps the stick
 POSES = {-1: (math.radians(10.0), math.radians(42.0))} if TALK else None
+# the badge on his chest: --badge=avocado (the default), cookie or shield
+BADGE = next((a.split("=", 1)[1] for a in ARGS if a.startswith("--badge=")), "avocado")
 
 body(GIRTH, smile=True, cheeks=True, arm_poses=POSES)
 
@@ -59,7 +62,7 @@ def beard_mass():
 
 
 BEARD = beard_mass()
-append_mesh("beard", BEARD, HAIR_SHADE)
+append_mesh("beard", BEARD, HAIR)   # the same white as the locks, so gaps between them read as beard
 
 
 def beard_locks():
@@ -67,39 +70,41 @@ def beard_locks():
     tree = surface_tree(BEARD)
     rnd = random.Random(12)
     front = head_y(0.0, 0.8)
-    n = 17
-    for k in range(n):
-        th = math.radians(-88.0 + 176.0 * k / (n - 1) + rnd.uniform(-2, 2))
-        w = abs(math.degrees(th)) / 88.0
-        z0 = 0.885 + 0.07 * w ** 1.6
-        x0 = math.sin(th) * (head_radius(th, z0) + 0.02)
-        end_z = 0.67 + 0.13 * w ** 1.3 + rnd.uniform(-0.01, 0.01)
-        lock_r = rnd.uniform(0.016, 0.019)
-        pts = []
-        steps = 12
-        for s in range(steps + 1):
-            f = s / steps
-            z = z0 + (end_z - z0) * f
-            x = x0 * (1.0 - 0.55 * f)
-            # aim at the beard from in front, toward the inside of the jaw
-            inner = Vector((x * 0.3, front - 0.06, z))
-            out = Vector((x * 1.6, front + 0.35, z)) if abs(th) < math.radians(60) else \
-                Vector((x * 1.9, front + 0.05, z))
-            loc, nrm = hit(tree, out, inner - out)
-            if loc is None:
+    # a long under layer, then a shorter top layer set half a lock across, so no gap shows between locks
+    layers = [(18, 0.0, 0.0, (0.019, 0.022)), (12, 0.5, 0.06, (0.018, 0.021))]
+    for n, shift, short, (r_lo, r_hi) in layers:
+        for k in range(n):
+            th = math.radians(-90.0 + 180.0 * (k + shift) / (n - 1 + 2 * shift) + rnd.uniform(-2, 2))
+            w = abs(math.degrees(th)) / 90.0
+            z0 = 0.885 + 0.07 * w ** 1.6
+            x0 = math.sin(th) * (head_radius(th, z0) + 0.02)
+            end_z = 0.67 + 0.13 * w ** 1.3 + short + rnd.uniform(-0.01, 0.01)
+            lock_r = rnd.uniform(r_lo, r_hi)
+            pts = []
+            steps = 8
+            for s in range(steps + 1):
+                f = s / steps
+                z = z0 + (end_z - z0) * f
+                x = x0 * (1.0 - 0.55 * f)
+                # aim at the beard from in front, toward the inside of the jaw
+                inner = Vector((x * 0.3, front - 0.06, z))
+                out = Vector((x * 1.6, front + 0.35, z)) if abs(th) < math.radians(60) else \
+                    Vector((x * 1.9, front + 0.05, z))
+                loc, nrm = hit(tree, out, inner - out)
+                if loc is None:
+                    continue
+                pts.append(loc + nrm * lock_r * (0.55 + 0.9 * (short > 0)))
+            if len(pts) < 4:
                 continue
-            pts.append(loc + nrm * lock_r * 0.55)
-        if len(pts) < 4:
-            continue
-        # a small curl at the tip
-        last, prev = pts[-1], pts[-2]
-        down = (last - prev).normalized()
-        fwd = Vector((0.0, 1.0, 0.0))
-        for j in range(1, 5):
-            a = math.radians(45.0 * j)
-            pts.append(last + down * lock_r * math.sin(a) + fwd * lock_r * (1 - math.cos(a)))
-        tube("beard", pts, lock_r, HAIR, sides=6, lobe_depth=0.18, weave=YARN, yarn=LOCK_PLY,
-                taper=lambda s: 1.0 - 0.35 * smoothstep(0.7, 1.0, s))
+            # a small curl at the tip
+            last, prev = pts[-1], pts[-2]
+            down = (last - prev).normalized()
+            fwd = Vector((0.0, 1.0, 0.0))
+            for j in range(1, 5):
+                a = math.radians(45.0 * j)
+                pts.append(last + down * lock_r * math.sin(a) + fwd * lock_r * (1 - math.cos(a)))
+            tube("beard", pts, lock_r, HAIR, sides=6, lobe_depth=0.18, weave=YARN, yarn=LOCK_PLY,
+                    taper=lambda s: 1.0 - 0.35 * smoothstep(0.7, 1.0, s))
 
 
 def moustache():
@@ -143,11 +148,34 @@ def torso_front(x, z):
 
 
 def badge():
-    p, n = torso_front(-0.11, 0.64)
-    b = basis_from(n)
-    # a shield: a rounded felt plate with a bead boss in its middle and a stitched rim
-    ellipsoid("badge", p + n * 0.004, (0.036, 0.044, 0.008), THREAD, cols=14, rings=8, basis=b, weave=BEAD)
-    ellipsoid("badge", p + n * 0.012, (0.014, 0.014, 0.006), TRIM, cols=10, rings=6, basis=b, weave=BEAD)
+    p, n = torso_front(-0.15, 0.645)   # out to the side, clear of the beard
+    b = basis_from(n) @ Matrix.Diagonal((1.3, 1.3, 1.0))   # a third bigger than it is drawn below, so its shape reads
+    if BADGE == "avocado":
+        # half an avocado: a pear of dark skin, a pale flesh face a little inside it and a round bead stone
+        def pear(grow, lift):
+            return [(p + n * lift + b @ Vector((0.0, y, 0.0)), (r + grow, (r + grow) * 1.05, 0.007), b)
+                    for y, r in ((-0.012, 0.031), (0.022, 0.021))]
+        append_mesh("badge", fused("badge skin", pear(0.0, 0.004), voxel=0.003, smooth=0.5, repeat=3, decimate=0.15),
+                AVO_SKIN)
+        append_mesh("badge", fused("badge flesh", pear(-0.006, 0.013), voxel=0.003, smooth=0.5, repeat=3,
+                decimate=0.15), AVO_FLESH)
+        ellipsoid("badge", p + n * 0.021 + b @ Vector((0.0, -0.012, 0.0)), (0.015, 0.016, 0.007), TRIM, cols=10,
+                rings=6, basis=b, weave=BEAD)
+    elif BADGE == "cookie":
+        # a round honey cookie with a bumpy baked edge and five chocolate chips
+        blobs = [(p + n * 0.004, (0.038, 0.038, 0.008), b)]
+        for k in range(11):
+            a = math.tau * k / 11
+            blobs.append((p + n * 0.004 + b @ Vector((0.034 * math.cos(a), 0.034 * math.sin(a), 0.0)),
+                          (0.009, 0.009, 0.007), b))
+        append_mesh("badge", fused("badge", blobs, voxel=0.003, smooth=0.5, repeat=3, decimate=0.15), THREAD)
+        for x, y in ((-0.016, 0.014), (0.012, 0.018), (0.0, -0.002), (-0.014, -0.017), (0.017, -0.012)):
+            ellipsoid("badge", p + n * 0.011 + b @ Vector((x, y, 0.0)), (0.0065, 0.0065, 0.004), TRIM, cols=8,
+                    rings=5, basis=b, weave=BEAD)
+    else:
+        # a shield: a rounded felt plate with a bead boss in its middle
+        ellipsoid("badge", p + n * 0.004, (0.036, 0.044, 0.008), THREAD, cols=14, rings=8, basis=b, weave=BEAD)
+        ellipsoid("badge", p + n * 0.012, (0.014, 0.014, 0.006), TRIM, cols=10, rings=6, basis=b, weave=BEAD)
 
 
 def pockets():
