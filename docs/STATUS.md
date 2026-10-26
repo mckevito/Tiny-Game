@@ -411,6 +411,11 @@ own player's keys. The top-left line only invites a couch friend to drop in.
 | A button keeps the word after it on its line in every prompt ("B done" never wraps as "B / done") | `test_prompts.test_prompts_draw_pad_icons_and_keycaps` | Passing |
 | The legend reads well and is enough on the owner's screen | Owner's play | Waiting on the owner |
 
+Playtest's findings on round 4 (fixed in the next PR): at 150% the corner docks reached into the prompt column, hiding
+the end of a prompt line; the column now narrows to the room between the docks too
+(`test_hud.test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages`, fails without it). The pad's stick icon
+looked like the Circle button at legend size; it is now a honey thumb cap with four arrows (`art/ui/glyphs/make_glyphs.py`).
+
 **Proposed** (data/tuning.json `legend`): day 1 shows Walk, Use, Look, Clipboard, Menu; later days Use, Look,
 Clipboard, Menu; building Look and Menu (the build prompt and the dock's own lines show the rest).
 

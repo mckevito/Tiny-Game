@@ -21,9 +21,9 @@ def disc(mark):
     return svg(64, 64, f'<circle cx="32" cy="32" r="29" fill="{INK}" stroke="{CREAM}" stroke-width="3"/>{mark}')
 
 
-def line(points, w=W):
+def line(points, w=W, colour=CREAM):
     d = " ".join(("M" if i == 0 else "L") + f"{x},{y}" for i, (x, y) in enumerate(points))
-    return (f'<path d="{d}" fill="none" stroke="{CREAM}" stroke-width="{w}" stroke-linecap="round" '
+    return (f'<path d="{d}" fill="none" stroke="{colour}" stroke-width="{w}" stroke-linecap="round" '
             f'stroke-linejoin="round"/>')
 
 
@@ -37,11 +37,11 @@ STROKES = {
 }
 
 
-def word(text, x, y, scale, w=5):
+def word(text, x, y, scale, w=5, colour=CREAM):
     out = ""
     for ch in text:
         for stroke in STROKES[ch]:
-            out += line([(x + px * scale, y + py * scale) for px, py in stroke], w)
+            out += line([(x + px * scale, y + py * scale) for px, py in stroke], w, colour)
         x += 13 * scale
     return out
 
@@ -55,9 +55,12 @@ def bumper(text, right):
 
 
 def stick(text):
+    # A stick reads as a stick, not the Circle button: a filled honey thumb cap with four arrows pointing out.
     ring = (f'<circle cx="32" cy="32" r="29" fill="{INK}" stroke="{CREAM}" stroke-width="3"/>'
-            f'<circle cx="32" cy="32" r="18" fill="none" stroke="{HONEY}" stroke-width="3"/>')
-    return svg(64, 64, ring + (word(text, 19.5, 22, 1.2, 4.5) if text else ""))
+            f'<circle cx="32" cy="32" r="14" fill="{HONEY}"/>')
+    arrows = (f'<path d="M32,4.5 L37,10.5 L27,10.5 Z M32,59.5 L37,53.5 L27,53.5 Z '
+              f'M4.5,32 L10.5,27 L10.5,37 Z M59.5,32 L53.5,27 L53.5,37 Z" fill="{CREAM}"/>')
+    return svg(64, 64, ring + arrows + (word(text, 19.5, 22, 1.2, 4.5, INK) if text else ""))
 
 
 def dpad(arm):

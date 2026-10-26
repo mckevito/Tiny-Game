@@ -404,6 +404,11 @@ func test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages() -> String:
 					hud.get_node("Toast"), camp._boards[who]])
 			why = "" if why == "" else "at %d%% with the clipboard open: %s" % [scale, why]
 		camp.toggle_clipboard(who)
+		# Playtest (PR #45): with the clipboard away, the dock in the corner reached into the prompt column at 150%.
+		await _frames(3)
+		if why == "":
+			why = hud_fits(view, [hud.get_node("Prompt"), camp._docks[who]])
+			why = "" if why == "" else "at %d%% with the dock showing: %s" % [scale, why]
 		if why != "":
 			break
 	if why == "":

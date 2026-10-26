@@ -2325,9 +2325,9 @@ func _fit_panel(panel: Clipboard, who: String) -> void:
 	panel.fit(top, get_viewport().get_visible_rect().size.y - gap)
 
 
-## The prompt and toast column (hud.prompt_width_px): centred, but when an open panel at a side would cover it (a big
-## interface size), it narrows to the room beside that panel, unless that leaves less than half of it (two panels on
-## the couch), when it stays centred. Toasts start below the hint and the clock where they reach over the column
+## The prompt and toast column (hud.prompt_width_px): centred, but when a dock or an open panel at a side would cover
+## it (a big interface size), it narrows to the room beside them, unless that leaves less than half of it, when it
+## stays centred. Toasts start below the hint and the clock where they reach over the column
 ## (clipboard.gap_px), however many lines those wrap to.
 func _place_centre() -> void:
 	var view := get_viewport().get_visible_rect().size
@@ -2336,9 +2336,13 @@ func _place_centre() -> void:
 	var cx := view.x * 0.5
 	var room_left := -INF
 	var room_right := INF
+	# The docks sit in the bottom corners beside the prompts; at a big interface size they reach into the column too.
+	var sides: Array[Control] = []
 	for id in local_ids():
-		var panel := _panel_of(id)
-		if panel == null or not panel.visible:
+		sides.append(_panel_of(id))
+		sides.append(_docks.get(id))
+	for panel in sides:
+		if panel == null or not panel.is_visible_in_tree():
 			continue
 		var rect := panel.get_global_rect()
 		if rect.get_center().x < cx - 1.0:
