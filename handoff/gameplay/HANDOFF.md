@@ -31,10 +31,16 @@
    the arrival evening first. Built: `CampStory` (`scripts/camp/camp_story.gd`, camp keys `story` and `names`,
    `data/ranger.json`), Burl as an uncontrolled `Camper` (`Camp._spawn_ranger`, Art's knitted `ranger_burl`, swapped to `ranger_burl_talk` by `Camp._ranger_talks` while he speaks), his bubble `TalkBubble` (`scripts/ui/talk_bubble.gd`, which also takes the camp's name), the cold
    fire (`fire_pit_cold`, `_sync_fire`), the camp sign (`_sync_sign`), `capture.gd --opening`.
+3c. **Burl's story jobs (owner go, 26 Oct 2026).** Seven jobs in `data/ranger_jobs.json`, kept in the story's `job`,
+   `asked` and `have`. `CampStory.talk_plan` says what he will say (thanks, then the next ask, chaining a job already
+   done), the host's `hear` (ask `ranger_job`) applies it and pays, `note` counts steps from `Camp._progress`.
+   `Camp.burl_line` is the HUD line and the morning word. `_ranger_pose` is the rpc that shows his talk on the other
+   PC; `_turn_for_talk` turns the play camera (`PlayCamera.turn_to`) and back. Frames 9 to 11 of `capture.gd --opening`.
 4. **Open work, in order:**
-   0. Next from the case study, one PR each: ranger jobs (Burl hands out one story job at a time, reusing the firsts,
-      plus his morning word in the report); then the ranger stamp card (stamps from odd jobs and tiered badges, a
-      clipboard page, Burl's shop of personal upgrades); renaming Burl himself (`names.ranger` is saved, no spot yet).
+   0. Next from the case study: the **scrapbook** (owner, 26 Oct 2026; it replaces the ranger stamp card). Photos the
+      players take of animals, people and places, plus pages for tools, props, craftables and builds that fill in by
+      themselves, by category. Propose design options to the owner first. Then renaming Burl himself
+      (`names.ranger` is saved, no spot yet).
       Interface owns the tool ring and the clipboard's home grid.
    1. The owner plays round 5 and signs off Stage B (chat sign-off plus the merged PR; record it in the next PR's
       `docs/STATUS.md` and the `docs/PLAN.md` decision log). Approve or change the **Proposed** numbers.

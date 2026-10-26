@@ -272,8 +272,8 @@ func test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_button
 				_press(camp, "interact")
 			if not camp._boards.has("p_host"):
 				why = "the handover should end with the clipboard open"
-			elif camp.ranger.get_node("Mark").visible:
-				why = "the '!' should go once the evening is over"
+			elif not camp.ranger.get_node("Mark").visible:
+				why = "after the evening the '!' should stay up for Burl's first story job"
 	if why == "":
 		camp.toggle_clipboard("p_host")
 		_stand(camp, "p_host", _by_ranger())
@@ -281,8 +281,8 @@ func test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_button
 			why = "beside the ranger, interact should talk to him"
 		else:
 			camp.interact("p_host")
-			if not camp.talk.visible or camp.talk.line() == "":
-				why = "talking to him afterwards should give one of his everyday lines"
+			if not camp.talk.visible or not camp.talk.line().begins_with(Tuning.text("job.board.ask_1").left(20)):
+				why = "talking to him afterwards should give his first story job: " + camp.talk.line()
 			_press(camp, "cancel")
 	if why == "":
 		_stand(camp, "p_host", _by_sign())

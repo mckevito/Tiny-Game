@@ -162,6 +162,7 @@
     "nothing_for_fire": "You have nothing the fire needs yet.",
     "fire_lit_already": "The fire is already burning.",
     "name_empty": "A camp needs a name with at least one letter.",
+    "nothing_new": "The ranger has nothing new for you just now.",
     "nothing_to_sell": "Nothing in your Pack the sell crate takes.",
     "project_needs_it": "The camp project still needs those, so they stay in your Pack.",
     "crate_empty": "The sell crate is empty.",
@@ -205,6 +206,8 @@
     "fire_fed": "On the fire! It still needs %s.",
     "fire_lit": "The camp's first fire is lit!",
     "camp_named": "Welcome to %s!",
+    "job_done": "Ranger's job done: %s! +%d coins.",
+    "burl_word": "Ranger %s would like a word.",
     "shipped": "Into the sell crate: %s (%d). It pays in the morning.",
     "took_back": "Back in your Pack: %s (%d).",
     "project_given": "Thank you! The camp project %s is coming along.",
@@ -382,6 +385,8 @@
     "goal_project": "Project: %s",
     "goal_dream": "Dream: %s",
     "tomorrow": "Tomorrow: %s",
+    "burl_word": "Ranger %s is waiting by the path with something to tell you.",
+    "burl_job": "Ranger %s says: \"Today, if you can: %s (%d of %d).\"",
     "welcome": "Welcome to the campground! It's your first morning. Guests come to a free tent pitch and ask for little things: that is the heart of the day. The odd jobs in the corner are there whenever you like; each one pays a little bonus. Sleep in your tent whenever you want the next day."
   },
   "goal": {
@@ -401,6 +406,8 @@
   "hud": {
     "today": "Odd jobs (for coins)",
     "fire_job": "Light the fire: %s",
+    "burl_word": "Ranger %s would like a word",
+    "burl_job": "Ranger %s: %s %d/%d",
     "guests": "Guests",
     "guest_line": "%s: %s"
   },
@@ -457,6 +464,49 @@
     "and": " and ",
     "name_title": "Name your campground",
     "name_hint": "Type a name · {type_done} paint it on the sign · {cancel} keep it as it is"
+  },
+  "job": {
+    "board": {
+      "goal": "Put up the camp board",
+      "ask_1": "Morning! First things first: guests need to know where to book. That camp board in your kit goes up anywhere you like.",
+      "ask_2": "Pick it in build mode and set it down somewhere folk can find it. Bookings will show up on it.",
+      "thanks": "There she stands! The first booking won't be long now. Here, a few coins for the trouble."
+    },
+    "pitch": {
+      "goal": "Mark out a tent pitch",
+      "ask_1": "Next, a guest needs somewhere to sleep. Mark out a tent pitch, a nice flat spot near the fire.",
+      "ask_2": "A pitch costs a few coins to put down, and you get them all back if you ever pack it away.",
+      "thanks": "A proper pitch! That's the first one in nine years. Walk-in guests will find it now."
+    },
+    "guest": {
+      "goal": "Grant a guest's wish",
+      "ask_1": "Guests are coming! Each one wishes for something. You'll see it float over their head.",
+      "ask_2": "Bring a guest what they wish for. That's what makes a stay worth telling friends about.",
+      "thanks": "Did you see that smile? That's the whole job, right there. They'll be back, mark my words."
+    },
+    "bench": {
+      "goal": "Build a bench by the fire",
+      "ask_1": "A fire wants something to sit on. Make a log bench at the workbench and set it by the fire.",
+      "thanks": "Now that's a fine seat. Guests sit a while longer when there's a bench to sit on."
+    },
+    "supper": {
+      "goal": "Catch supper and grill it",
+      "ask_1": "Let's have supper the old way. The pond's full of perch if you're patient with a rod.",
+      "ask_2": "Catch one, then grill it over the fire. A grilled fish makes any guest's evening.",
+      "thanks": "Smells wonderful! Grilled fish by the fire, just like the old days."
+    },
+    "replant": {
+      "goal": "Plant a sapling where a tree was cut",
+      "ask_1": "We've taken some wood from the woods. Time to give some back. Dig up a sapling and plant it on a stump.",
+      "thanks": "There. In a few days that'll be a tree again. The woods remember who looks after them."
+    },
+    "star": {
+      "goal": "Earn the camp's second star",
+      "ask_1": "You've done everything I've asked, and done it well. Now the camp needs a reputation.",
+      "ask_2": "Happy guests, a few comforts, a tidy camp. Earn a second star and I'll have news for you.",
+      "thanks_1": "Two stars! Word's getting round the valley, I can tell you that.",
+      "thanks_2": "I've nothing more to ask. It's your camp now. Keep it growing, and I'll keep an eye out for Lantern Night."
+    }
   },
   "ranger": {
     "hello": "Well now, there you both are! I'm Ranger $ranger. I looked after this place for thirty-odd years.",

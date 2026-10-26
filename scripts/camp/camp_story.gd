@@ -7,6 +7,10 @@ extends RefCounted
 ## (tests, older saves) is "done" from the start. Names the players chose live in the camp's "names" ("" means the
 ## default in data/text.json names.*); either player can repaint the camp sign at any time. The host's copy decides;
 ## every rule takes a profile ID and returns "" or a text key.
+##
+## After the evening Burl gives story jobs one at a time (data/ranger_jobs.json), kept in the story's "job" (the
+## index of his current job), "asked" (true once he has given it) and "have" (steps toward a job counted from the
+## players' steps).
 
 var state: CampState:
 	get:
@@ -90,6 +94,136 @@ func feed_fire(profile_id: String) -> String:
 	if missing().is_empty():
 		state.camp["story"] = {"step": "name", "given": {}}
 	return ""
+
+
+# --- Ranger Burl's story jobs ------------------------------------------------------------------------------------
+
+## Coins the last jobs Burl thanked the players for paid, and the ids of those jobs (for the host's toasts).
+var paid := 0
+var thanked: Array[String] = []
+
+
+static func jobs() -> Array:
+	return Tuning.value("ranger_jobs", "jobs", [])
+
+
+static func job_row(id: String) -> Dictionary:
+	for row: Dictionary in jobs():
+		if str(row.get("id", "")) == id:
+			return row
+	return {}
+
+
+func _story() -> Dictionary:
+	if not state.camp.has("story"):
+		state.camp["story"] = {"step": "done", "given": {}}
+	return state.camp["story"]
+
+
+func job_index() -> int:
+	return int(_story().get("job", 0))
+
+
+## Burl's current job (data/ranger_jobs.json), or {} once every job is done.
+func job() -> Dictionary:
+	var i := job_index()
+	return jobs()[i] if i >= 0 and i < jobs().size() else {}
+
+
+## True once Burl has given his current job.
+func asked() -> bool:
+	return bool(_story().get("asked", false))
+
+
+## How far the current job has come: builds standing now, the camp's stars, or the players' steps since he asked.
+func job_have() -> int:
+	return _have(job_index())
+
+
+func _have(i: int) -> int:
+	if i < 0 or i >= jobs().size():
+		return 0
+	var need := str(jobs()[i].get("need", ""))
+	if need == "stars":
+		return state.rating.stars()
+	if need.begins_with("has:"):
+		var n := 0
+		for id: String in state.camp["objects"]:
+			if CampBuild.kind_of(state, id) == need.trim_prefix("has:"):
+				n += 1
+		return n
+	return int(_story().get("have", 0)) if i == job_index() and asked() else 0
+
+
+func job_ready() -> bool:
+	return asked() and not job().is_empty() and job_have() >= int(job().get("count", 1))
+
+
+## True while Burl has something new to say: the next job to give, or a done job to thank them for.
+func has_word() -> bool:
+	return step() == "done" and not job().is_empty() and (not asked() or job_ready())
+
+
+## What Burl says when a player talks to him now, in order: [{"say": "thanks" or "ask", "job": index}]. A job that
+## is already done when he gives it (a pitch built before he asked) is thanked for straight away.
+func talk_plan() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if step() != "done":
+		return out
+	var i := job_index()
+	var given := asked()
+	while i < jobs().size():
+		if not given:
+			out.append({"say": "ask", "job": i})
+			given = true
+		elif _have(i) >= int(jobs()[i].get("count", 1)):
+			out.append({"say": "thanks", "job": i})
+			i += 1
+			given = false
+		else:
+			break
+	return out
+
+
+## A player talks to Burl: he thanks them for what is done (paying its coins) and gives the next job.
+func hear(profile_id: String) -> String:
+	paid = 0
+	thanked.clear()
+	if not state.online.has(profile_id):
+		return "deny.not_here"
+	if not near_ranger(state.player_pos(profile_id)):
+		return "deny.too_far"
+	var plan := talk_plan()
+	if plan.is_empty():
+		return "deny.nothing_new"
+	var story := _story()
+	for part: Dictionary in plan:
+		var row: Dictionary = jobs()[int(part["job"])]
+		if part["say"] == "thanks":
+			paid += int(row.get("coins", 0))
+			thanked.append(str(row["id"]))
+			story["job"] = int(part["job"]) + 1
+			story["asked"] = false
+		else:
+			story["job"] = int(part["job"])
+			story["asked"] = true
+		story["have"] = 0
+	state.camp["coins"] = int(state.camp.get("coins", 0)) + paid
+	return ""
+
+
+## A step the players took ("give", "cook", "build:pitch"...). True when it just finished Burl's current job.
+func note(event: String) -> bool:
+	if step() != "done" or not asked() or job().is_empty():
+		return false
+	var need := str(job().get("need", ""))
+	var count := int(job().get("count", 1))
+	if need.begins_with("has:"):
+		return event == "build:" + need.trim_prefix("has:") and job_have() == count
+	if need == "stars" or (event != need and not event.begins_with(need + ":")):
+		return false
+	_story()["have"] = mini(int(_story().get("have", 0)) + 1, count)
+	return int(_story()["have"]) == count
 
 
 # --- Names ---------------------------------------------------------------------------------------------------------

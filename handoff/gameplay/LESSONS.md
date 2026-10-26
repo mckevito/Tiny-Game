@@ -77,3 +77,6 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   data/build.json `blockers` (why: the build check only knows scenery listed there). The sign also sat inside the
   spot every test pitches on, so it moved to the foot of the path, where guests arrive; check new scenery against
   the test spots before placing it.
+- 26 Oct 2026: Burl's story jobs. A HUD element updated in `_process` (his "!") reads a frame late in tests: wait a
+  frame after an action before checking it. A job the players finished before he asks (a pitch already built) must
+  not make them do it twice, so builds count what stands (`has:<kind>`) and the talk chains straight to his thanks.

@@ -591,6 +591,21 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
 | The guest PC reads the letter, sees the cold fire, lights it and names the camp through the host | `test_story.test_the_guest_pc_reads_the_letter_and_lights_the_fire_through_the_host` | Passing |
 | Review frames: letter, hello, cold fire, fire lit at dusk, naming, handover, clipboard, sign | `capture.gd --opening` (`opening-r1/` in the project files) | Looked at |
 
+### Burl's story jobs (26 Oct 2026)
+The owner said go on the second pick from the case study. After the arrival evening Ranger Burl gives one story job
+at a time, in person, that walks the players through the camp (`data/ranger_jobs.json`, `CampStory.talk_plan`,
+`hear`, `note`): put up the camp board, mark out a tent pitch, grant a guest's wish, build a bench by the fire, catch
+and grill supper, replant a stump, earn the second star. The odd jobs stay as the side list. Playtest's notes on the
+talk are in too: the camera turns while he talks so the player no longer hides him, he turns back to his own facing
+afterwards, and the other PC sees him talk.
+
+| Proof | Test | Result |
+|---|---|---|
+| One job at a time, given in person; done jobs are thanked for with their coins and the next is given; a job done before he asks is thanked for at once; steps that aren't the job don't count; older saves start at the first job; none before the evening is over | `test_jobs.test_burl_gives_one_job_at_a_time_and_thanks_each_in_person` | Passing |
+| From the buttons: the "!" and HUD line while he has a word, his job lines, the camera turning to show both and back, his pose and facing after, the HUD's job line, the "!" back once it is done, the morning word, his thanks and coins, the jobs saved | `test_jobs.test_talking_to_burl_from_the_buttons_gives_his_job_and_shows_him` | Passing |
+| The guest PC takes a job through the host, and the host PC sees Burl talk to the guest and stand again after | `test_jobs.test_the_guest_pc_takes_a_job_and_the_host_sees_burl_talk` | Passing |
+| Review frames: the first job head on, the "!" once it is done, his thanks | `capture.gd --opening` frames 9 to 11 (`jobs-r1/` in the project files) | Looked at |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -605,6 +620,9 @@ the guide (a new senior ranger; Ranger Ada stays the district ranger who visits 
    the bookings, and three goals for the day. E (Cross) starts the day.
 
 ### Still open
+- **Proposed** (story jobs): the seven jobs, their order, lines and coins (5 to 10) in `data/ranger_jobs.json` and
+  `data/text.json` `job.*`; the camera's turn while he talks (`camera.talk_side_deg` 55, `turn_rate` 5).
+- **Replaced** (owner, 26 Oct 2026): the ranger stamp card becomes a scrapbook; design options come before any build.
 - **Proposed** (arrival evening): Burl's lines, the letter and the fire's needs (3 sticks, 1 wood) in
   `data/ranger.json` and `data/text.json`; Burl is Art's knitted `ranger_burl` (PR #49), raising an arm (`ranger_burl_talk`) and turning to the player while he talks; the walk
   in through the gate waits for Stage C's road; the ranger's own name is kept in the save but has no rename spot yet.
