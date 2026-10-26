@@ -212,7 +212,7 @@
     "took_back": "Back in your Pack: %s (%d).",
     "project_given": "Thank you! The camp project %s is coming along.",
     "project_done": "Camp project finished: %s! %s",
-    "photo_new": "Snap! A %s for the field guide (+%d coins).",
+    "photo_new": "Snap! A %s for the scrapbook (+%d coins).",
     "photo_again": "Snap! Another %s photo (%d in the guide).",
     "new_request": "%s would love %s now.",
     "joined": "%s joined the camp.",
@@ -427,7 +427,7 @@
     "grill_meals": "Grill meals",
     "help_guests": "Help guests with what they asked for",
     "spot_animals": "Spot the animals",
-    "photo_animals": "Photograph the animals for the field guide",
+    "photo_animals": "Photograph the animals for the scrapbook",
     "pick_berries": "Pick wild berries",
     "place": {
       "edges": "at the edges of the clearing",
@@ -464,6 +464,157 @@
     "and": " and ",
     "name_title": "Name your campground",
     "name_hint": "Type a name · {type_done} paint it on the sign · {cancel} keep it as it is"
+  },
+  "scrap": {
+    "title": "%s scrapbook",
+    "tab": "%s %d/%d",
+    "cat": {
+      "animals": "Animals",
+      "tools": "Tools",
+      "builds": "Builds",
+      "finds": "Finds"
+    },
+    "unknown": "?",
+    "hint": {
+      "photo": "Not photographed yet. Look for it: %s.",
+      "event": "Not found yet. To fill this page: %s.",
+      "build": "Not built yet. To fill this page: %s.",
+      "item": "Not found yet. To fill this page: %s."
+    },
+    "footer": {
+      "photo": "Photographed by %s on day %d",
+      "found": "Found by %s on day %d"
+    },
+    "no_snapshot": "No snapshot on this PC yet. Take another photo to tape one in.",
+    "new_page": "New scrapbook page: %s (%s)",
+    "hint_line": "{move} pick a page · {tabs} turn the tab · {scrapbook} close",
+    "page": {
+      "rabbit": {
+        "name": "Rabbit",
+        "about": "A felt rabbit with a cotton-ball tail. Rabbits nibble the meadow from breakfast to bedtime and hop off if you rush them.",
+        "clue": "hops round the meadow all day"
+      },
+      "squirrel": {
+        "name": "Squirrel",
+        "about": "A busy red squirrel who keeps a pantry in every tree and forgets half of it. That's how new trees start.",
+        "clue": "by the big trees east of the fire, all day"
+      },
+      "deer": {
+        "name": "Deer",
+        "about": "A shy deer who comes to the edge of the woods when the light is low. Walk slowly and she may stay for a photo.",
+        "clue": "at the west woods at dawn and dusk, from day 2"
+      },
+      "bear": {
+        "name": "Bear",
+        "about": "A big, gentle bear who likes to sit by the fire of an evening. He has never once eaten a camper.",
+        "clue": "sits by the fire in the evening, from day 3"
+      },
+      "axe": {
+        "name": "Axe",
+        "about": "A small camp axe with a red handle. A few swings bring down a tree and leave a stump for a sapling.",
+        "clue": "take a swing at a tree"
+      },
+      "rod": {
+        "name": "Fishing rod",
+        "about": "A bamboo rod with a red-and-white float. The pond has perch, trout and sunfish for the patient.",
+        "clue": "cast a line at the pond"
+      },
+      "camera": {
+        "name": "Camera",
+        "about": "A boxy old camera with a leather strap. Every photo goes straight into this scrapbook.",
+        "clue": "take a photo of an animal"
+      },
+      "shovel": {
+        "name": "Shovel",
+        "about": "A sturdy shovel for digging up stumps and saplings.",
+        "clue": "dig up a stump or a sapling"
+      },
+      "pitch": {
+        "name": "Tent pitch",
+        "about": "A flat, marked spot where a guest's tent goes up. Pack it away any time and the coins come back.",
+        "clue": "mark out a tent pitch"
+      },
+      "water_point": {
+        "name": "Water point",
+        "about": "A tap on a post with a bucket underneath. Guests love not walking far for water.",
+        "clue": "build a water point"
+      },
+      "lantern_post": {
+        "name": "Lantern post",
+        "about": "A tall post with a warm lantern. It lights the way after dark.",
+        "clue": "build a lantern post"
+      },
+      "log_bench": {
+        "name": "Log bench",
+        "about": "A split log on two stumps. The best seat by the fire.",
+        "clue": "build a log bench"
+      },
+      "stool": {
+        "name": "Stool",
+        "about": "A little three-legged stool for one more seat round the fire.",
+        "clue": "build a stool"
+      },
+      "planter": {
+        "name": "Flower planter",
+        "about": "A wooden box of flowers that makes any corner of the camp look loved.",
+        "clue": "build a flower planter"
+      },
+      "project_board": {
+        "name": "Camp board",
+        "about": "Where bookings get pinned and camp projects are planned.",
+        "clue": "put up the camp board"
+      },
+      "stick": {
+        "name": "Sticks",
+        "about": "Fallen sticks from the edge of the woods. They kindle a fire and turn up again each morning.",
+        "clue": "pick up a stick"
+      },
+      "wood": {
+        "name": "Wood",
+        "about": "Split firewood from a felled tree. The workbench and the fire both want it.",
+        "clue": "chop a tree and pick up the wood"
+      },
+      "berries": {
+        "name": "Berries",
+        "about": "Wild berries from the bushes. Guests are very fond of a handful.",
+        "clue": "pick some berries"
+      },
+      "sapling": {
+        "name": "Sapling",
+        "about": "A young tree, ready to plant on a stump.",
+        "clue": "dig up a sapling"
+      },
+      "perch": {
+        "name": "Perch",
+        "about": "A striped little fish, the easiest catch in the pond.",
+        "clue": "catch a perch"
+      },
+      "trout": {
+        "name": "Trout",
+        "about": "A speckled trout. Worth the wait.",
+        "clue": "catch a trout"
+      },
+      "sunfish": {
+        "name": "Sunfish",
+        "about": "A round, bright sunfish that likes the warm shallows.",
+        "clue": "catch a sunfish"
+      },
+      "grilled_perch": {
+        "name": "Grilled perch",
+        "about": "Perch grilled over the fire. Simple and good.",
+        "clue": "grill a perch"
+      },
+      "grilled_trout": {
+        "name": "Grilled trout",
+        "about": "Trout grilled over the fire. A guest's favourite supper.",
+        "clue": "grill a trout"
+      },
+      "grilled_sunfish": {
+        "name": "Grilled sunfish",
+        "about": "Sunfish grilled over the fire, crisp at the edges.",
+        "clue": "grill a sunfish"
+      }
+    }
   },
   "job": {
     "board": {
@@ -534,7 +685,7 @@
       "pitches": "another tent pitch would let more guests stay.",
       "pieces": "a few more lanterns, benches or planters would make the camp homier.",
       "happy": "guests love it when their requests are met and something nice is near their tent.",
-      "photos": "the field guide could use more animal photos.",
+      "photos": "the scrapbook could use more animal photos.",
       "projects": "the project board has another camp project waiting.",
       "fire": "a bigger campfire would draw everyone round it in the evening."
     }
@@ -552,8 +703,7 @@
     "tab": {
       "today": "Today",
       "bookings": "Bookings",
-      "supplies": "Supplies",
-      "guide": "Field guide"
+      "supplies": "Supplies"
     },
     "hint": "{tabs} turn the page · {clipboard} put it away",
     "answer": "Answer a new booking from the menu: {menu}",
@@ -597,18 +747,6 @@
     "shovel": "Shovel",
     "rod": "Fishing rod",
     "camera": "Camera"
-  },
-  "guide": {
-    "head": "Field guide: %d of %d animals photographed",
-    "photo": "%s · %d photo(s) · %s",
-    "seen": "%s · seen, no photo yet · %s",
-    "unknown": "??? · %s",
-    "hint": {
-      "rabbit": "hops round the meadow all day",
-      "squirrel": "by the big trees east of the fire, all day",
-      "deer": "at the west woods at dawn and dusk, from day 2",
-      "bear": "sits by the fire in the evening, from day 3"
-    }
   },
   "dock": {
     "tool": "Tool · {next_tool} next, hold for all",
@@ -714,7 +852,8 @@
       "clipboard": "Clipboard",
       "next_tool": "Next tool",
       "pack": "Open the Pack",
-      "grid": "Grid or free (while building)"
+      "grid": "Grid or free (while building)",
+      "scrapbook": "Scrapbook"
     },
     "press_key": "Waiting for a key…",
     "press_button": "Waiting for a button…",
@@ -729,7 +868,7 @@
     "off": "Off"
   },
   "legend": {"move": "Walk", "interact": "Use", "camera": "Look", "clipboard": "Clipboard", "menu": "Menu", "rotate": "Turn",
-    "undo": "Undo", "build": "Done", "grid": "Grid"},
+    "undo": "Undo", "build": "Done", "grid": "Grid", "scrapbook": "Scrapbook"},
   "glyphs": {
     "join": " ",
     "key_pad": " ",

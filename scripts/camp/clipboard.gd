@@ -1,7 +1,7 @@
 class_name Clipboard
 extends PanelContainer
 ## A player's clipboard: a knitted felt board on their side of the screen holding a knitted sheet of paper, with a
-## ribbed clip and stitched rules under the writing, and tabs (Today, Bookings, Supplies, Field guide) that the camera's
+## ribbed clip and stitched rules under the writing, and tabs (Today, Bookings, Supplies) that the camera's
 ## turn buttons flip through. Each player on this PC has their own; it never pauses the game, so the other player plays
 ## on. The camp fills each tab's text (Camp.clipboard_text). Sizes and colours: data/tuning.json "clipboard"; the knit
 ## is scripts/ui/knit.gdshader.

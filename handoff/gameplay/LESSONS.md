@@ -80,3 +80,9 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
 - 26 Oct 2026: Burl's story jobs. A HUD element updated in `_process` (his "!") reads a frame late in tests: wait a
   frame after an action before checking it. A job the players finished before he asks (a pitch already built) must
   not make them do it twice, so builds count what stands (`has:<kind>`) and the talk chains straight to his thanks.
+- 26 Oct 2026: the scrapbook's snapshot. Grabbing the screen and hiding the HUD first still caught toasts and the new
+  page's card (why: the HUD re-shows itself each frame and the ask adds new parts after the hide); the photo is now
+  drawn by its own camera in a throwaway SubViewport on the same world, which has no HUD at all and can aim at the
+  animal. A guest's first photo can arrive before its PC knows the book's id, so a guest always sends its snapshot
+  to the host, which keeps it and sends it back. A new panel built visible counts as "showing" at once: hide it until
+  it has something to show.

@@ -32,7 +32,7 @@
     "kit": {"project_board": 1},
     "fire": {"level": 0},
     "story": {"step": "done", "given": {}},
-    "names": {"camp": "", "ranger": ""},
+    "names": {"camp": "", "ranger": ""}, "scrapbook": {"id": "", "pages": {}},
     "bundles": {},
     "crate": [],
     "shipped": {},
