@@ -91,6 +91,28 @@ When the new model is a sibling of an approved one, and there is no sheet of its
   - About 31k vertices: the hair is 8k (the swept locks are longer than player one's curls), the headband 3.9k
     and the bun 1.7k.
 
+## A family of lighter characters (the guests, 25 Oct 2026)
+For figures that appear several at a time, such as the camp's guests:
+- **One shared body module, one small script per figure.** `art/characters/knit_guests/guest_body.py` is player one's
+  head, face, sweater, sleeves, trousers and boots at a lighter level of detail; each `knit_guest_<name>/build_*.py`
+  calls `body(girth)`, adds its own hat and hair, and ends with `guest_finish(name, scale)`, which scales the whole
+  figure about its feet. Each folder works with `turnaround.sh` as it is.
+- **Where the vertices went:** the sweater 24 columns (players 28), sleeves 10, collar 16, head 36 × 22, the felt
+  masses decimated to 0.10 to 0.11, wider running stitches and no boot welts. About 15k vertices (29k to 32k
+  triangles) against a player's 33k; a test keeps each guest under two thirds of a player.
+- **Slots:** the players' twelve, then `$trim` for stripes, ribbons, buttons and ties.
+- **Tell them apart by the top of the figure first:** a bobble with a pompom, a brimmed hat, a flat cap; then hair
+  (plaits, a bob, a beard), then the sweater's colour. A test checks every guest's sweater, hat and hair against the
+  players' and each other's.
+- **Hats over hair:** size a hat to the hair's outside, not to the head, and keep the hair's fullness low where the
+  hat sits. A hat over a face tilts back (10 to 17 degrees) and is checked from the play camera, not only in the
+  studio: `capture.gd --hero --line-up` saves `play_guests_<mood>.png` at the play camera's pitch.
+- **Brims and peaks:** a lathe whose profile runs under the brim out to its lip, round the lip, back along the top,
+  then up the crown (the same turning sense as the beanie's cuff, so faces point out). A peak is a slab traced the
+  same way, slice by slice round the front of the cap's foot.
+- **Plaits:** three yarn strands round a Catmull-Rom path, each swinging side to side (`sin`) and in and out at
+  twice that rate (`sin 2x`), a third of a turn apart, with a tie and a felt tuft at the end.
+
 ## A hand-held prop (the knitted clipboard, 25 Oct 2026)
 The worked example is `art/props/knit_clipboard/` (about 4.1k vertices; props go in `art/props/<id>/`).
 - **Work from a brief when there is no sheet:** its size, swatches, budget, origin and how it is held. Put the

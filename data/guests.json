@@ -43,7 +43,7 @@
   "bookings": [
     {"id": "ferns", "offer_day": 1, "arrive_day": 3, "nights": 2, "looks": ["guest_b", "guest_a"],
       "essential": {"pitches": 2}, "optional": [{"build": "water_point", "bonus": 10}, {"build": "lantern_post", "bonus": 8}]},
-    {"id": "birdwatchers", "offer_day": 3, "arrive_day": 5, "nights": 2, "looks": ["guest_a", "guest_b", "guest_a"],
+    {"id": "birdwatchers", "offer_day": 3, "arrive_day": 5, "nights": 2, "looks": ["guest_a", "guest_b", "guest_c"],
       "essential": {"pitches": 3}, "optional": [{"build": "lantern_post", "bonus": 8}, {"build": "water_point", "bonus": 10}]}
   ]
 }

@@ -6,7 +6,8 @@ const SIZES := {
 	"camper_a": [1.1, 1.6], "camper_b": [1.1, 1.6], "tent": [1.2, 2.0], "tree_pine": [2.5, 4.5],
 	"tree_round": [2.5, 4.5], "tree_puff": [2.5, 4.5], "picnic_table": [0.6, 1.0], "chair_teal": [0.7, 1.2],
 	"chair_honey": [0.7, 1.2], "fire_pit": [0.4, 1.2], "knit_camper": [1.1, 1.6],
-	"knit_camper_b": [1.1, 1.6], "knit_clipboard": [0.3, 0.45],
+	"knit_camper_b": [1.1, 1.6], "knit_clipboard": [0.3, 0.45], "guest_a": [1.1, 1.6], "guest_b": [1.1, 1.6],
+	"guest_c": [1.1, 1.6],
 }
 
 
@@ -116,7 +117,10 @@ func test_stitch_cord_is_unbroken() -> String:
 
 
 ## The sculpted campers: player one's (knit_camper) and player two's (knit_camper_b), built from art/RECIPE.md.
-const SCULPTED := ["knit_camper", "knit_camper_b"]
+## The three knitted guests share a lighter body (art/characters/knit_guests/guest_body.py).
+const SCULPTED := ["knit_camper", "knit_camper_b", "knit_guest_bea", "knit_guest_olive", "knit_guest_walt"]
+const GUESTS := ["guest_a", "guest_b", "guest_c"]
+const PLAYERS := ["camper_a", "camper_b"]
 
 
 func test_sculpted_camper_is_painted_from_the_palette() -> String:
@@ -142,6 +146,40 @@ func test_the_two_sculpted_players_look_different() -> String:
 	for slot in ["shirt", "hat", "hair"]:
 		if one.get(slot) == two.get(slot):
 			return "both players' %s is %s" % [slot, one.get(slot)]
+	return ""
+
+
+func test_guests_read_apart_from_the_players_and_each_other() -> String:
+	# From the play camera the top of a figure carries most of the difference (art/RECIPE.md): every guest wears a
+	# hat, hair and sweater unlike both players' and the other guests' (data/models.json slots).
+	var ids: Array = PLAYERS + GUESTS
+	for i in ids.size():
+		for j in range(i + 1, ids.size()):
+			var one: Dictionary = FeltBuilder.resolve(ids[i]).get("slots", {})
+			var two: Dictionary = FeltBuilder.resolve(ids[j]).get("slots", {})
+			for slot in ["shirt", "hat", "hair"]:
+				if one.get(slot) == two.get(slot):
+					return "%s and %s share a %s (%s)" % [ids[i], ids[j], slot, one.get(slot)]
+	return ""
+
+
+func test_guests_are_lighter_than_the_players() -> String:
+	# Up to three guests and two players on the laptop floor (docs/PLAN.md): a guest stays well under a player.
+	var player := FeltBuilder.mesh("camper_a").surface_get_array_len(0)
+	for id: String in GUESTS:
+		var n := FeltBuilder.mesh(id).surface_get_array_len(0)
+		if n * 3 > player * 2:
+			return "%s has %d vertices, more than two thirds of a player's %d" % [id, n, player]
+	return ""
+
+
+func test_every_guest_look_is_a_model() -> String:
+	var looks: Array = Tuning.value("day", "stays.looks", [])
+	for b: Dictionary in Tuning.value("guests", "bookings", []):
+		looks += b.get("looks", [])
+	for look: Variant in looks:
+		if not FeltBuilder.model_ids().has(str(look)):
+			return "look %s has no model" % look
 	return ""
 
 

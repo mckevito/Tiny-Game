@@ -56,6 +56,12 @@ All of `handoff/build/LESSONS.md` "Owner rules" apply. For art especially:
   sheet, or hair with no hat over it; both are now in the recipe ("A sibling or variant"). Faults found by looking:
   the first round rendered under OpenGL (the hook's Vulkan install had failed quietly), so its colours were wrong;
   `olive_felt` trousers read as a bright green next to the mustard sweater.
+- 25 Oct 2026, the three knitted guests (one shared lighter body, three tops; two review rounds). Faults found by
+  looking: Olive's bob locks poked through a hat sized to the head, not to the hair (stops it: size a hat to the hair's
+  outside, and keep the hair's fullness low under it); from the play camera Walt's cap and Olive's brim hid their
+  eyes though the studio views looked fine (stops it: `capture.gd --hero --line-up` saves `play_guests_<mood>.png` at
+  the play camera's pitch, checked before showing anyone); a cap close to the skin colour vanished into the face
+  (stops it: a hat differs in value from the skin as well as in hue).
 - 25 Oct 2026, the knitted clipboard (the first prop by the recipe): four review rounds. Faults found by looking: the
   writing first read as dots (a running stitch this small; now a solid yarn cord); the writing showed through the
   board's back (the slab was inside out: its rings ran round the x-z plane, so they must be reversed); brown speckle

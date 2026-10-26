@@ -61,8 +61,14 @@
 3. **Open work, in order:**
    1. Done (25 Oct 2026): the owner signed off both knitted campers and made `art/RECIPE.md` the standard for the
       whole game. Both players use them (`camper_a` and `camper_b` in data/models.json point at `knit_camper` and
-      `knit_camper_b`), and `camper.hand_pos` (data/tuning.json) sits at the knitted mitten's centre. Guests still
-      use the code camper (`guest_a`, `guest_b`); they are the next characters to bring up to the recipe.
+      `knit_camper_b`), and `camper.hand_pos` (data/tuning.json) sits at the knitted mitten's centre.
+   1a. Knitted guests (Proposed, 25 Oct 2026): `guest_a`, `guest_b` and a new `guest_c` point at Bea Thistle, Olive
+      Ashby and Walt Hollis (`art/characters/knit_guests/`), the three fall visitors. They share a lighter copy of
+      player one's body (`guest_body.py`: fewer columns and rings, no boot welts, about 15k vertices against a
+      player's 33k) and differ in the top of the figure: Bea a striped bobble beanie, ginger fringe and plaits; Olive
+      a bucket hat, silver bob and round glasses with a cream cardigan; Walt (rounder, 3% taller) a flat cap, grey
+      hair and a felt beard. Waits on the owner's verdict. The visitor names themselves come with Stage C (Gameplay);
+      the looks are ready for them. `capture.gd --hero --line-up` shows them in camp (day, dusk and the play camera).
    2. The knitted clipboard prop (`knit_clipboard`, `art/props/knit_clipboard/`, 25 Oct 2026): built for the
       owner's "a clipboard that looks knitted" ask. Gameplay puts it in hand while that player's clipboard is
       open: at `camper.hand_pos`, turned 180° so the page faces the camper and tipped about 35° back. Interface

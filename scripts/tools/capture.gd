@@ -36,6 +36,8 @@ extends SceneTree
 ## --edge saves the play camera looking out from the walking edge to the north, east, south and west (edge_<dir>.png):
 ## the woods round the camp should fill the top of each frame, with no sky band.
 ## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
+## --line-up (with --hero) adds the three guest looks (guest_a, guest_b, guest_c; data/models.json) beside the two
+## campers in the hero shots, and saves play_guests_<mood>.png from the play camera's pitch and distance (data/tuning.json camera).
 
 const SETTLE_FRAMES := 30
 
@@ -53,10 +55,11 @@ func _run() -> void:
 	var menus := false
 	var hud := false
 	var hero := false
+	var guests := false
 	var chop := false
 	var fire := false
+	var line_up := false
 	var edge := false
-	var guests := false
 	var swap := {}
 	var turn := ""
 	var glb := ""
@@ -71,10 +74,11 @@ func _run() -> void:
 		menus = menus or arg == "--menus"
 		hud = hud or arg == "--hud"
 		hero = hero or arg == "--hero"
+		guests = guests or arg == "--guests"
 		chop = chop or arg == "--chop"
 		fire = fire or arg == "--fire"
+		line_up = line_up or arg == "--line-up"
 		edge = edge or arg == "--edge"
-		guests = guests or arg == "--guests"
 		if arg.begins_with("--turn="):
 			turn = arg.trim_prefix("--turn=")
 		if arg.begins_with("--glb="):
@@ -123,7 +127,7 @@ func _run() -> void:
 		quit(0)
 		return
 	if hero:
-		await _hero(out, swap)
+		await _hero(out, swap, line_up)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -680,7 +684,7 @@ func _hud(out: String) -> void:
 
 ## The art review shot: a lower, closer camera on the sandbox's fire, tent and trees, in each mood, then a close
 ## look at the campers' faces. The play camera keeps following the player, so this camera is made current instead.
-func _hero(out: String, swap: Dictionary) -> void:
+func _hero(out: String, swap: Dictionary, line_up := false) -> void:
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
 	for who: String in swap:
 		sandbox.get_node("Player" if who == "player" else "Friend").model_id = swap[who]
@@ -689,6 +693,14 @@ func _hero(out: String, swap: Dictionary) -> void:
 	for label in ["Hint", "Mood"]:
 		sandbox.get_node(label).visible = false
 	var mid: Vector3 = (sandbox.player.position + sandbox.friend.position) * 0.5
+	if line_up:
+		# the guests stand round the two campers, facing the camera (a model's front is -Z)
+		var spots := [Vector3(-2.1, 0.0, -0.6), Vector3(-0.9, 0.0, -1.6), Vector3(2.6, 0.0, 0.3)]
+		for i in 3:
+			var g := FeltBuilder.build(["guest_a", "guest_b", "guest_c"][i])
+			sandbox.add_child(g)
+			g.position = mid + spots[i]
+			g.rotation.y = PI
 	var cam := Camera3D.new()
 	cam.fov = 40.0
 	sandbox.add_child(cam)
@@ -704,6 +716,14 @@ func _hero(out: String, swap: Dictionary) -> void:
 		Miniature.focus(cam, cam.position.distance_to(mid))
 		await _settle()
 		_save(out + "/face_%s.png" % mood)
+		if line_up:
+			var pitch := deg_to_rad(Tuning.num("tuning", "camera.pitch_deg", 42.0))
+			var dist := Tuning.num("tuning", "camera.min_distance_m", 7.0)
+			var at := mid + Vector3(0.0, 0.7, -0.8)
+			cam.look_at_from_position(at + Vector3(0.0, sin(pitch), cos(pitch)) * dist, at)
+			Miniature.focus(cam, dist)
+			await _settle()
+			_save(out + "/play_guests_%s.png" % mood)
 
 
 ## A turnaround: the model alone in a studio, from eight sides, lit from the camera's upper right as the owner's sheet
