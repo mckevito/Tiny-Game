@@ -49,6 +49,10 @@
    failure, timers or lost items); guests' requests are the core loop and gathering is optional money (25 Oct); the
    day must never be stuck (bed open all day); trees fall and are replanted like Animal Crossing; two players max.
 6. **Traps:** all of `handoff/build/HANDOFF.md` section 6, plus:
+   - Build spots go through `CampBuild.snap_fit` (whole cells) or `free_spot` (free building), never `snap` alone; the
+     host re-snaps with the request's free flag (args[3]). `footprint` is the box an angled piece covers, so an angled
+     piece blocks a little more than its real shape. `grid` shares D-pad down with `pack`: it only works in build mode.
+     Stage C build zones: pass a zone's own cell and origin into the grid (now `grid_m` and `grid_origin`).
    - Solo, anything that votes for bed (the tent, the menu) starts the night at once; a test that needs to stay in
      bed adds a second online player with `state.join` first.
    - What guests do is `GuestPlans.plan(state, asleep)`, a pure function of shared keys (calendar, stays, objects,

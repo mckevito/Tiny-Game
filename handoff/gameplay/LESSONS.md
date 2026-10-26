@@ -59,6 +59,10 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   now mixes the hash first); a scene test's guests stayed home (why: they asked again on the camp's tick; set
   `next_at` too when a test marks requests met); resting guests slid 5 cm off their spot (why: physics pushed them out
   of the tent's collider; guests now skip physics between walks).
+- 26 Oct 2026: build round: a stitched grid and free building. The grid already existed but was invisible; pieces now
+  fill whole cells (`CampBuild.snap_fit`) and the free choice rides in the build request (args[3]). Faults: a free
+  pitch at 15 degrees was "too close" where a square one fitted (why: the blocking box of an angled footprint is
+  wider; pick test spots with room, or test free builds square on).
 - 26 Oct 2026: arrival evening (owner picks after the cozy-games case study): Ranger Burl's letter, the cold fire, the
   camp's name on a sign, the clipboard handover. Faults: Burl's lines first used {camp} and {ranger}, which the glyph
   test read as missing button glyphs (why: braces are the glyph syntax; caught by `test_prompts`, now `$camp`); the

@@ -1,11 +1,11 @@
 {
-  "_about": "Every gameplay action with its default keyboard/mouse and joypad bindings. Keys use Godot key names; joy_buttons and joy_axes use Godot's JoyButton and JoyAxis numbers (0 = Cross / left stick X). glyphs names each action's button per device for prompts: a string writes {action} and gets the glyph of the device that player last used. pad_icons gives each DualSense button name its drawn icon (art/ui/glyphs/, made by make_glyphs.py), shown in prompts in place of the word. These are the defaults: each PC can remap them and set the stick deadzone in Options (data/settings.json, scripts/core/settings.gd).",
+  "_about": "Every gameplay action with its default keyboard/mouse and joypad bindings. Keys use Godot key names; joy_buttons and joy_axes use Godot's JoyButton and JoyAxis numbers (0 = Cross / left stick X). glyphs names each action's button per device for prompts: a string writes {action} and gets the glyph of the device that player last used. pad_icons gives each DualSense button name its drawn icon (art/ui/glyphs/, made by make_glyphs.py), shown in prompts in place of the word. grid shares D-pad down with pack: grid works only in build mode, where the Pack does not open. These are the defaults: each PC can remap them and set the stick deadzone in Options (data/settings.json, scripts/core/settings.gd).",
   "aim_axes": [2, 3],
   "_aim_about": "aim_axes: the joypad axes (x, y) that point in the tool ring: the right stick. The left stick and the walking keys point too.",
   "ui": {"_about": "Godot's menu actions take the pad buttons of these game actions (with this PC's remaps), so Cross presses a focused menu button and Circle goes back.", "ui_accept": "interact", "ui_cancel": "cancel"},
   "glyphs": {
-    "keyboard": {"interact": "E", "menu": "Tab", "cancel": "Esc", "move": "WASD", "camera": "Q and R", "build": "B", "rotate": "F", "undo": "Z", "next_kind": "C", "clipboard": "J", "tabs": "Q and R", "next_tool": "T", "pack": "I"},
-    "pad": {"interact": "Cross", "menu": "Options", "cancel": "Circle", "move": "Left stick", "camera": "L1 and R1", "build": "Triangle", "rotate": "Square", "undo": "D-pad left", "next_kind": "D-pad right", "clipboard": "Touchpad", "tabs": "L1 and R1", "next_tool": "D-pad up", "pack": "D-pad down"}
+    "keyboard": {"interact": "E", "menu": "Tab", "cancel": "Esc", "move": "WASD", "camera": "Q and R", "build": "B", "rotate": "F", "undo": "Z", "next_kind": "C", "clipboard": "J", "tabs": "Q and R", "next_tool": "T", "pack": "I", "grid": "G"},
+    "pad": {"interact": "Cross", "menu": "Options", "cancel": "Circle", "move": "Left stick", "camera": "L1 and R1", "build": "Triangle", "rotate": "Square", "undo": "D-pad left", "next_kind": "D-pad right", "clipboard": "Touchpad", "tabs": "L1 and R1", "next_tool": "D-pad up", "pack": "D-pad down", "grid": "D-pad down"}
   },
   "pad_icons": {"Cross": "res://art/ui/glyphs/pad_cross.svg", "Circle": "res://art/ui/glyphs/pad_circle.svg", "Square": "res://art/ui/glyphs/pad_square.svg", "Triangle": "res://art/ui/glyphs/pad_triangle.svg", "Options": "res://art/ui/glyphs/pad_options.svg", "Create": "res://art/ui/glyphs/pad_create.svg", "Touchpad": "res://art/ui/glyphs/pad_touchpad.svg", "L1": "res://art/ui/glyphs/pad_l1.svg", "R1": "res://art/ui/glyphs/pad_r1.svg", "L2": "res://art/ui/glyphs/pad_l2.svg", "R2": "res://art/ui/glyphs/pad_r2.svg", "L3": "res://art/ui/glyphs/pad_l3.svg", "R3": "res://art/ui/glyphs/pad_r3.svg", "Left stick": "res://art/ui/glyphs/pad_lstick.svg", "Right stick": "res://art/ui/glyphs/pad_rstick.svg", "D-pad up": "res://art/ui/glyphs/pad_up.svg", "D-pad down": "res://art/ui/glyphs/pad_down.svg", "D-pad left": "res://art/ui/glyphs/pad_left.svg", "D-pad right": "res://art/ui/glyphs/pad_right.svg"},
   "actions": {
@@ -27,6 +27,7 @@
     "clipboard":    {"keys": ["J"], "joy_buttons": [20]},
     "next_tool":    {"keys": ["T"], "joy_buttons": [11]},
     "pack":         {"keys": ["I"], "joy_buttons": [12]},
+    "grid":         {"keys": ["G"], "joy_buttons": [12]},
     "dev_menu":     {"keys": ["F1"], "joy_buttons": [4]}
   }
 }
