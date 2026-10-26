@@ -21,7 +21,9 @@ static func rich(text: String, pad: bool, paper := false) -> String:
 	var glyphs: Dictionary = Tuning.value("input", "glyphs.pad" if pad else "glyphs.keyboard", {})
 	for action: String in glyphs:
 		if text.contains("{%s}" % action):
-			text = text.replace("{%s}" % action, icons(glyph(action, pad, str(glyphs[action])), pad, paper))
+			var drawn := icons(glyph(action, pad, str(glyphs[action])), pad, paper)
+			# A button keeps its next word on the same line ("B done" never wraps as "B / done").
+			text = text.replace("{%s} " % action, drawn + "\u00a0").replace("{%s}" % action, drawn)
 	return text
 
 

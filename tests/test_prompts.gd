@@ -55,4 +55,7 @@ func test_prompts_draw_pad_icons_and_keycaps() -> String:
 		return "a key should show as a keycap, got " + keys
 	if Prompts.rich("{camera}", true).count("[img=") != 2:
 		return "a pair of buttons should show two icons, got " + Prompts.rich("{camera}", true)
+	# Playtest: a centre prompt wrapped "B / done"; a button keeps its next word on its line.
+	if not Prompts.rich("{build} done", false).ends_with("[/bgcolor]\u00a0done"):
+		return "a button should be glued to the word after it, got " + Prompts.rich("{build} done", false)
 	return ""

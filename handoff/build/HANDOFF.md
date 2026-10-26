@@ -160,7 +160,8 @@ here; open work moved to `handoff/gameplay/`, `handoff/interface/` and `handoff/
    The exit code of the tests is the number of failures. Two real game copies on one machine:
    `godot --headless -- --host --slot=2` and `godot --headless -- --join=127.0.0.1 --profile=b`. Add
    `--write-movie OUT.png --quit-after 90` (with xvfb, no `--headless`) to save frames of a copy. The capture saves `play_<mood>.png` and `close_<mood>.png`
-   from the play camera (and `clip_###.png` walking frames with `--clip`; make a GIF with ffmpeg). `--couch` instead
+   from the play camera (and `clip_###.png` walking frames with `--clip`; make a GIF with ffmpeg). `--edge` saves
+   `edge_<north|east|south|west>.png` from the walking edge looking out (the woods should fill the top, no sky). `--couch` instead
    plays a couch walk that splits and merges (`couch_###.png`, about 3 minutes on lavapipe). `--stage-a` saves
    `day_11/18/21.png`: a pitch, its guest and tent, and a build ghost at three hours of the day. `--menus` saves the title, the start page, each
    Options tab and Options from the in-camp menu. `--hud` saves the dock and the open Pack alone, then on the couch both docks,

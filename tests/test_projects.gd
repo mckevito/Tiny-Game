@@ -42,13 +42,13 @@ func _put_up_board(s: CampState) -> void:
 func test_the_sell_crate_pays_at_night_and_gives_back_until_then() -> String:
 	var s := _state()
 	s.pack.add("p_host", "sapling", 1)
-	s.pack.add("p_host", "stick", 5)
+	s.pack.add("p_host", "wood", 5)
 	s.pack.add("p_host", "perch", 2)
 	s.set_player_pos("p_host", Vector2(20, 20), 0.0)
 	if s.projects.ship("p_host") != "deny.too_far":
 		return "the crate should only take things from a player beside it"
 	s.set_player_pos("p_host", _beside("sell_crate"), 0.0)
-	if s.projects.ship("p_host") != "" or s.pack.count("p_host", "stick") != 0 or s.projects.crate().size() != 1:
+	if s.projects.ship("p_host") != "" or s.pack.count("p_host", "wood") != 0 or s.projects.crate().size() != 1:
 		return "the first sellable stack (the sapling has no price) should go into the crate whole"
 	if s.projects.ship("p_host") != "" or s.pack.count("p_host", "perch") != 0:
 		return "a second press should put the next stack in"
@@ -59,14 +59,39 @@ func test_the_sell_crate_pays_at_night_and_gives_back_until_then() -> String:
 	s.projects.ship("p_host")
 	var coins := int(s.camp["coins"])
 	var summary := s.day.settle_night()
-	var want := 5 * CampProjects.price("stick") + 2 * CampProjects.price("perch")
+	var want := 5 * CampProjects.price("wood") + 2 * CampProjects.price("perch")
 	if int(summary["sale"]["coins"]) != want or int(s.camp["coins"]) != coins + int(summary["coins"]) \
 			or int(summary["coins"]) < want:
 		return "the night should pay %d coins for the crate, got %s" % [want, summary.get("sale")]
-	if not s.projects.crate().is_empty() or int(s.camp["shipped"].get("stick", 0)) != 5:
+	if not s.projects.crate().is_empty() or int(s.camp["shipped"].get("wood", 0)) != 5:
 		return "the crate should empty and the shipped list count what was sold"
-	if not s.day.settle_night().is_empty() and int(s.camp["shipped"].get("stick", 0)) != 5:
+	if not s.day.settle_night().is_empty() and int(s.camp["shipped"].get("wood", 0)) != 5:
 		return "a night should never pay the crate twice"
+	return ""
+
+
+## Playtest pass 2: the crate took the sticks and berries the open project still needed.
+func test_the_sell_crate_keeps_back_what_the_open_project_needs() -> String:
+	var s := _state()
+	var r := s.projects.current()
+	var sticks := int(r["needs"]["stick"])
+	var berries := int(r["needs"]["berries"])
+	s.pack.add("p_host", "berries", berries)
+	s.pack.add("p_host", "stick", sticks + 3)
+	s.set_player_pos("p_host", _beside("sell_crate"), 0.0)
+	if s.projects.sellable("p_host") != "stick" or s.projects.spare("p_host", "stick") != 3:
+		return "only the sticks beyond what the project needs should be for sale, not its berries"
+	if s.projects.ship("p_host") != "" or s.pack.count("p_host", "stick") != sticks \
+			or int(s.projects.crate()[0]["n"]) != 3:
+		return "the crate should take the 3 spare sticks and leave the project's %d" % sticks
+	if s.projects.ship("p_host") != "deny.project_needs_it" or s.pack.count("p_host", "berries") != berries:
+		return "a second press should say the project needs the rest, and sell nothing"
+	s.pack.add("p_host", "wood", 2)
+	if s.projects.sellable("p_host") != "wood":
+		return "wood the open project doesn't need should still sell past the kept-back stacks"
+	s.projects.given()["stick"] = sticks - 2
+	if s.projects.spare("p_host", "stick") != sticks - 2:
+		return "sticks already brought to the board should free that many up for the crate"
 	return ""
 
 
@@ -244,7 +269,7 @@ func test_the_guest_pc_sells_and_gives_to_a_project_from_the_buttons() -> String
 				and fire.get_node_or_null("Upgrade") != null):
 			why = "the guest PC should see the fire grow"
 	if why == "":
-		host.state.pack.add("p_guest", "stick", 6)
+		host.state.pack.add("p_guest", "wood", 6)
 		host.state.pack.add("p_guest", "berries", 4)
 		host._share()
 		if not await _until(func() -> bool: return guest.state.pack.count("p_guest", "berries") == 4):
@@ -255,11 +280,11 @@ func test_the_guest_pc_sells_and_gives_to_a_project_from_the_buttons() -> String
 		if why != "":
 			pass
 		elif not await _until(func() -> bool: return guest.state.projects.crate().size() == 1):
-			why = "the guest's sticks should go into the crate through the host"
-		elif not guest.clipboard_text("p_guest", "supplies").contains(Tuning.text("clipboard.crate") % (Tuning.text("pack.slot") % [Tuning.text("items.stick"), 6])):
+			why = "the guest's wood should go into the crate through the host"
+		elif not guest.clipboard_text("p_guest", "supplies").contains(Tuning.text("clipboard.crate") % (Tuning.text("pack.slot") % [Tuning.text("items.wood"), 6])):
 			why = "the clipboard's Supplies should list what is in the crate"
 	if why == "":
-		# The board: the berries the first project needs go in; the crate's sticks are not in the Pack any more.
+		# The board: the berries the first project needs go in; the crate's wood is not in the Pack any more.
 		_stand(guest, "p_guest", _beside("project_board"))
 		await _until(func() -> bool: return host.state.player_pos("p_guest").distance_to(_beside("project_board")) < 0.1)
 		guest.interact("p_guest")
@@ -275,8 +300,8 @@ func test_the_guest_pc_sells_and_gives_to_a_project_from_the_buttons() -> String
 		if not await _until(func() -> bool: return guest.report.visible and host.report.visible):
 			why = "both PCs should see the morning report"
 		else:
-			var line := Tuning.text("report.sale") % [6 * CampProjects.price("stick"),
-					Tuning.text("pack.slot") % [Tuning.text("items.stick"), 6]]
+			var line := Tuning.text("report.sale") % [6 * CampProjects.price("wood"),
+					Tuning.text("pack.slot") % [Tuning.text("items.wood"), 6]]
 			for camp: Node in [host, guest]:
 				if why == "" and not camp.report.text().contains(line):
 					why = "the morning report should say what the crate paid: " + line

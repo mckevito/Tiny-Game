@@ -398,6 +398,22 @@ Playtest's findings on round 3 (fixed in the same PR):
 | At 120% and 150% interface size, alone on the PC, an open clipboard no longer covers the prompt: the prompt and toast column moves into the room beside it; toasts start below the hint and the clock, however many lines they wrap to; the clipboard moves down as soon as the hint grows | same test | Passing (fails without the column move) |
 | A one-letter key's cap is wider (text: glyphs.key_pad_one, a no-break figure space, so the hint never wraps between a key and its words) | same test | Passing (an en space let "E" end a line at 150%) |
 
+### Interface round 4: a context legend in each dock (26 Oct 2026)
+The owner's pick (26 Oct 2026, on the controls-line card): replace the always-on controls line with a context legend.
+The long top-left line ("WASD to walk · Q R turn the camera · ...") is gone. Each player's dock now starts with a short
+legend of button icons for what they can do now, in their own device's buttons, so on the couch each half shows its
+own player's keys. The top-left line only invites a couch friend to drop in.
+
+| Proof | Test | Result |
+|---|---|---|
+| Each dock has a legend in its player's own buttons (keycaps for the keyboard player, pad icons for the pad player); day 1 adds walking, later days leave it out; while building it shows only the build mode's entries | `test_hud.test_each_dock_has_a_legend_for_now` | Passing |
+| The controls are no longer on the top line; the legend wraps only between entries and has no dots | `test_hud.test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report` | Passing |
+| A button keeps the word after it on its line in every prompt ("B done" never wraps as "B / done") | `test_prompts.test_prompts_draw_pad_icons_and_keycaps` | Passing |
+| The legend reads well and is enough on the owner's screen | Owner's play | Waiting on the owner |
+
+**Proposed** (data/tuning.json `legend`): day 1 shows Walk, Use, Look, Clipboard, Menu; later days Use, Look,
+Clipboard, Menu; building Look and Menu (the build prompt and the dock's own lines show the rest).
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.
@@ -423,6 +439,8 @@ the next PR.
 | A version 5 save gets an empty crate, sold list and projects (save version 6) | `test_projects.test_a_version_5_save_gets_the_crate_and_projects` | Passing |
 | A stool counts as a chair for guests; a flower planter near a pitch is a new atmosphere point | `data/guests.json` | Built, not tested on its own |
 | Playtest's finding on main: walking could leave the clearing into the empty field; players now stop at the edge | `test_camp_rules.test_a_player_cannot_walk_off_the_clearing` | Passing |
+| Playtest pass 2: the crate keeps back what the open camp project still needs (only spare sticks or berries sell, and a press with nothing spare says so); what was already brought to the board frees that many up | `test_projects.test_the_sell_crate_keeps_back_what_the_open_project_needs` | Passing (fails when the crate takes the whole stack) |
+| Playtest pass 2: woods ring the walking edge (data/clearing.json `border`: a row of bushes, then three rings of trees, the same every run) with the grass running on past them, so the edge shows and the sky band never does; no border tree is within chopping reach | `test_camp_rules.test_woods_ring_the_walking_edge_out_of_reach` | Passing (fails with no rings); frames from `capture.gd --edge` looked at |
 | Review frames: the crate prompt, stools and a planter by the fire, Supplies with the crate, the morning report's sale line | Cloud frames (`stage-b/gameplay2_crate_projects.jpg` in the project files) | Looked at |
 
 How to try round 2: carry sticks or a fish to the little crate south of the fire and press E; press E again with
