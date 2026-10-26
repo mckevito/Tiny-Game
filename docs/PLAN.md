@@ -275,6 +275,16 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   Burl's letter; the fire is cold until the players bring it 3 sticks and 1 wood; when it catches he talks about
   Lantern Night and asks for the camp's name, painted on a new camp sign by the path that can be repainted any time;
   then he hands over his clipboard. Older saves skip it. Burl gives the daily star hint from now on.
+- 26 Oct 2026, owner: go on Burl's story jobs. **Proposed** (built): after the arrival evening Burl gives seven jobs,
+  one at a time and in person (put up the camp board, mark out a pitch, grant a guest's wish, a bench by the fire,
+  catch and grill supper, replant a stump, earn the second star; `data/ranger_jobs.json`). A felt "!" over him, a HUD
+  line and his word at the top of the morning report say when he has something; talking to him thanks them, pays
+  5 to 10 coins and gives the next. Nothing is timed; a job already done when he gives it is thanked for at once.
+  Older saves start at the first job. While he talks the camera turns so he and the player stand side by side, he
+  turns back afterwards, and both PCs see him talk.
+- 26 Oct 2026, owner: **no ranger stamp card.** It is replaced by a **scrapbook**: photos the players take of animals,
+  people and places (waterfalls and other sights), and pages for tools, props, craftables and builds that fill in by
+  themselves when first got or placed, organised by category. Design options go to the owner before it is built.
 - 26 Oct 2026, owner asked for a developer menu for gameplay checks and QA (time of day, spawning guests and other
   dev tools). **Proposed**: F1 or the DualSense's Create button opens it in a camp, only in a debug build (the editor)
   or with `-- --dev`; elsewhere F1 still shows just the fps line. F1 no longer speeds the clock by itself: the menu's

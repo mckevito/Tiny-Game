@@ -531,7 +531,8 @@ func _fire(out: String) -> void:
 
 
 ## The arrival evening on a new camp, from the menu: the letter, Ranger Burl's hello, the cold fire, the fire lit at
-## dusk, naming the camp, the clipboard handover and the painted sign (opening_<n>_<what>.png).
+## dusk, naming the camp, the clipboard handover, the painted sign, then Burl's first story job, the '!' once it is
+## done and his thanks (opening_<n>_<what>.png).
 func _opening(out: String) -> void:
 	CampSave.dir = "user://captures_save"
 	DirAccess.make_dir_recursive_absolute(CampSave.dir)
@@ -592,6 +593,25 @@ func _opening(out: String) -> void:
 	s.camp["calendar"]["minute"] = (11.0 - Tuning.num("day", "clock.start_hour")) * 60.0
 	await _settle()
 	_save(out + "/opening_8_sign.png")
+	var head_on := CampStory.ranger_pos() + Vector2(0.0, 1.2)
+	me.position = Vector3(head_on.x, 0, head_on.y)
+	me.rotation.y = 0.0
+	s.set_player_pos("p_capture_one", head_on, 0.0)
+	camp.camera.yaw = 0.0
+	camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m") + 1.5
+	camp.interact("p_capture_one")
+	await _settle()
+	await _settle()
+	_save(out + "/opening_9_first_job.png")
+	for i in (CampStory.jobs()[0]["ask"] as Array).size():
+		camp._unhandled_input(press)
+	camp.ask("build", ["project_board", Vector2(-3.2, 7.9), 0.0], "p_capture_one")
+	await _settle()
+	await _settle()
+	_save(out + "/opening_10_job_done.png")
+	camp.interact("p_capture_one")
+	await _settle()
+	_save(out + "/opening_11_thanks.png")
 
 
 func _guests(out: String) -> void:

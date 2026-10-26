@@ -121,6 +121,10 @@ var _talker := ""
 var _talk_kind := ""
 var _heard := ""
 var _chats := 0
+## Ranger Burl's own facing (data/ranger.json face), which he turns back to after a talk.
+var _ranger_yaw := 0.0
+## The play camera's turn before it turned to show a talk with Ranger Burl (put back afterwards), or null.
+var _talk_cam_yaw: Variant = null
 var _fresh := false
 
 const STITCH_GRID := preload("res://scripts/art/stitch_grid.gdshader")
@@ -1218,7 +1222,8 @@ func interact(who: String = "") -> void:
 		"deposit", "ship", "take_back", "project", "upgrade_fire", "feed_fire":
 			ask(act["what"], [], who)
 		"talk":
-			_open_talk(who, "idle" if state.story.step() == "done" else state.story.step())
+			var step := state.story.step()
+			_open_talk(who, step if step != "done" else ("job" if state.story.has_word() else "idle"))
 		"sign":
 			_ask_name(who)
 		"read_board":
@@ -1342,6 +1347,8 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		why = state.story.feed_fire(profile_id)
 	elif what == "name_camp" and args.size() == 1 and args[0] is String:
 		why = state.story.name_camp(profile_id, args[0])
+	elif what == "ranger_job" and args.is_empty():
+		why = state.story.hear(profile_id)
 	elif what == "drop" and args.size() == 1 and args[0] is int:
 		why = state.pack.drop(profile_id, args[0])
 	elif what == "pick_bundle" and args.size() == 1 and args[0] is String:
@@ -1367,7 +1374,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 			_denied.rpc_id(peer, why)
 		return
 	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "dig", "upgrade_fire", "forage", "spot", "take_sapling", "plant", "drop",
-			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project", "feed_fire", "name_camp", "dev"]:
+			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project", "feed_fire", "name_camp", "ranger_job", "dev"]:
 		match what:
 			"fish":
 				_say(peer, "toast.caught", [Tuning.text("items." + state.pack.last_item)])
@@ -1400,6 +1407,9 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 			"name_camp":
 				_say_all("toast.camp_named", [state.story.camp_name()])
 				_sync_sign()
+			"ranger_job":
+				for job_id in state.story.thanked:
+					_say_all("toast.job_done", [Tuning.text("job.%s.goal" % job_id), int(CampStory.job_row(job_id).get("coins", 0))])
 			"dig":
 				_strike(profile_id, "dig", args[0])
 				_say(peer, "toast.dug", [])
@@ -1494,6 +1504,8 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 func _progress(event: String) -> void:
 	for id in state.tasks.note(event):
 		_say_all("toast.task_done", [Tuning.text("task." + id), int(CampTasks.plan(id).get("bonus", 0))])
+	if state.story.note(event):
+		_say_all("toast.burl_word", [state.story.ranger_name()])
 
 
 ## A guest's PC says hello. With a link code it claims that couch character (taking it off this PC's couch if it is
@@ -1722,6 +1734,9 @@ func today_lines() -> String:
 	var out := ""
 	if not state.story.lit():
 		out += "\n" + Tuning.text("hud.fire_job") % CampStory.words(state.story.missing())
+	var burl := burl_line(true)
+	if burl != "":
+		out += "\n" + burl
 	var wants := guest_wants()
 	if not wants.is_empty():
 		out += "\n" + Tuning.text("hud.guests")
@@ -1732,6 +1747,19 @@ func today_lines() -> String:
 	for row: Dictionary in rows.slice(0, int(Tuning.num("tuning", "hud.today_max", 3))):
 		out += "\n" + CampTasks.line(row, true)
 	return out
+
+
+## Ranger Burl's word about his story job (data/ranger_jobs.json): that he would like a word, or the job he gave
+## and how far it has come; "" once every job is done. `short` is the HUD's line, otherwise his morning word.
+func burl_line(short: bool) -> String:
+	var row := state.story.job()
+	if state.story.step() != "done" or row.is_empty():
+		return ""
+	var form := "hud." if short else "report."
+	if state.story.has_word():
+		return Tuning.text(form + "burl_word") % state.story.ranger_name()
+	return Tuning.text(form + "burl_job") % [state.story.ranger_name(), Tuning.text("job.%s.goal" % row["id"]),
+			mini(state.story.job_have(), int(row.get("count", 1))), int(row.get("count", 1))]
 
 
 ## One line for each guest with an open request: who and what they would love.
@@ -1794,6 +1822,9 @@ func morning_report(summary: Dictionary) -> String:
 	var cal: Dictionary = state.camp["calendar"]
 	var lines: PackedStringArray = [Tuning.text("report.morning") % [Tuning.text("clock.season." + str(cal["season"])),
 			int(cal["day"])], ""]
+	var burl := burl_line(false)
+	if burl != "":
+		lines.append_array([burl, ""])
 	if (summary.get("lines", []) as Array).is_empty():
 		lines.append(Tuning.text("report.quiet"))
 	else:
@@ -2929,6 +2960,7 @@ func _spawn_ranger() -> void:
 	ranger.transform = Clearing.placement_transform({"pos": Tuning.value("ranger", "pos", [0, 0]),
 			"face": Tuning.value("ranger", "face", [0, 0])})
 	add_child(ranger)
+	_ranger_yaw = ranger.rotation.y
 	var mark := Label3D.new()
 	mark.name = "Mark"
 	mark.text = Tuning.text("ranger.mark")
@@ -2950,7 +2982,7 @@ func _story_cue() -> void:
 		return
 	var mark := ranger.get_node_or_null("Mark")
 	if mark:
-		mark.visible = state.story.step() != "done"
+		mark.visible = state.story.step() != "done" or state.story.has_word()
 	var step := state.story.step()
 	if step == _heard or report.visible or menu.visible or talk.visible or mode == Mode.MENU:
 		return
@@ -2959,11 +2991,17 @@ func _story_cue() -> void:
 
 
 ## Opens Ranger Burl's speech bubble for a player on this PC with one of his line sets (data/ranger.json lines):
-## fire, name or done for the arrival evening, or idle (one of his everyday lines, taking turns, then a star hint).
+## fire, name or done for the arrival evening, job (his thanks for a done story job and the next one he gives,
+## data/ranger_jobs.json, which the host settles), or idle (one of his everyday lines, taking turns, then a star hint).
 func _open_talk(who: String, kind: String) -> void:
 	var keys: Array = Tuning.value("ranger", "lines." + kind, [])
 	var lines: Array[String] = []
-	if kind == "idle":
+	if kind == "job":
+		for part: Dictionary in state.story.talk_plan():
+			var row: Dictionary = CampStory.jobs()[int(part["job"])]
+			for key in row.get(part["say"], []):
+				lines.append(Tuning.text(str(key)))
+	elif kind == "idle":
 		if not keys.is_empty():
 			lines.append(Tuning.text(str(keys[_chats % keys.size()])))
 		_chats += 1
@@ -2984,6 +3022,9 @@ func _open_talk(who: String, kind: String) -> void:
 	campers[who].controlled = false
 	campers[who].velocity = Vector3.ZERO
 	_ranger_talks(who)
+	_turn_for_talk(who, true)
+	if kind == "job":
+		ask("ranger_job", [], who)
 	talk.say(Tuning.text("ranger.tag") % state.story.ranger_name(), lines,
 			Prompts.rich(Tuning.text("prompt.talk_next"), _glyph(who)),
 			Prompts.rich(Tuning.text("prompt.talk_end"), _glyph(who)))
@@ -3004,21 +3045,66 @@ func _end_talk(skip: bool = false) -> void:
 	_talker = ""
 	_talk_kind = ""
 	_ranger_talks("")
+	_turn_for_talk(who, false)
 	if campers.has(who) and _menu_for != who and not _busy.has(who):
 		campers[who].controlled = true
 	if not skip and kind == "done" and not _boards.has(who):
 		toggle_clipboard(who)
 
 
-## Ranger Burl takes his talking pose and turns to the player he talks to ("" puts him back as he stands).
+## Ranger Burl takes his talking pose and turns to the player he talks to ("" puts him back as he stands, facing
+## data/ranger.json face), on this PC and the other one.
 func _ranger_talks(who: String) -> void:
+	_ranger_pose(who)
+	if mode == Mode.HOST:
+		for guest: int in _guests:
+			_ranger_pose.rpc_id(guest, who)
+	elif mode == Mode.GUEST:
+		_ranger_pose.rpc_id(1, who)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _ranger_pose(who: String) -> void:
 	if ranger == null:
 		return
+	var sender := multiplayer.get_remote_sender_id()
+	if sender != 0:
+		if mode == Mode.HOST and who != "" and _guests.get(sender, "") != who:
+			return
+		if mode == Mode.GUEST and sender != 1:
+			return
+		if who == "" and _talker != "":
+			return
 	var stand := str(Tuning.value("ranger", "model", "ranger_burl"))
 	ranger.set_look(str(Tuning.value("ranger", "talk_model", stand)) if who != "" else stand)
+	ranger.rotation.y = _ranger_yaw
 	if who != "" and campers.has(who):
 		var at: Vector3 = campers[who].position
 		ranger.rotation.y = atan2(-(at.x - ranger.position.x), -(at.z - ranger.position.z))
+
+
+## While a player on this PC talks to Ranger Burl, their camera turns until both of them show side by side (when it
+## looked at him from behind the player), at least camera.talk_side_deg off that line (data/tuning.json); `on` false
+## turns it back.
+func _turn_for_talk(who: String, on: bool) -> void:
+	var cam: PlayCamera = couch.second_camera() if couch.split and who == couch_id else camera
+	if cam.leader:
+		cam = cam.leader
+	if not on:
+		if _talk_cam_yaw is float:
+			cam.turn_to = _talk_cam_yaw
+		_talk_cam_yaw = null
+		return
+	if ranger == null or not campers.has(who):
+		return
+	var d: Vector3 = ranger.global_position - campers[who].global_position
+	var behind := atan2(-d.x, -d.z)
+	var side := deg_to_rad(Tuning.num("tuning", "camera.talk_side_deg", 55.0))
+	var off := angle_difference(behind, cam.yaw)
+	if absf(off) >= side:
+		return
+	_talk_cam_yaw = cam.yaw
+	cam.turn_to = behind + (side if off >= 0.0 else -side)
 
 
 ## The bubble asks a player on this PC for the camp's name, starting from the one it has.
