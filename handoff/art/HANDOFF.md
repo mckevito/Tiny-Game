@@ -68,11 +68,15 @@
       player's 33k) and differ in the top of the figure: Bea a striped bobble beanie, ginger fringe and plaits; Olive
       a bucket hat, silver bob and round glasses with a cream cardigan; Walt (rounder, 3% taller) a flat cap, grey
       hair and a felt beard. Waits on the owner's verdict. The visitor names themselves come with Stage C (Gameplay);
-      the looks are ready for them. `capture.gd --hero --guests` shows them in camp (day, dusk and the play camera).
-   2. Still plain: animals, tools, saplings, stumps, water point, lantern post, bag covers, bundles, the pitch.
-   3. Ideas from the reference not yet built: a stitched fence and sign, log-stump seats, mugs, a lantern on the
+      the looks are ready for them. `capture.gd --hero --line-up` shows them in camp (day, dusk and the play camera).
+   2. The knitted clipboard prop (`knit_clipboard`, `art/props/knit_clipboard/`, 25 Oct 2026): built for the
+      owner's "a clipboard that looks knitted" ask. Gameplay puts it in hand while that player's clipboard is
+      open: at `camper.hand_pos`, turned 180° so the page faces the camper and tipped about 35° back. Interface
+      draws the matching screen.
+   3. Still plain: animals, tools, saplings, stumps, water point, lantern post, bag covers, bundles, the pitch.
+   4. Ideas from the reference not yet built: a stitched fence and sign, log-stump seats, mugs, a lantern on the
       table, a soft tilt-shift blur (the play camera belongs to Gameplay; ask first).
-   4. A timing check on the laptop floor: the scene is about 180k vertices (ground scatter 65k) and the shader runs
+   5. A timing check on the laptop floor: the scene is about 180k vertices (ground scatter 65k) and the shader runs
       about seven noises per pixel; if it costs, give the Light preset a lighter material.
 4. **Owner decisions:** the felt reference picture (25 Oct 2026) is the target look; pilot first (3 to 5 pieces), shown
    beside the reference in day and dusk, then roll out.

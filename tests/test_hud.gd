@@ -301,7 +301,7 @@ func test_the_menu_key_closes_the_menu_it_opened() -> String:
 	return why
 
 
-## Playtest: the hint wrapped inside a control ("Tab for the / menu"), and a toast that came with the morning report
+## Playtest: the hint wrapped inside a control ("Tab for the / menu") or left a lone dot at a line's end, and a toast that came with the morning report
 ## drew under it and was never read.
 func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> String:
 	_fresh()
@@ -310,8 +310,11 @@ func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> St
 	await _frames(2)
 	var why := ""
 	var hint: String = camp.get_node("Hud/Hint").text.get_slice("\n", 0)
-	for part in hint.split(" · "):
-		if part.contains(" "):
+	# The only breakable spaces come after a dot, so a wrapped line ends on its dot and never starts with one.
+	if hint.contains(" ·"):
+		why = "a dot in the hint should stay on the line before it: " + hint
+	for part in hint.split("\u00a0· "):
+		if why == "" and part.contains(" "):
 			why = "the hint should only break between controls, but %s can break inside" % part
 	if why == "":
 		camp._welcome_report()
@@ -324,4 +327,116 @@ func test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report() -> St
 		if why == "" and not camp.get_node("Hud/Toast").text.contains("Clover"):
 			why = "the toast should show once the report is put away, got " + camp.get_node("Hud/Toast").text
 	await _done()
+	return why
+
+
+## The owner (25 Oct 2026): a clipboard that looks knitted, with a knitted sheet of paper the writing sits on. The board
+## and the sheet are knitted (scripts/ui/knit.gdshader), the clip sits across the top of the sheet, a stitched rule
+## runs under each line of the page and stops at its end, and keys on the sheet are honey caps, not cream on cream.
+func test_the_clipboard_is_a_knitted_board_with_a_ruled_sheet() -> String:
+	_fresh()
+	var camp := _camp("NearSide", "p_host", "Hana")
+	camp.start_solo(1)
+	camp.toggle_clipboard("p_host")
+	await _frames(3)
+	var why := ""
+	var board: Clipboard = camp._boards.get("p_host")
+	var sheet: PanelContainer = board._sheet if board else null
+	if board == null or not (board.material is ShaderMaterial and sheet.material is ShaderMaterial):
+		why = "the open clipboard should be a knitted board holding a knitted sheet"
+	if why == "" and (sheet.material as ShaderMaterial).shader != Clipboard.KNIT:
+		why = "the sheet should use the knit shader"
+	if why == "":
+		var knit := sheet.material as ShaderMaterial
+		var body: Label = board._body
+		var line_h := float(body.get_line_height()) + float(body.get_theme_constant("line_spacing"))
+		var top := float(knit.get_shader_parameter("rule_top"))
+		var body_top := body.get_global_rect().position.y - sheet.get_global_rect().position.y
+		if absf(float(knit.get_shader_parameter("rule_px")) - line_h) > 0.5:
+			why = "a rule should come every line (%.1f px), got %s" % [line_h, knit.get_shader_parameter("rule_px")]
+		elif absf(top - body_top) > 0.5:
+			why = "the rules should start where the writing starts (%.1f), got %.1f" % [body_top, top]
+		elif float(knit.get_shader_parameter("rule_bottom")) > body_top + body.size.y + 1.5:
+			why = "the rules should stop at the end of the page"
+		elif sheet.get_global_rect().position.y <= board.get_global_rect().position.y:
+			why = "the board should show above the sheet, where the clip holds it"
+	if why == "":
+		var sheet_face := FeltBuilder.swatch(str(Tuning.value("tuning", "clipboard.sheet_swatch"))).linear_to_srgb()
+		var paper_key := FeltBuilder.swatch(str(Tuning.value("tuning", "glyphs.paper_key_swatch"))).linear_to_srgb()
+		if not Prompts.rich("{clipboard}", false, true).contains(paper_key.to_html()):
+			why = "keys on the sheet should be paper keycaps"
+		elif absf(sheet_face.get_luminance() - paper_key.get_luminance()) < 0.12:
+			why = "a paper keycap should stand out from the sheet"
+	camp.toggle_clipboard("p_host")
+	await _done()
+	return why
+
+
+## Playtest (PR #40): at a big interface size an open clipboard covered the prompt in the middle of the screen and the
+## toasts ran over a hint that had wrapped to four lines; a morning report with three guests ran off the top and bottom
+## of the screen. Alone on the PC the prompt and toasts move beside the clipboard and below the hint, and a report too
+## tall for the screen turns into pages: interact turns them, and on the last page it closes the report.
+func test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages() -> String:
+	_fresh()
+	var was := _tree().root.size
+	_tree().root.size = SCREEN
+	var camp := _camp("BigSide", "p_host", "Hana")
+	camp.start_solo(1)
+	var who: String = camp.local_ids()[0]
+	camp.toggle_build(who)
+	for i in 3:
+		camp._toast(Tuning.text("toast.crafted") % ["Hana", Tuning.text("build.lantern_post")])
+	var why := ""
+	for scale in [120, 150]:
+		Settings.set_value("ui_scale", scale)
+		Settings.apply("ui_scale")
+		camp.toggle_clipboard(who)
+		await _frames(3)
+		var view: Rect2 = camp.get_viewport().get_visible_rect()
+		var hud: Node = camp.get_node("Hud")
+		if str(hud.get_node("Prompt").text) == "":
+			why = "a building prompt should show at %d%%" % scale
+		if why == "":
+			why = hud_fits(view, [hud.get_node("Hint"), hud.get_node("Clock"), hud.get_node("Prompt"),
+					hud.get_node("Toast"), camp._boards[who]])
+			why = "" if why == "" else "at %d%% with the clipboard open: %s" % [scale, why]
+		camp.toggle_clipboard(who)
+		if why != "":
+			break
+	if why == "":
+		var lines: PackedStringArray = []
+		for i in 60:
+			lines.append("Guest %d had a lovely stay and left a kind note by the fire." % i)
+		camp.report.show_report("\n".join(lines), "close", "next %d of %d")
+		await _frames(3)
+		var view: Rect2 = camp.get_viewport().get_visible_rect()
+		var pages: int = camp.report.page_count()
+		if pages < 2:
+			why = "a 60-line report should take more than one page at 150%"
+		elif not view.encloses(camp.report.get_global_rect()):
+			why = "each page of the report should fit the screen, got %s in %s" % [camp.report.get_global_rect(), view]
+		var press := InputEventAction.new()
+		press.action = "interact"
+		press.pressed = true
+		for i in pages - 1:
+			if why == "":
+				camp._unhandled_input(press)
+				if not camp.report.visible:
+					why = "interact should turn to page %d, not close the report" % (i + 2)
+		if why == "":
+			camp._unhandled_input(press)
+			if camp.report.visible:
+				why = "interact on the last page should close the report"
+	camp.report.visible = false
+	Settings.reset_page("access")
+	Settings.apply("ui_scale")
+	_tree().root.size = was
+	await _done()
+	if why == "" and not Prompts.rich("{pack}", false).contains(Tuning.text("glyphs.key_pad_one") + "I"):
+		why = "a one-letter key should get the wider keycap padding"
+	# Playtest: an en space (a breaking space) let the hint wrap between "E" and "use or pick up" at 150%.
+	for key in ["glyphs.key_pad", "glyphs.key_pad_one", "glyphs.join"]:
+		for c in Tuning.text(key):
+			if why == "" and not ["\u00a0", "\u2007", "\u202f"].has(c):
+				why = "%s should only hold no-break spaces, so a keycap never wraps from its words" % key
 	return why

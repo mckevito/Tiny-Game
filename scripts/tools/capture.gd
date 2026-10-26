@@ -20,6 +20,9 @@ extends SceneTree
 ## to sweep it up (+1 tags), then digs the stump with the shovel; a throwaway save.
 ## --fire saves the camp fire at each level at dusk (fire_<level>.png) with the camp board put up beside the camper
 ## (from the kit), a throwaway save.
+## --guests saves three guests busy at once (guests_<n>.png, a few slots of the day so each kind shows: fishing,
+## photos, kites, sitting on the log bench or the fire ring's logs, a frisbee in the air), each with a closer look at
+## one busy guest (guests_<n>_close.png), a throwaway save.
 ## --menus saves the title over the clearing (title.png), the start page (start.png), each Options tab
 ## (options_<tab>.png, focus on the first setting) and Options opened from the in-camp menu (options_in_camp.png),
 ## with a throwaway save and settings file.
@@ -29,9 +32,10 @@ extends SceneTree
 ## a key light from the camera's upper left, eight views (turn_front.png, turn_front_right.png ... turn_front_left.png;
 ## data/art.json "turnaround"). --glb=PATH shows that .glb, painted as model ID, instead of the model's own file (a
 ## camper built with --pose=t to match a T-pose sheet; it needn't be imported).
+## --zoom=K brings that studio camera K times closer, for a model K times smaller than the camper (a prop: about 4).
 ## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
-## --guests adds the three guest looks (guest_a, guest_b, guest_c; data/models.json) beside the two campers in the hero
-## shots, and saves play_guests_<mood>.png from the play camera's pitch and distance (data/tuning.json camera).
+## --line-up (with --hero) adds the three guest looks (guest_a, guest_b, guest_c; data/models.json) beside the two
+## campers in the hero shots, and saves play_guests_<mood>.png from the play camera's pitch and distance (data/tuning.json camera).
 
 const SETTLE_FRAMES := 30
 
@@ -52,9 +56,11 @@ func _run() -> void:
 	var guests := false
 	var chop := false
 	var fire := false
+	var line_up := false
 	var swap := {}
 	var turn := ""
 	var glb := ""
+	var zoom := 1.0
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -68,10 +74,13 @@ func _run() -> void:
 		guests = guests or arg == "--guests"
 		chop = chop or arg == "--chop"
 		fire = fire or arg == "--fire"
+		line_up = line_up or arg == "--line-up"
 		if arg.begins_with("--turn="):
 			turn = arg.trim_prefix("--turn=")
 		if arg.begins_with("--glb="):
 			glb = arg.trim_prefix("--glb=")
+		if arg.begins_with("--zoom="):
+			zoom = maxf(float(arg.trim_prefix("--zoom=")), 0.1)
 		for who in ["player", "friend"]:
 			if arg.begins_with("--%s=" % who):
 				swap[who] = arg.trim_prefix("--%s=" % who)
@@ -87,6 +96,10 @@ func _run() -> void:
 		return
 	if stage_b:
 		await _stage_b(out)
+		quit(0)
+		return
+	if guests:
+		await _guests(out)
 		quit(0)
 		return
 	if fire:
@@ -106,11 +119,11 @@ func _run() -> void:
 		quit(0)
 		return
 	if turn != "":
-		await _turn(out, turn, glb)
+		await _turn(out, turn, glb, zoom)
 		quit(0)
 		return
 	if hero:
-		await _hero(out, swap, guests)
+		await _hero(out, swap, line_up)
 		quit(0)
 		return
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
@@ -479,6 +492,73 @@ func _fire(out: String) -> void:
 		_save(out + "/fire_%d.png" % level)
 
 
+func _guests(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.start_solo(1)
+	camp.report.visible = false
+	var s: CampState = camp.state
+	s.camp["coins"] = 500
+	s.camp["kit"]["log_bench"] = 1
+	s.camp["fire"] = {"level": 1}
+	camp._sync_fire()
+	for p: Vector2 in [Vector2(3, 5), Vector2(-4, 7), Vector2(4, 9)]:
+		print(s.build.build("p_capture_one", "pitch", p, 0.0))
+		camp._show_object(s.build.last_id)
+	print(s.build.build("p_capture_one", "log_bench", Vector2(-1, 3), 180.0))
+	camp._show_object(s.build.last_id)
+	var me: Camper = camp.campers["p_capture_one"]
+	me.position = Vector3(0.5, 0, 3.5)
+	s.set_player_pos("p_capture_one", Vector2(0.5, 3.5), 0.0)
+	s.camp["calendar"]["minute"] = (Tuning.num("day", "stays.arrive_hour") - Tuning.num("day", "clock.start_hour")) * 60.0
+	for i in 3:
+		s.day.maybe_arrive()
+		s.camp["calendar"]["minute"] = float(s.camp["calendar"]["minute"]) + Tuning.num("day", "stays.gap_min")
+	for id: String in s.camp["stays"]:
+		s.camp["stays"][id]["request"] = {"kind": "fish", "done": true}
+		s.camp["stays"][id]["next_at"] = INF
+	camp._sync_stays(false)
+	camp.camera._want_distance = Tuning.num("tuning", "camera.max_distance_m")
+	var slot_min := Tuning.num("guests", "activities.slot_min")
+	var shots := 0
+	var shown := {}
+	for slot in range(1, int(CampDay.day_minutes() / slot_min) - 4):
+		s.camp["calendar"]["minute"] = (slot + 0.5) * slot_min
+		var kinds: Array = GuestPlans.plan(s, false).values().map(func(p: Dictionary) -> String: return p["kind"])
+		if kinds.all(func(k: String) -> bool: return shown.has(k)):
+			continue
+		for k: String in kinds:
+			shown[k] = true
+		print("slot %d: %s" % [slot, kinds])
+		await process_frame
+		for id: String in camp.visitors:
+			var c: Camper = camp.visitors[id]
+			if c.walk_target is Vector3:
+				c.position = c.walk_target
+		me.position = Vector3(0.5, 0, 3.5)
+		camp.camera._want_distance = Tuning.num("tuning", "camera.max_distance_m")
+		await _settle()
+		_save(out + "/guests_%d.png" % shots)
+		# A closer look at the first guest who is out doing something, the player stood just behind them.
+		for id: String in camp.visitors:
+			if camp._doing.get(id, {}).get("kind", "rest") != "rest":
+				me.position = camp.visitors[id].position + Vector3(0.6, 0, 2.4)
+				camp.camera._want_distance = Tuning.num("tuning", "camera.distance_m")
+				await _settle()
+				for key: String in camp._discs:
+					camp._discs[key]["t"] = Tuning.num("guests", "activities.frisbee.flight_s") * 0.45
+				await process_frame
+				_save(out + "/guests_%d_close.png" % shots)
+				break
+		shots += 1
+
+
 func _menus(out: String) -> void:
 	CampSave.dir = "user://captures_save"
 	DirAccess.make_dir_recursive_absolute(CampSave.dir)
@@ -579,7 +659,7 @@ func _hud(out: String) -> void:
 
 ## The art review shot: a lower, closer camera on the sandbox's fire, tent and trees, in each mood, then a close
 ## look at the campers' faces. The play camera keeps following the player, so this camera is made current instead.
-func _hero(out: String, swap: Dictionary, guests := false) -> void:
+func _hero(out: String, swap: Dictionary, line_up := false) -> void:
 	var sandbox: Node = load("res://scenes/sandbox.tscn").instantiate()
 	for who: String in swap:
 		sandbox.get_node("Player" if who == "player" else "Friend").model_id = swap[who]
@@ -588,7 +668,7 @@ func _hero(out: String, swap: Dictionary, guests := false) -> void:
 	for label in ["Hint", "Mood"]:
 		sandbox.get_node(label).visible = false
 	var mid: Vector3 = (sandbox.player.position + sandbox.friend.position) * 0.5
-	if guests:
+	if line_up:
 		# the guests stand round the two campers, facing the camera (a model's front is -Z)
 		var spots := [Vector3(-2.1, 0.0, -0.6), Vector3(-0.9, 0.0, -1.6), Vector3(2.6, 0.0, 0.3)]
 		for i in 3:
@@ -611,7 +691,7 @@ func _hero(out: String, swap: Dictionary, guests := false) -> void:
 		Miniature.focus(cam, cam.position.distance_to(mid))
 		await _settle()
 		_save(out + "/face_%s.png" % mood)
-		if guests:
+		if line_up:
 			var pitch := deg_to_rad(Tuning.num("tuning", "camera.pitch_deg", 42.0))
 			var dist := Tuning.num("tuning", "camera.min_distance_m", 7.0)
 			var at := mid + Vector3(0.0, 0.7, -0.8)
@@ -623,7 +703,7 @@ func _hero(out: String, swap: Dictionary, guests := false) -> void:
 
 ## A turnaround: the model alone in a studio, from eight sides, lit from the camera's upper right as the owner's sheet
 ## is. The light turns with the camera; the floor is a shadow catcher in the backdrop's colour, so there is no horizon.
-func _turn(out: String, id: String, glb: String) -> void:
+func _turn(out: String, id: String, glb: String, zoom := 1.0) -> void:
 	var cfg: Dictionary = Tuning.table("art").get("turnaround", {})
 	# Drawn larger and scaled down, as a photo would: felt fuzz comes out soft instead of single-pixel speckle.
 	root.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
@@ -681,15 +761,16 @@ void light() { DIFFUSE_LIGHT += vec3(1.0 - strength * (1.0 - ATTENUATION)); }
 	cam.fov = float(cfg.get("fov_deg", 16.0))
 	world.add_child(cam)
 	cam.current = true
-	var dist := float(cfg.get("camera_distance_m", 6.0))
-	var aim := Vector3(0, float(cfg.get("aim_height_m", 0.72)), 0)
+	# --zoom=K moves the whole studio camera K times closer, for a model K times smaller than a camper (a prop).
+	var dist := float(cfg.get("camera_distance_m", 6.0)) / zoom
+	var aim := Vector3(0, float(cfg.get("aim_height_m", 0.72)) / zoom, 0)
 	var key_az := deg_to_rad(float(cfg.get("key_azimuth_deg", 40.0)))
 	var key_el := deg_to_rad(float(cfg.get("key_elevation_deg", 40.0)))
 	var views := ["front", "front_right", "right", "back_right", "back", "back_left", "left", "front_left"]
 	for i in views.size():
 		# The front is -Z and the camper's right is +X: view i stands 45 degrees further round to its right.
 		var a := deg_to_rad(45.0 * i)
-		cam.look_at_from_position(Vector3(sin(a) * dist, float(cfg.get("camera_height_m", 1.6)), -cos(a) * dist), aim)
+		cam.look_at_from_position(Vector3(sin(a) * dist, float(cfg.get("camera_height_m", 1.6)) / zoom, -cos(a) * dist), aim)
 		var key := Vector3(sin(a + key_az) * cos(key_el), sin(key_el), -cos(a + key_az) * cos(key_el))
 		sun.look_at_from_position(key * 10.0, Vector3.ZERO)
 		await _settle()

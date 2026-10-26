@@ -6,7 +6,8 @@ const SIZES := {
 	"camper_a": [1.1, 1.6], "camper_b": [1.1, 1.6], "tent": [1.2, 2.0], "tree_pine": [2.5, 4.5],
 	"tree_round": [2.5, 4.5], "tree_puff": [2.5, 4.5], "picnic_table": [0.6, 1.0], "chair_teal": [0.7, 1.2],
 	"chair_honey": [0.7, 1.2], "fire_pit": [0.4, 1.2], "knit_camper": [1.1, 1.6],
-	"knit_camper_b": [1.1, 1.6], "guest_a": [1.1, 1.6], "guest_b": [1.1, 1.6], "guest_c": [1.1, 1.6],
+	"knit_camper_b": [1.1, 1.6], "knit_clipboard": [0.3, 0.45], "guest_a": [1.1, 1.6], "guest_b": [1.1, 1.6],
+	"guest_c": [1.1, 1.6],
 }
 
 

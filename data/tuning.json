@@ -62,8 +62,10 @@
   "hud": {
     "toast_s": 3.5,
     "toast_lines": 3,
+    "toast_top_px": 150,
     "report_font_px": 26,
     "report_width_px": 980,
+    "report_gap_px": 24,
     "report_margin_px": 28,
     "report_corner_px": 18,
     "report_edge_px": 6,
@@ -85,22 +87,39 @@
     "keep_clear_rate": 6.0
   },
   "clipboard": {
-    "_about": "The clipboard (scripts/camp/clipboard.gd): tabs in order (text: clipboard.tab.<name>), the panel width, font, gap from the screen edge and from the top, the margin, the edge and the thicker top edge (the clip), the felt swatches, and how often its text refreshes.",
+    "_about": "The clipboard (scripts/camp/clipboard.gd): tabs in order (text: clipboard.tab.<name>), the sheet's text width, font, gap from the screen edge and from the top, and how often its text refreshes. It is a knitted felt board (board_swatch, board_px round the sheet, board_top_px above it for the clip, corner_px corners) holding a knitted sheet of paper (sheet_swatch, margin_px inside, sheet_corner_px corners, a shadow of sheet_shadow_px at sheet_shadow_alpha) with stitched rules under each written line (rule_swatch at rule_alpha, rule_px thick, dashes rule_dash_px long). The ribbed knitted clip (clip_swatch) is clip_size_px, with ribs every clip_rib_px and a ring clip_ring_px across. Knit stitches: [width px, height px, groove depth] for the board and the sheet. Writing is ink_swatch. The open tab is a honey felt tag (tab_swatch); the others are ink at tab_dim_alpha.",
     "tabs": [
       "today",
       "bookings",
       "supplies",
       "guide"
     ],
-    "width_px": 560,
+    "width_px": 544,
     "font_px": 22,
     "gap_px": 24,
     "top_px": 150,
     "margin_px": 22,
-    "edge_px": 6,
-    "clip_px": 18,
-    "swatch": "warm_cream",
-    "edge_swatch": "honey_thread",
+    "board_px": 14,
+    "board_top_px": 30,
+    "corner_px": 20,
+    "sheet_corner_px": 8,
+    "sheet_shadow_px": 5,
+    "sheet_shadow_alpha": 0.3,
+    "board_swatch": "wood_felt",
+    "sheet_swatch": "warm_cream",
+    "clip_swatch": "honey_thread",
+    "clip_size_px": [150, 40],
+    "clip_rib_px": 9,
+    "clip_ring_px": 26,
+    "knit_board": [16, 11, 0.3],
+    "knit_sheet": [12, 8, 0.1],
+    "rule_swatch": "honey_thread",
+    "rule_alpha": 0.6,
+    "rule_px": 2,
+    "rule_dash_px": 10,
+    "tab_swatch": "honey_thread",
+    "ink_swatch": "ink_brown",
+    "tab_dim_alpha": 0.55,
     "refresh_s": 0.25
   },
   "pack_panel": {
@@ -153,9 +172,10 @@
     "centre_share": 1.6
   },
   "glyphs": {
-    "_about": "Button glyphs in prompts (scripts/core/prompts.gd rich): controller icons icon_px tall; keyboard keys as keycaps in key_swatch with key_ink_swatch letters.",
+    "_about": "Button glyphs in prompts (scripts/core/prompts.gd rich): controller icons icon_px tall; keyboard keys as keycaps in key_swatch with key_ink_swatch letters, or paper_key_swatch on a cream panel (the clipboard, Pack, workbench and report).",
     "icon_px": 34,
     "key_swatch": "warm_cream",
+    "paper_key_swatch": "honey_thread",
     "key_ink_swatch": "ink_brown"
   }
 }

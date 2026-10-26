@@ -10,7 +10,8 @@ the numbers, and the mistakes not to repeat. The worked example is `art/characte
 - `art/tools/knit_kit.py` is the shared Blender kit. It holds the mesh, the shapes (below), the baked shade and the
   export. A build script imports it and ends with `finish("<id>")`. The camper's script uses it unchanged: it builds
   byte for byte the same GLB as before the split.
-- `art/tools/turnaround.sh DIR OUT` runs one review round. It builds the T-pose, renders eight studio views, and
+- `art/tools/turnaround.sh DIR OUT [ZOOM]` runs one review round. ZOOM brings the studio camera that many times
+  closer, for a model that many times smaller than the camper (about 4 for a hand-held prop). It builds the T-pose, renders eight studio views, and
   lays them beside the reference sheet. It takes about 2 minutes.
 - `art/tools/compare.py` measures the renders against the sheet:
   - `sheets` lays them out (`compare8.png`, `pairs.png`, and `versus.png`, the one to show the owner).
@@ -105,12 +106,34 @@ For figures that appear several at a time, such as the camp's guests:
   players' and each other's.
 - **Hats over hair:** size a hat to the hair's outside, not to the head, and keep the hair's fullness low where the
   hat sits. A hat over a face tilts back (10 to 17 degrees) and is checked from the play camera, not only in the
-  studio: `capture.gd --hero --guests` saves `play_guests_<mood>.png` at the play camera's pitch.
+  studio: `capture.gd --hero --line-up` saves `play_guests_<mood>.png` at the play camera's pitch.
 - **Brims and peaks:** a lathe whose profile runs under the brim out to its lip, round the lip, back along the top,
   then up the crown (the same turning sense as the beanie's cuff, so faces point out). A peak is a slab traced the
   same way, slice by slice round the front of the cap's foot.
 - **Plaits:** three yarn strands round a Catmull-Rom path, each swinging side to side (`sin`) and in and out at
   twice that rate (`sin 2x`), a third of a turn apart, with a tie and a felt tuft at the end.
+
+## A hand-held prop (the knitted clipboard, 25 Oct 2026)
+The worked example is `art/props/knit_clipboard/` (about 4.1k vertices; props go in `art/props/<id>/`).
+- **Work from a brief when there is no sheet:** its size, swatches, budget, origin and how it is held. Put the
+  origin where the hands hold it, and face the part people read toward the model's front (+Y in Blender, -Z in the
+  game). Whoever puts it in a hand turns it from there.
+- **Review with `turnaround.sh DIR OUT 4`** and look at the front, a three-quarter view, the side and the back.
+  Without a `reference.json` there is nothing to measure against, so judge by eye against the knitted campers.
+- **Flat felt pieces are slabs:** rings of a rounded rectangle (`ring_points` with `n_exp` 5) from the back, round
+  the edge, to the front. Those rings run round the x-z plane, not round +Z as a lathe's do, so reverse each ring, or
+  every face looks inward. Check the normals of a new kind of shape before judging any render: an inside-out board
+  showed the writing through its back.
+- **Fuzz shells poke through thin layers.** Every face grows fibre tips 6 mm out (data/art.json "shells"), so a
+  face lying under a layer thinner than that (the board under the knitted page) speckles through it. Don't build the
+  hidden face: the board's front is a frame that stops 4 mm inside the page's edge, and the page closes it.
+- **A flat knit panel** is a `grid` with `closed=False` whose stitch map is (x / column width, height / row height).
+  It needs only 2 vertices per column, because the shader draws the stitches from the stitch map. Run x from right
+  to left so the faces look out of the front. The page's columns are 12.5 mm, finer than the sweater's, as small
+  knitting would be.
+- **Embroidered writing is a solid cord,** never a running stitch: at this size a running stitch reads as dots. Use
+  `tube` with the yarn weave (radius 2 mm, 2.8 mm for a heading line) on a slight double wave. Set it into the
+  surface by half its radius.
 
 ## How a model is made
 - **One mesh, one material.** Each vertex carries:
