@@ -7,7 +7,7 @@ const SIZES := {
 	"tree_round": [2.5, 4.5], "tree_puff": [2.5, 4.5], "picnic_table": [0.6, 1.0], "chair_teal": [0.7, 1.2],
 	"chair_honey": [0.7, 1.2], "fire_pit": [0.4, 1.2], "knit_camper": [1.1, 1.6],
 	"knit_camper_b": [1.1, 1.6], "knit_clipboard": [0.3, 0.45], "guest_a": [1.1, 1.6], "guest_b": [1.1, 1.6],
-	"guest_c": [1.1, 1.6],
+	"guest_c": [1.1, 1.6], "ranger_burl": [1.2, 1.7],
 }
 
 
@@ -118,8 +118,10 @@ func test_stitch_cord_is_unbroken() -> String:
 
 ## The sculpted campers: player one's (knit_camper) and player two's (knit_camper_b), built from art/RECIPE.md.
 ## The three knitted guests share a lighter body (art/characters/knit_guests/guest_body.py).
-const SCULPTED := ["knit_camper", "knit_camper_b", "knit_guest_bea", "knit_guest_olive", "knit_guest_walt"]
-const GUESTS := ["guest_a", "guest_b", "guest_c"]
+const SCULPTED := ["knit_camper", "knit_camper_b", "knit_guest_bea", "knit_guest_olive", "knit_guest_walt",
+		"ranger_burl", "ranger_burl_talk"]
+## Ranger Burl, the camp's guide, shares the guests' lighter body, so he is held to their budget and must read apart too.
+const GUESTS := ["guest_a", "guest_b", "guest_c", "ranger_burl"]
 const PLAYERS := ["camper_a", "camper_b"]
 
 

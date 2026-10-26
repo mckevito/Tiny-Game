@@ -36,8 +36,8 @@ extends SceneTree
 ## --edge saves the play camera looking out from the walking edge to the north, east, south and west (edge_<dir>.png):
 ## the woods round the camp should fill the top of each frame, with no sky band.
 ## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
-## --line-up (with --hero) adds the three guest looks (guest_a, guest_b, guest_c; data/models.json) beside the two
-## campers in the hero shots, and saves play_guests_<mood>.png from the play camera's pitch and distance (data/tuning.json camera).
+## --line-up (with --hero) adds the three guest looks (guest_a, guest_b, guest_c; data/models.json) and Ranger Burl
+## (talking) beside the two campers in the hero shots, and saves play_guests_<mood>.png from the play camera's pitch and distance (data/tuning.json camera).
 
 const SETTLE_FRAMES := 30
 
@@ -802,9 +802,9 @@ func _hero(out: String, swap: Dictionary, line_up := false) -> void:
 	var mid: Vector3 = (sandbox.player.position + sandbox.friend.position) * 0.5
 	if line_up:
 		# the guests stand round the two campers, facing the camera (a model's front is -Z)
-		var spots := [Vector3(-2.1, 0.0, -0.6), Vector3(-0.9, 0.0, -1.6), Vector3(2.6, 0.0, 0.3)]
-		for i in 3:
-			var g := FeltBuilder.build(["guest_a", "guest_b", "guest_c"][i])
+		var spots := [Vector3(-2.1, 0.0, -0.6), Vector3(-0.9, 0.0, -1.6), Vector3(2.6, 0.0, 0.3), Vector3(1.0, 0.0, -1.7)]
+		for i in 4:
+			var g := FeltBuilder.build(["guest_a", "guest_b", "guest_c", "ranger_burl_talk"][i])
 			sandbox.add_child(g)
 			g.position = mid + spots[i]
 			g.rotation.y = PI

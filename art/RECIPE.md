@@ -112,6 +112,12 @@ For figures that appear several at a time, such as the camp's guests:
   same way, slice by slice round the front of the cap's foot.
 - **Plaits:** three yarn strands round a Catmull-Rom path, each swinging side to side (`sin`) and in and out at
   twice that rate (`sin 2x`), a third of a turn apart, with a tie and a felt tuft at the end.
+- **A second pose, cheaply** (Ranger Burl, 26 Oct 2026): a static model has no rig, so a pose is a second GLB from
+  the same script (`--pose=talk`) and a model row that only swaps the file (`{"base": "ranger_burl", "file": ...}`).
+  `body(arm_poses={side: (drop, forward)})` lifts an arm. Something held (his stick) is placed from the hand's own
+  matrix, so it follows the pose.
+- **A knitted beard:** a fused felt mass, then yarn locks laid on it by casting rays at the mass from in front
+  (`surface_tree` and `hit`), each lifted half its radius off the hit and ending in a small curl.
 
 ## A hand-held prop (the knitted clipboard, 25 Oct 2026)
 The worked example is `art/props/knit_clipboard/` (about 4.1k vertices; props go in `art/props/<id>/`).
