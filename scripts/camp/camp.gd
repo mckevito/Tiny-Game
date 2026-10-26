@@ -494,14 +494,16 @@ func _process(delta: float) -> void:
 	var lines: PackedStringArray = []
 	if state and not menu.visible and not report.visible:
 		for id in local_ids():
-			if _packs.has(id) or _bench.has(id):
-				continue
-			var line := _build_prompt(id) if _building.has(id) else _carry_prompt(id)
-			if line == "":
-				continue
-			line = Prompts.rich(line, _glyph(id))
-			lines.append(Tuning.text("prompt.for_player") % [state.camp["profiles"][id]["name"], line] \
-					if couch_id != "" else line)
+			var line := ""
+			if not (_packs.has(id) or _bench.has(id)):
+				line = _build_prompt(id) if _building.has(id) else _carry_prompt(id)
+			if line != "":
+				line = Prompts.rich(line, _glyph(id))
+			# On the couch each player's prompt is on their own dock (HudDock.show_prompt); the column keeps the bed line.
+			if couch_id != "" and _docks.has(id):
+				_docks[id].show_prompt(line, _building.has(id))
+			elif line != "":
+				lines.append(line)
 		var bed := _bed_line()
 		if bed != "":
 			lines.append(Prompts.rich(bed, _pad))

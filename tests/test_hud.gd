@@ -155,6 +155,30 @@ func _couch_fits(camp: Node, what: String, may_meet: Array = []) -> String:
 	return "" if why == "" else what + ": " + why
 
 
+## Playtest (PR #47): "" when each building player's prompt is on their own dock, the shared column holds only the
+## bed line, a dock is no taller than with its tool row, and the column stands clear of both campers.
+func _prompt_roomy(camp: Node, what: String) -> String:
+	var prompt: RichTextLabel = camp.get_node("Hud/Prompt")
+	for who: String in camp.local_ids():
+		var dock: HudDock = camp._docks[who]
+		if dock.prompt_text() == "":
+			return what + ": %s's prompt should be on their dock" % who
+		if prompt.text.contains(dock.prompt_text()):
+			return what + ": %s's prompt should not also be in the shared column" % who
+	if prompt.text != Prompts.rich(camp._bed_line(), camp._pad):
+		return what + ": the shared column should hold just the bed line, got " + prompt.text
+	camp._keep_in_view(10.0)
+	camp._keep_in_view(10.0)
+	var view: Rect2 = camp.get_viewport().get_visible_rect()
+	for who: String in camp.local_ids():
+		var cam: PlayCamera = camp.couch.second_camera() if camp.couch.split and who == camp.couch_id else camp.camera
+		var body: Vector3 = camp.campers[who].global_position + Vector3.UP * Tuning.num("tuning", "hud.keep_clear_height_m")
+		var at := cam.unproject_position(body) * (view.size.y / cam.get_viewport().get_visible_rect().size.y)
+		if prompt.get_global_rect().has_point(at):
+			return what + ": the bed line %s should not cover %s's camper at %s" % [prompt.get_global_rect(), who, at]
+	return ""
+
+
 ## Playtest: an open panel covered its own player's camper. "" when each player with an open panel stands clear of it
 ## once their view has slid (a long step lets the easing finish).
 func _campers_clear(camp: Node, what: String) -> String:
@@ -236,6 +260,19 @@ func test_couch_split_screen_hud_never_overlaps() -> String:
 			camp._boards[p1].flip(1)
 			camp._boards[p2].flip(1)
 			camp._refresh_boards()
+		# Playtest (PR #47): with the clipboards away and both players building, the docks squeezed the prompt column
+		# to a sliver, so the two prompts stacked 8 to 10 lines over both campers. Each now sits on its own dock.
+		if why == "":
+			camp.toggle_clipboard(p1)
+			camp.toggle_clipboard(p2)
+			for who in [p1, p2]:
+				if not camp._building.has(who):
+					camp.toggle_build(who)
+			# The F1 dev line may pass under a dock here; it is a dev tool, not part of play.
+			why = await _couch_fits(camp, "both building at the biggest interface size", [["Toast", "Prompt"],
+					["Dev", "Dock"]])
+		if why == "":
+			why = _prompt_roomy(camp, "both building at the biggest interface size")
 		Settings.reset_page("access")
 		Settings.apply("ui_scale")
 	_tree().root.size = was

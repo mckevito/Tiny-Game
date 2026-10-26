@@ -20,10 +20,9 @@
     "pick_up": "{interact} Pick up",
     "put_down": "{interact} Put down",
     "drop_in": "A friend can drop in: {menu} on a second controller",
-    "for_player": "%s: %s",
-    "build_here": "{interact} Put a %s here (%s) · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
-    "build_blocked": "%s · {next_kind} next · {rotate} turn · {undo} undo · {build} done",
-    "pack_here": "{interact} Pack away this %s (%s back) · {undo} undo · {build} done",
+    "build_here": "{interact} Put a %s here (%s)",
+    "build_blocked": "%s",
+    "pack_here": "{interact} Pack away this %s (%s back)",
     "sleep_wait": "Ready for bed: %s (%d of %d). {menu} for the menu to join in.",
     "bed_open": "The evening is here. When you are ready, sleep in your tent or {menu} and choose Ready for bed.",
     "fish": "{interact} Fish",
@@ -584,7 +583,8 @@
     "on": "On",
     "off": "Off"
   },
-  "legend": {"move": "Walk", "interact": "Use", "camera": "Look", "clipboard": "Clipboard", "menu": "Menu"},
+  "legend": {"move": "Walk", "interact": "Use", "camera": "Look", "clipboard": "Clipboard", "menu": "Menu", "rotate": "Turn",
+    "undo": "Undo", "build": "Done"},
   "glyphs": {
     "join": " ",
     "key_pad": " ",

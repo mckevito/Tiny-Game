@@ -43,3 +43,8 @@ See `handoff/gameplay/LESSONS.md` "Who owns what". `camp.gd` and `data/text.json
   sizes. Why: the layout tests checked the couch at 150% (where the column may pass under panels) but never solo at
   120% or 150%, and never a long report. What stops it: a solo big-size test with a full HUD and a 60-line report.
   Panels placed under the hint must move when it resizes (`resized` signal, deferred).
+- 26 Oct 2026, round 4 fix 2 (Playtest on #47): narrowing the shared prompt column to the room between the docks
+  fixed the solo case but squeezed the couch at 150% to 344 px (10 lines over the campers). Why: the column was
+  checked solo at 150% and on the couch at 150% only with clipboards open, never with both docks and both prompts.
+  What stops it: the couch layout test now builds with both docks showing at 150%. Lifting the column above the docks
+  does not work there either (the clock fills the top right); per-player things belong on the player's own dock.
