@@ -167,6 +167,9 @@ func _prompt_roomy(camp: Node, what: String) -> String:
 			return what + ": %s's prompt should not also be in the shared column" % who
 	if prompt.text != Prompts.rich(camp._bed_line(), camp._pad):
 		return what + ": the shared column should hold just the bed line, got " + prompt.text
+	# Playtest (PR #48): five lines of bed line sat over whoever stood mid-screen.
+	if prompt.get_line_count() > 3:
+		return what + ": the bed line should take at most 3 lines, got %d" % prompt.get_line_count()
 	camp._keep_in_view(10.0)
 	camp._keep_in_view(10.0)
 	var view: Rect2 = camp.get_viewport().get_visible_rect()

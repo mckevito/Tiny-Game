@@ -425,7 +425,7 @@ so the build prompt is now one short line ("E Put a tent pitch here (2 wood)"), 
 
 | Proof | Test | Result |
 |---|---|---|
-| On the couch at 150% with both building, each prompt is on its own dock, the column holds just the bed line, and nothing overlaps (clock, docks, toasts) or covers a camper | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing (fails without it: the column ran into the clock) |
+| On the couch at 150% with both building, each prompt is on its own dock, the column holds just the bed line (now short: "Evening: sleep in your tent, or {menu} Ready for bed.", at most 3 lines, Playtest on #48), and nothing overlaps (clock, docks, toasts) or covers a camper | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing (fails without it: the column ran into the clock) |
 | The same couch at 150%, to look at | `tools/capture.gd --hud` (couch_docks_big.png) | Looked at (cloud frames) |
 
 **Proposed** (data/tuning.json `legend`): day 1 shows Walk, Use, Look, Clipboard, Menu; later days Use, Look,
