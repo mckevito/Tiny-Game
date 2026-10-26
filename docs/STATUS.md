@@ -195,7 +195,7 @@ mentioned; they stay open under Milestone 3's "Still open".
 4. From 6 pm open the menu (Tab or Options) and choose **Ready for bed**. Alone, the night comes at once; with a friend
    (couch or online) it waits for both, and either can choose **Not ready for bed yet**. The night pays 15 coins for
    the guest, who heads home in the morning.
-5. To skip ahead, open the F1 panel on the host: the clock runs 30 times faster while it is open.
+5. To skip ahead, open the dev menu (F1) and set the time of day or the clock speed (see "Developer menu").
 
 ### Still open
 - Defaults the plan left open, **approved by the owner** on 25 Oct 2026 (data/day.json, data/build.json): bed opens at 6 pm and is chosen from the
@@ -671,3 +671,33 @@ owner's try. Research notes are outside the repo (project files, "Title screen a
   `data/settings.json` (in a window, vsync on, 60 frames a second, volumes 80/70/80/70, deadzone 20%, interface 100%).
 - There is no sound yet, so the volume sliders only set the buses that sound will use.
 - Remaps are per PC, so both couch controllers share them; walking on the controller stays on the left stick.
+
+## Developer menu (QA tool, 26 Oct 2026)
+Asked for by the owner: a dev menu to change the time of day, call guests and other checks, for gameplay and QA.
+Waits on the owner's try. F1 (or the DualSense's Create button) opens it in a camp, in a debug build (the editor) or
+with `-- --dev`; anywhere else F1 shows only the fps line, as before. Rows and numbers: `data/dev.json`; words:
+`data/text.json` dev.
+
+| Proof | Test | Result |
+|---|---|---|
+| Every row has words and every value a name; the preview list holds only models that exist | `test_dev.test_every_row_has_words_and_every_value_a_name` | Passing |
+| F1 and Create open and close it; the camper stands still while it is open; the fps line shows with it | `test_dev.test_f1_opens_the_menu_and_holds_the_camper_and_closes_again` | Passing |
+| Without dev tools F1 shows only the fps line, and the host refuses dev requests | `test_dev.test_without_dev_tools_f1_shows_only_the_fps_line` | Passing |
+| Time of day, clock speed, season, day and sleep now, from the keys | `test_dev.test_time_speed_season_day_and_sleep_from_the_keys` | Passing |
+| Call a guest (a pitch goes up when none is free), give coins and an item, go to a place, show and clear previews | `test_dev.test_a_guest_coins_an_item_a_teleport_and_previews` | Passing |
+| Hide the HUD (the menu stays) and keep the fps line on | `test_dev.test_hide_the_hud_and_keep_the_fps_line` | Passing |
+| On the couch each player opens their own with their own device (stick, D-pad); the other keeps playing | `test_dev.test_on_the_couch_each_player_opens_their_own_and_the_other_keeps_playing` | Passing |
+| A guest PC asks and the host decides (time, coins, a guest), and a host without dev tools refuses | `test_dev.test_a_guest_pc_asks_and_the_host_decides` | Passing |
+| Jump the arrival evening to the cold fire, naming the camp or the handover (Burl says that step again), and show his letter | `test_dev.test_jump_to_each_step_of_the_arrival_evening` | Passing |
+
+### How to try it
+1. Start a camp from the editor (F5) and press F1, or Create on the DualSense.
+2. Up and down choose a row (W/S, arrows, D-pad or stick), left and right change it (A/D, arrows, Q/R, D-pad or
+   stick), E or Cross runs it, Esc, Circle, Tab, Options or F1 again closes it. The mouse works too: point at a row,
+   the wheel changes it, a click runs it.
+3. Time of day, clock speed, season and day change as you step; the rest wait for E or Cross.
+
+### Still open
+- **Proposed** (docs/PLAN.md): F1 no longer speeds the clock by itself; the clock speed row does.
+- Ranger Burl's knitted model joins the preview row by itself once `ranger_burl` is in `data/models.json` (his
+  stand-in is there now). New opening steps add their values to the story row (`DevMenu.values`, `DevTools.run`).

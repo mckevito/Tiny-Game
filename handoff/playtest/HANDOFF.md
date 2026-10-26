@@ -29,7 +29,9 @@
    - Never `git stash` during a merge: it drops the merge state.
    - Tests that call `camp._unhandled_input` skip GUI focus; a focused button eats Tab, the arrows and Enter first.
      Drive real keys with `Input.parse_input_event` when checking menus (the Tab fault, pass 1).
-   - The pad's Create button (`JOY_BUTTON_BACK`) is the dev panel; the clipboard is the Touchpad (`JOY_BUTTON_TOUCHPAD`).
+   - The pad's Create button (`JOY_BUTTON_BACK`) opens the dev menu (F1 on the keyboard; `data/dev.json`): time of day,
+     clock speed, sleep now, season, day, call a guest, coins, items, teleports, character previews, hide the HUD.
+     The clipboard is the Touchpad (`JOY_BUTTON_TOUCHPAD`). F1 no longer speeds the clock by itself.
    - The first pad to press Options drops in a couch player when player one has only used the keyboard (Proposed rule,
      Milestone 3); it does not open player one's menu.
    - Check two open PRs together: merge one into the other locally, run the tests, and name any conflicting file.

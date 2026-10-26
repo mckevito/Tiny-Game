@@ -272,3 +272,7 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   Burl's letter; the fire is cold until the players bring it 3 sticks and 1 wood; when it catches he talks about
   Lantern Night and asks for the camp's name, painted on a new camp sign by the path that can be repainted any time;
   then he hands over his clipboard. Older saves skip it. Burl gives the daily star hint from now on.
+- 26 Oct 2026, owner asked for a developer menu for gameplay checks and QA (time of day, spawning guests and other
+  dev tools). **Proposed**: F1 or the DualSense's Create button opens it in a camp, only in a debug build (the editor)
+  or with `-- --dev`; elsewhere F1 still shows just the fps line. F1 no longer speeds the clock by itself: the menu's
+  clock speed row does (×1, ×10, ×30, ×120 on the host). Rows that change the camp go to the host, who decides.

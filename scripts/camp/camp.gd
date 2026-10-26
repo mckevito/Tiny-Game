@@ -56,6 +56,9 @@ var _picking := ""
 var _menu_for := ""
 var _link_code := ""
 var _dev_clock := 0.0
+## The developer menu (F1 or Create; DevMenu, DevTools) and how fast the host runs the clock (its clock speed row).
+var dev: DevMenu
+var dev_speed := 1.0
 var _profile_file := ""
 var _send_clock := 0.0
 var _pad := false
@@ -136,6 +139,15 @@ func _ready() -> void:
 		above.resized.connect(func() -> void: if state: _refresh_boards.call_deferred())
 	couch.main = camera
 	camera.set_faders(clearing.faders)
+	# The dev menu has its own layer, over everything, so "hide the HUD" leaves it showing.
+	var dev_layer := CanvasLayer.new()
+	dev_layer.name = "DevLayer"
+	dev_layer.layer = $Hud.layer + 10
+	add_child(dev_layer)
+	dev = DevMenu.new()
+	dev.camp = self
+	dev_layer.add_child(dev)
+	dev.chose.connect(_on_dev)
 	menu.chose.connect(_on_menu)
 	talk = TalkBubble.new()
 	talk.name = "Talk"
@@ -296,6 +308,9 @@ func stop(reason: String) -> void:
 		save_camp()
 	_end_couch()
 	_menu_for = ""
+	close_dev()
+	DevTools.clear_previews(self)
+	dev_speed = 1.0
 	if multiplayer.multiplayer_peer is ENetMultiplayerPeer:
 		multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = null
@@ -549,6 +564,10 @@ func _process(delta: float) -> void:
 	_place_centre()
 	_show_hud()
 	_keep_in_view(delta)
+	if dev.visible:
+		_place_dev()
+	# The dev menu's "hide the HUD" (for clean screenshots) gives way to the pause menu and the morning report.
+	$Hud.visible = not (dev.hud_off and state != null and not menu.visible and not report.visible)
 	if $Hud/Dev.visible:
 		_dev_clock -= delta
 		if _dev_clock <= 0.0:
@@ -739,8 +758,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if pad != null and who == profile.get("id", ""):
 		_pad = pad
 	if event.is_action_pressed("dev_menu"):
-		$Hud/Dev.visible = not $Hud/Dev.visible
-		_dev_clock = 0.0
+		toggle_dev(who if who != "" else str(profile.get("id", "")))
+		get_viewport().set_input_as_handled()
+		return
+	if dev.visible and who == dev.who:
+		if not dev.handle(event):
+			close_dev()
+		get_viewport().set_input_as_handled()
 		return
 	if state == null or who == "":
 		return
@@ -864,6 +888,59 @@ func _close_menu() -> void:
 	if campers.has(_menu_for):
 		campers[_menu_for].controlled = not (_bench.has(_menu_for) or _packs.has(_menu_for))
 	_menu_for = ""
+
+
+# --- Developer menu ----------------------------------------------------------------------------------------------
+
+## F1 or Create: in a camp with dev tools (DevTools.enabled), opens the dev menu for that local player, or closes
+## it (a second local player's press moves it to them); anywhere else it shows or hides the fps line.
+func toggle_dev(who: String) -> void:
+	if state == null or not DevTools.enabled() or not local_ids().has(who):
+		dev.stats_on = not dev.stats_on
+	elif dev.visible and dev.who == who:
+		close_dev()
+	else:
+		close_dev()
+		dev.open(who, _glyph(who))
+		if campers.has(who):
+			campers[who].controlled = false
+	_dev_clock = 0.0
+	$Hud/Dev.visible = dev.visible or dev.stats_on
+
+
+## The dev menu sits on its player's side: the left, or the right when their dock is on the right (the couch).
+func _place_dev() -> void:
+	var width := get_viewport().get_visible_rect().size.x
+	var margin := Tuning.num("dev", "panel.side_px", 24)
+	var dock: Control = _docks.get(dev.who)
+	var right := couch_id != "" and dock != null and dock.get_global_rect().get_center().x > width * 0.5
+	dev.position = Vector2(width - dev.size.x - margin if right else margin, Tuning.num("dev", "panel.top_px", 96))
+
+
+func close_dev() -> void:
+	if dev == null or not dev.visible:
+		return
+	var who := dev.who
+	dev.close()
+	if campers.has(who) and not (menu.visible and _menu_for == who):
+		campers[who].controlled = not (_bench.has(who) or _packs.has(who))
+	$Hud/Dev.visible = dev.stats_on
+
+
+## A dev menu row was run: the camp's rows go to the host (ask), the rest change only this PC. A guest PC also sets a
+## live row (time, speed, season, day) on its own copy at once, so quick steps add up before the host's answer.
+func _on_dev(who: String, id: String, value: Variant) -> void:
+	var row := DevTools.row(id)
+	if bool(row.get("host", false)):
+		if id == "story":
+			_heard = ""
+		if mode == Mode.GUEST and bool(row.get("live", false)):
+			DevTools.run(self, who, id, value)
+		ask("dev", [id, value], who)
+	elif id == "stats":
+		$Hud/Dev.visible = true
+	elif id != "hud":
+		DevTools.run_local(self, who, id, value)
 
 
 # --- Couch -------------------------------------------------------------------------------------------------------
@@ -1268,6 +1345,8 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		why = state.build.craft(profile_id, args[0])
 	elif (what == "spot" or what == "photo") and args.size() == 1 and args[0] is String:
 		why = "" if Wildlife.kinds().has(args[0]) else "deny.not_movable"
+	elif what == "dev" and args.size() == 2 and args[0] is String and DevTools.row(args[0]).get("host", false):
+		why = DevTools.run(self, profile_id, args[0], args[1])
 	if why != "":
 		if peer == 0:
 			_toast(Tuning.text(why))
@@ -1275,7 +1354,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 			_denied.rpc_id(peer, why)
 		return
 	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "dig", "upgrade_fire", "forage", "spot", "take_sapling", "plant", "drop",
-			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project", "feed_fire", "name_camp"]:
+			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project", "feed_fire", "name_camp", "dev"]:
 		match what:
 			"fish":
 				_say(peer, "toast.caught", [Tuning.text("items." + state.pack.last_item)])
@@ -1556,9 +1635,9 @@ func _on_peer_disconnected(peer: int) -> void:
 
 # --- Stage A: the day, guests and the night ----------------------------------------------------------------------
 
-## How fast the clock runs: faster while the F1 dev panel is open on the host (data/tuning.json dev.clock_scale).
+## How fast the clock runs: the host's dev menu clock speed (data/dev.json speeds); a guest PC follows the host.
 func _clock_scale() -> float:
-	return Tuning.num("tuning", "dev.clock_scale", 1.0) if $Hud/Dev.visible and mode != Mode.GUEST else 1.0
+	return dev_speed if mode != Mode.GUEST else 1.0
 
 
 ## Moves the clock on. The host's clock is the true one: it waits while the menu is open with no guest PC in, lets a

@@ -77,7 +77,10 @@ here; open work moved to `handoff/gameplay/`, `handoff/interface/` and `handoff/
      (`scripts/core/player_input.gd`) reads one player's devices from `data/input.json`; campers use it only while
      someone is on the couch. `CouchView` (`scripts/camp/couch_view.gd` + `split.gdshader`) is the split screen: the
      main camera is player one's half, a SubViewport camera draws player two's half only while split.
-   - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale. The preset
+   - Picture presets: `scripts/core/quality.gd` + `data/graphics.json`; F1 shows fps, preset and render scale;
+     in a debug build F1 (or Create) opens the dev menu instead (`scripts/camp/dev_menu.gd`, `dev_tools.gd`,
+     `data/dev.json`): rows marked `host` go through `ask("dev", [row, value])` and `DevTools.run` on the host; add a
+     row there, with its words in `data/text.json` dev.row. The preset
      is now a setting of the PC (below); a profile from before settings existed still gives its old `quality`.
    - Title and settings: `CampMenu` holds every page in one felt panel (title, start, in-camp, and `options`, an
      `OptionsScreen` from `scripts/ui/options_screen.gd`); `page()` says which shows. `menu.visible` stays true while

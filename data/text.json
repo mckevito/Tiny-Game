@@ -109,7 +109,49 @@
     "low": "Light, for laptops"
   },
   "dev": {
-    "stats": "%d fps · picture %s · %s at %d%% · clock ×%d"
+    "stats": "%d fps · picture %s · %s at %d%% · clock ×%d",
+    "title": "Developer tools",
+    "for": "for %s",
+    "hint": "{move} choose · {interact} do · {cancel} close",
+    "value": "‹ %s ›",
+    "on": "on",
+    "off": "off",
+    "speed": "×%d",
+    "coins": "+%d coins",
+    "item": "%s ×%d",
+    "clear": "put them away",
+    "done": "Dev: done.",
+    "denied": "Dev tools are off on the host's PC.",
+    "no_pitch": "Dev: no room for another tent pitch.",
+    "row": {
+      "hour": "Time of day",
+      "speed": "Clock speed",
+      "sleep": "Sleep now (next morning)",
+      "season": "Season",
+      "day": "Day of the season",
+      "guest": "Call a guest",
+      "coins": "Give coins",
+      "item": "Give an item",
+      "teleport": "Go to",
+      "preview": "Show a character beside me",
+      "story": "Arrival evening: go to",
+      "letter": "Show Ranger Burl's letter",
+      "welcome": "Show the welcome report",
+      "stats": "Keep the fps line on",
+      "hud": "Hide the HUD"
+    },
+    "story": {
+      "fire": "the cold fire",
+      "name": "naming the camp",
+      "done": "the clipboard handover"
+    },
+    "place": {
+      "fire": "the fire pit",
+      "pond": "the pond",
+      "bench": "the workbench",
+      "box": "the camp box",
+      "entry": "the camp entrance"
+    }
   },
   "save": {
     "too_new": "That camp was saved by a newer version of the game.",
