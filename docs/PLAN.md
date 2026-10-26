@@ -285,6 +285,11 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 26 Oct 2026, owner: **no ranger stamp card.** It is replaced by a **scrapbook**: photos the players take of animals,
   people and places (waterfalls and other sights), and pages for tools, props, craftables and builds that fill in by
   themselves when first got or placed, organised by category. Design options go to the owner before it is built.
+- 26 Oct 2026, owner picks for the scrapbook: **your real snapshot, taped in** (the camera keeps the actual picture
+  the player took, and a copy goes to the other PC), **Burl's rewards per category** (a small personal thing every few
+  pages of a category, round 3) and **its own felt book** on its own button (K, or L2 on the DualSense), with the
+  clipboard's Field guide tab moved into it. Built in three rounds: the book with animal snapshots and pages that fill
+  by themselves for tools, builds and finds (round 1); people and places (round 2); Burl's rewards (round 3).
 - 26 Oct 2026, owner asked for a developer menu for gameplay checks and QA (time of day, spawning guests and other
   dev tools). **Proposed**: F1 or the DualSense's Create button opens it in a camp, only in a debug build (the editor)
   or with `-- --dev`; elsewhere F1 still shows just the fps line. F1 no longer speeds the clock by itself: the menu's

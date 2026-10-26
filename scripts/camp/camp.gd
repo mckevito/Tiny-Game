@@ -96,6 +96,12 @@ var _docks := {}
 ## Toasts that came while the morning report was up, shown once it is put away.
 var _held_toasts: Array[String] = []
 var _packs := {}
+## Each local player's open scrapbook: who -> {"panel": ScrapBook, "cat": tab index, "pick": tile index}.
+var _books := {}
+## The player whose ask the host is deciding now (the scrapbook notes who filled a page).
+var _actor := ""
+## Draws the knitted pictures for scrapbook pages (ScrapStudio).
+var studio := ScrapStudio.new()
 var _tools := {}
 ## Each local player's tool ring while their tool button is down (ToolRing).
 var _rings := {}
@@ -158,6 +164,8 @@ func _ready() -> void:
 	dev_layer.add_child(dev)
 	dev.chose.connect(_on_dev)
 	menu.chose.connect(_on_menu)
+	studio.name = "Studio"
+	add_child(studio)
 	talk = TalkBubble.new()
 	talk.name = "Talk"
 	$Hud.add_child(talk)
@@ -385,6 +393,8 @@ func _clear_world() -> void:
 		close_bench(who)
 	for who: String in _packs.keys():
 		close_pack(who)
+	for who: String in _books.keys():
+		close_book(who)
 	for who: String in _docks.keys():
 		_docks[who].queue_free()
 	_docks.clear()
@@ -555,7 +565,7 @@ func _process(delta: float) -> void:
 	if state and not menu.visible and not report.visible and not talk.visible:
 		for id in local_ids():
 			var line := ""
-			if not (_packs.has(id) or _bench.has(id)):
+			if not _in_panel(id):
 				line = _build_prompt(id) if _building.has(id) else _carry_prompt(id)
 			if line != "":
 				line = Prompts.rich(line, _glyph(id))
@@ -597,7 +607,7 @@ func _carry_prompt(id: String) -> String:
 			return Tuning.text("prompt.put_down") + " · " + Tuning.text("prompt.log_alone")
 	if _inside.has(id):
 		return Tuning.text("prompt.in_tent")
-	if _bench.has(id) or _packs.has(id):
+	if _in_panel(id):
 		return ""
 	if _busy.has(id):
 		return Tuning.text({"fish": "prompt.fishing", "cook": "prompt.cooking", "chop": "prompt.chopping",
@@ -799,6 +809,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		leave_tent(who)
 		get_viewport().set_input_as_handled()
 		return
+	if _books.has(who) and not menu.visible:
+		_book_input(event, who)
+		return
 	if _packs.has(who) and not menu.visible:
 		var count := int(Tuning.num("items", "pack_slots", 8))
 		var cols := int(Tuning.num("tuning", "pack_panel.columns", 4))
@@ -873,6 +886,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_start_ring(who)
 	elif not _building.has(who) and event.is_action_pressed("pack"):
 		open_pack(who)
+	elif not _building.has(who) and event.is_action_pressed("scrapbook"):
+		open_book(who)
 	elif event.is_action_pressed("interact"):
 		interact(who)
 
@@ -899,7 +914,7 @@ func _close_menu() -> void:
 	menu.visible = false
 	_picking = ""
 	if campers.has(_menu_for):
-		campers[_menu_for].controlled = not (_bench.has(_menu_for) or _packs.has(_menu_for))
+		campers[_menu_for].controlled = not _in_panel(_menu_for)
 	_menu_for = ""
 
 
@@ -940,7 +955,7 @@ func close_dev() -> void:
 	var who := dev.who
 	dev.close()
 	if campers.has(who) and not (menu.visible and _menu_for == who):
-		campers[who].controlled = not (_bench.has(who) or _packs.has(who))
+		campers[who].controlled = not _in_panel(who)
 	$Hud/Dev.visible = dev.stats_on
 
 
@@ -1238,8 +1253,7 @@ func interact(who: String = "") -> void:
 		"tent":
 			enter_tent(who)
 		"photo":
-			_flash()
-			ask("photo", [act["arg"]], who)
+			_snap(who, str(act["arg"]))
 		"fish", "cook", "chop", "dig":
 			_start_busy(who, act["what"], act.get("arg") if act["what"] in ["chop", "dig"] else null)
 
@@ -1303,6 +1317,7 @@ func ask(what: String, args: Array, who: String = "") -> void:
 # --- Host decisions and messages ---------------------------------------------------------------------------------
 
 func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
+	_actor = profile_id
 	var id := ""
 	var why := "deny.not_movable"
 	if what == "pick_up" and args.size() == 1 and args[0] is String:
@@ -1373,15 +1388,16 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		else:
 			_denied.rpc_id(peer, why)
 		return
+	_new_pages(state.scrapbook.sweep(profile_id))
 	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "dig", "upgrade_fire", "forage", "spot", "take_sapling", "plant", "drop",
 			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project", "feed_fire", "name_camp", "ranger_job", "dev"]:
 		match what:
 			"fish":
 				_say(peer, "toast.caught", [Tuning.text("items." + state.pack.last_item)])
-				_progress("fish")
+				_progress("fish:" + state.pack.last_item)
 			"cook":
 				_say(peer, "toast.grilled", [Tuning.text("items." + state.pack.last_item)])
-				_progress("cook")
+				_progress("cook:" + state.pack.last_item)
 			"give":
 				_say_all("toast.thanks", [state.camp["stays"][args[0]]["name"], state.guests.last_tip])
 				_sync_stays(false)
@@ -1463,6 +1479,11 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 				photos[kind] = int(photos.get(kind, 0)) + 1
 				if not (state.camp["journal"]["wildlife"] as Array).has(kind):
 					state.camp["journal"]["wildlife"].append(kind)
+				var first := not state.scrapbook.has(kind)
+				state.scrapbook.ensure_id()
+				state.scrapbook.photo(profile_id, kind)
+				if first:
+					_new_pages([kind] as Array[String])
 				if int(photos[kind]) == 1:
 					var bonus := int(Tuning.num("wildlife", "photo_bonus", 5))
 					state.camp["coins"] = int(state.camp.get("coins", 0)) + bonus
@@ -1506,6 +1527,7 @@ func _progress(event: String) -> void:
 		_say_all("toast.task_done", [Tuning.text("task." + id), int(CampTasks.plan(id).get("bonus", 0))])
 	if state.story.note(event):
 		_say_all("toast.burl_word", [state.story.ranger_name()])
+	_new_pages(state.scrapbook.note(event, _actor))
 
 
 ## A guest's PC says hello. With a link code it claims that couch character (taking it off this PC's couch if it is
@@ -1540,6 +1562,7 @@ func _hello(protocol: int, profile_id: String, display_name: String, link_code: 
 		state.camp["profiles"][profile_id]["link_code"] = ""
 	_spawn_camper(profile_id)
 	_welcome.rpc_id(peer, state.snapshot(), profile_id)
+	_send_photos(peer)
 	_toast(Tuning.text("toast.joined") % state.camp["profiles"][profile_id]["name"])
 	save_camp()
 
@@ -2394,6 +2417,7 @@ func _refresh_boards() -> void:
 	_board_clock = Tuning.num("tuning", "clipboard.refresh_s", 0.25)
 	_refresh_docks()
 	_refresh_packs()
+	_refresh_books()
 	_refresh_bench()
 	for who: String in _boards.keys():
 		if state == null or not local_ids().has(who):
@@ -2466,29 +2490,7 @@ func clipboard_text(who: String, tab: String) -> String:
 				seen.append(Tuning.text("animal." + kind))
 			lines.append(Tuning.text("clipboard.animals") % [seen.size(), Wildlife.kinds().size(),
 					", ".join(seen) if not seen.is_empty() else Tuning.text("clipboard.none_yet")])
-		"guide":
-			lines = field_guide()
 	return "\n".join(lines)
-
-
-## The field guide: each animal kind, photographed (how many), seen, or still a mystery, with where and when to look.
-func field_guide() -> Array[String]:
-	var photos: Dictionary = state.camp["journal"].get("photos", {})
-	var seen: Array = state.camp["journal"]["wildlife"]
-	var kinds: Array[String] = []
-	for kind in Wildlife.kinds():
-		if not kinds.has(kind):
-			kinds.append(kind)
-	var lines: Array[String] = [Tuning.text("guide.head") % [photos.size(), kinds.size()], ""]
-	for kind in kinds:
-		var hint := Tuning.text("guide.hint." + kind)
-		if int(photos.get(kind, 0)) > 0:
-			lines.append(Tuning.text("guide.photo") % [Tuning.text("animal." + kind).capitalize(), int(photos[kind]), hint])
-		elif seen.has(kind):
-			lines.append(Tuning.text("guide.seen") % [Tuning.text("animal." + kind).capitalize(), hint])
-		else:
-			lines.append(Tuning.text("guide.unknown") % hint)
-	return lines
 
 
 ## A quick white flash over the screen for a photo (data/tuning.json hud.flash_s).
@@ -2565,7 +2567,7 @@ func _show_hud() -> void:
 	# couch at 150%).
 	$Hud/Prompt.visible = not talk.visible
 	for who: String in _docks:
-		_docks[who].visible = not covered and not talk.visible and not (_packs.has(who) or _boards.has(who) or _bench.has(who))
+		_docks[who].visible = not covered and not talk.visible and not (_in_panel(who) or _boards.has(who))
 	for who: String in _boards:
 		_boards[who].visible = not menu.visible
 	for panels: Dictionary in [_packs, _bench]:
@@ -2686,7 +2688,7 @@ func _right_panel_open() -> bool:
 
 ## Keeps the turn buttons off the camera while any panel that uses them is open.
 func _hold_camera() -> void:
-	camera.hold_turn = not (_boards.is_empty() and _bench.is_empty() and _packs.is_empty())
+	camera.hold_turn = not (_boards.is_empty() and _bench.is_empty() and _packs.is_empty() and _books.is_empty())
 
 
 ## The tools every player cycles through (data/items.json tools.order).
@@ -2773,7 +2775,7 @@ func _tick_rings(delta: float) -> void:
 		if menu.visible or report.visible or not campers.has(who):
 			_end_ring(who, false)
 			continue
-		if (talk.visible and _talker == who) or _packs.has(who) or _bench.has(who) or (dev.visible and dev.who == who):
+		if (talk.visible and _talker == who) or _in_panel(who) or (dev.visible and dev.who == who):
 			_end_ring(who, false, false)
 			continue
 		if ring.tick(delta):
@@ -2835,7 +2837,7 @@ func close_pack(who: String) -> void:
 	_packs.erase(who)
 	panel.get_parent().remove_child(panel)
 	panel.queue_free()
-	if campers.has(who) and _menu_for != who and not _bench.has(who):
+	if campers.has(who) and _menu_for != who and not _bench.has(who) and not _books.has(who):
 		campers[who].controlled = true
 	_hold_camera()
 
@@ -3343,7 +3345,7 @@ func close_bench(who: String) -> void:
 	_bench.erase(who)
 	panel.get_parent().remove_child(panel)
 	panel.queue_free()
-	if campers.has(who) and _menu_for != who and not _packs.has(who):
+	if campers.has(who) and _menu_for != who and not _packs.has(who) and not _books.has(who):
 		campers[who].controlled = true
 	_hold_camera()
 
@@ -3523,3 +3525,273 @@ func _tent_look(tent: Node3D, model: String, open: bool) -> void:
 func is_open(tent: Node3D, model: String) -> bool:
 	return (tent.get_child(0) as MeshInstance3D).mesh == FeltBuilder.mesh(model + "_open")
 
+
+
+# --- The scrapbook (owner picks, 26 Oct 2026) -----------------------------------------------------------------------
+
+## True while a player on this PC has a panel open that holds them still: the Pack, the workbench or the scrapbook.
+func _in_panel(who: String) -> bool:
+	return _packs.has(who) or _bench.has(who) or _books.has(who)
+
+
+## Opens a player's scrapbook on its first tab (putting their clipboard and Pack away); they stand still meanwhile.
+func open_book(who: String) -> void:
+	if _books.has(who) or not campers.has(who):
+		return
+	if _boards.has(who):
+		toggle_clipboard(who)
+	close_pack(who)
+	var panel := ScrapBook.new()
+	panel.name = "Book_" + who
+	$Hud.add_child(panel)
+	panel.dock("right" if who == couch_id else ("left" if couch_id != "" else "centre"))
+	_books[who] = {"panel": panel, "cat": 0, "pick": 0}
+	campers[who].controlled = false
+	campers[who].velocity = Vector3.ZERO
+	_hold_camera()
+	_refresh_boards()
+
+
+func close_book(who: String) -> void:
+	if not _books.has(who):
+		return
+	var panel: ScrapBook = _books[who]["panel"]
+	_books.erase(who)
+	panel.get_parent().remove_child(panel)
+	panel.queue_free()
+	if campers.has(who) and _menu_for != who and not _packs.has(who) and not _bench.has(who):
+		campers[who].controlled = true
+	_hold_camera()
+
+
+## The book's buttons: walking picks a page, the turn buttons flip the category, the scrapbook button or back closes.
+func _book_input(event: InputEvent, who: String) -> void:
+	var book: Dictionary = _books[who]
+	var cats := CampScrapbook.categories()
+	var count := CampScrapbook.in_category(str(cats[int(book["cat"])])).size()
+	var cols := int(Tuning.num("scrapbook", "book.columns", 4))
+	if event.is_action_pressed("camera_right") or event.is_action_pressed("next_kind"):
+		book["cat"] = posmod(int(book["cat"]) + 1, cats.size())
+		book["pick"] = 0
+	elif event.is_action_pressed("camera_left"):
+		book["cat"] = posmod(int(book["cat"]) - 1, cats.size())
+		book["pick"] = 0
+	elif event.is_action_pressed("move_right"):
+		book["pick"] = posmod(int(book["pick"]) + 1, count)
+	elif event.is_action_pressed("move_left"):
+		book["pick"] = posmod(int(book["pick"]) - 1, count)
+	elif event.is_action_pressed("move_back"):
+		book["pick"] = mini(int(book["pick"]) + cols, count - 1)
+	elif event.is_action_pressed("move_forward"):
+		book["pick"] = maxi(int(book["pick"]) - cols, 0)
+	elif event.is_action_pressed("scrapbook") or event.is_action_pressed("cancel") or event.is_action_pressed("menu"):
+		close_book(who)
+	else:
+		return
+	_refresh_boards()
+	get_viewport().set_input_as_handled()
+
+
+## A page's picture: this PC's snapshot for a photographed page, else the knitted picture of its model.
+func page_picture(id: String) -> Texture2D:
+	var row := CampScrapbook.page(id)
+	if str(row.get("fill", "")) == "photo" and state.scrapbook.has(id):
+		var shot := state.scrapbook.photo_texture(id)
+		if shot:
+			return shot
+	if str(row.get("model", "")) == "":
+		var item_kind := CampPack.kind_of(id)
+		return studio.token(str(Tuning.value("tuning", "pack_panel.kind_swatch." + item_kind, "wood_felt")))
+	return studio.picture(str(row.get("model", "")))
+
+
+## A page as the book shows it: its name, words, the line about who filled it, and its picture.
+func page_view(id: String) -> Dictionary:
+	var row := CampScrapbook.page(id)
+	var photo := str(row.get("fill", "")) == "photo"
+	if not state.scrapbook.has(id):
+		return {"name": Tuning.text("scrap.unknown"), "about": Tuning.text("scrap.hint." + str(row.get("fill", "")))
+				% Tuning.text("scrap.page.%s.clue" % id), "footer": "", "picture": null, "photo": photo}
+	var got: Dictionary = state.scrapbook.filled()[id]
+	var by := str(state.camp["profiles"].get(str(got.get("by", "")), {}).get("name", ""))
+	var footer := Tuning.text("scrap.footer." + ("photo" if photo else "found")) % [by, int(got.get("day", 1))]
+	if photo and state.scrapbook.photo_bytes(id).is_empty():
+		footer = Tuning.text("scrap.no_snapshot")
+	return {"name": Tuning.text("scrap.page.%s.name" % id), "about": Tuning.text("scrap.page.%s.about" % id),
+			"footer": footer, "picture": page_picture(id), "photo": photo}
+
+
+func _refresh_books() -> void:
+	for who: String in _books.keys():
+		if state == null or not local_ids().has(who) or not state.camp["profiles"].has(who):
+			close_book(who)
+			continue
+		var book: Dictionary = _books[who]
+		var cats := CampScrapbook.categories()
+		var cat := str(cats[int(book["cat"])])
+		var tabs: Array[String] = []
+		for c in cats:
+			var n := state.scrapbook.count(str(c))
+			tabs.append(Tuning.text("scrap.tab") % [Tuning.text("scrap.cat." + str(c)), n.x, n.y])
+		var tiles: Array = []
+		var rows := CampScrapbook.in_category(cat)
+		for row: Dictionary in rows:
+			var id := str(row["id"])
+			var known := state.scrapbook.has(id)
+			tiles.append({"name": Tuning.text("scrap.page.%s.name" % id) if known else "", "known": known,
+					"picture": page_picture(id) if known else null})
+		var pick := clampi(int(book["pick"]), 0, maxi(rows.size() - 1, 0))
+		var page := page_view(str(rows[pick]["id"])) if not rows.is_empty() else {}
+		(book["panel"] as ScrapBook).show_book(Tuning.text("scrap.title") % state.story.camp_name(), tabs,
+				int(book["cat"]), tiles, pick, page, Prompts.rich(Tuning.text("scrap.hint_line"), _glyph(who), true))
+
+
+## Host: tells every PC about pages just filled, each with its card.
+func _new_pages(ids: Array[String]) -> void:
+	for id in ids:
+		_new_page(id)
+		for guest: int in _guests:
+			_new_page.rpc_id(guest, id)
+
+
+## A card near the top of the screen for a page just filled: its picture and name, for data/scrapbook.json card_s.
+## Pages filled together queue up and show one after another.
+@rpc("authority", "call_remote", "reliable")
+func _new_page(id: String) -> void:
+	if state == null or CampScrapbook.page(id).is_empty():
+		return
+	var card: PanelContainer = $Hud.get_node_or_null("PageCard")
+	if card == null:
+		card = PanelContainer.new()
+		card.name = "PageCard"
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.add_theme_stylebox_override("panel", UiLook.panel())
+		card.set_meta("queue", [])
+		card.set_meta("page", "")
+		card.visible = false
+		var col := VBoxContainer.new()
+		col.name = "Col"
+		card.add_child(col)
+		var pic := TextureRect.new()
+		pic.name = "Picture"
+		pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		var size: Array = Tuning.value("scrapbook", "card.picture_px", [192, 144])
+		pic.custom_minimum_size = Vector2(float(size[0]), float(size[1]))
+		pic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		col.add_child(pic)
+		var label := Label.new()
+		label.name = "Words"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.add_theme_font_size_override("font_size", int(Tuning.num("scrapbook", "card.font_px", 22)))
+		col.add_child(label)
+		$Hud.add_child(card)
+	if card.visible:
+		(card.get_meta("queue") as Array).append(id)
+		return
+	_show_page_card(card, id)
+
+
+func _show_page_card(card: PanelContainer, id: String) -> void:
+	card.get_node("Col/Picture").set("texture", page_picture(id))
+	(card.get_node("Col/Words") as Label).text = Tuning.text("scrap.new_page") % [
+			Tuning.text("scrap.page.%s.name" % id), Tuning.text("scrap.cat." + str(CampScrapbook.page(id)["cat"]))]
+	card.set_meta("page", id)
+	card.visible = true
+	card.reset_size()
+	card.position = Vector2(Tuning.num("scrapbook", "card.left_px", 24), Tuning.num("scrapbook", "card.top_px", 64))
+	get_tree().create_timer(Tuning.num("scrapbook", "card_s", 3.0)).timeout.connect(func() -> void:
+		if not is_instance_valid(card) or str(card.get_meta("page", "")) != id:
+			return
+		card.visible = false
+		card.set_meta("page", "")
+		var queue: Array = card.get_meta("queue")
+		if not queue.is_empty() and state != null:
+			_show_page_card(card, str(queue.pop_front())))
+	_refresh_boards()
+
+
+## A player on this PC photographs an animal: a picture of the camp world from their camera, turned toward the animal
+## and zoomed in (data/scrapbook.json photo), with no HUD in it, kept as a snapshot and sent to the other PC; then the
+## white flash and the ask. (A headless run draws nothing, so it only flashes and asks.)
+func _snap(who: String, kind: String) -> void:
+	_flash()
+	if DisplayServer.get_name() == "headless":
+		ask("photo", [kind], who)
+		return
+	var eye: Camera3D = couch.second_camera() if couch.split and who == couch_id else camera
+	var me: Camper = campers.get(who)
+	var target := Vector3.INF
+	for a: Dictionary in wildlife.animals:
+		var node: Node3D = a["node"]
+		if str(a["row"]["model"]) == kind and me and node.visible and (target == Vector3.INF
+				or node.position.distance_to(me.position) < target.distance_to(me.position)):
+			target = node.global_position
+	var view := SubViewport.new()
+	view.size = Vector2i(int(Tuning.num("scrapbook", "photo.width_px", 320)), int(Tuning.num("scrapbook", "photo.height_px", 240))) \
+			* int(Tuning.num("scrapbook", "photo.supersample", 2))
+	view.world_3d = eye.get_world_3d()
+	view.render_target_update_mode = SubViewport.UPDATE_ONCE
+	var lens := Camera3D.new()
+	lens.fov = eye.fov * Tuning.num("scrapbook", "photo.zoom_share", 0.5)
+	view.add_child(lens)
+	add_child(view)
+	lens.global_transform = eye.global_transform
+	if target != Vector3.INF:
+		lens.look_at(target + Vector3.UP * Tuning.num("scrapbook", "photo.aim_up_m", 0.3))
+	lens.current = true
+	ask("photo", [kind], who)
+	await RenderingServer.frame_post_draw
+	var frame := view.get_texture().get_image()
+	view.queue_free()
+	var bytes := CampScrapbook.snapshot(frame)
+	if state != null and not bytes.is_empty():
+		_keep_and_send(kind, bytes)
+
+
+## Keeps a snapshot here and sends it on: from the host to the guest PC, from a guest to the host. A guest sends it
+## even when it could not keep it yet (its camp's first photo, before the host's scrapbook id has arrived): the host
+## keeps it and sends it back.
+func _keep_and_send(id: String, bytes: PackedByteArray) -> void:
+	if str(state.scrapbook.data().get("id", "")) == "" and mode != Mode.GUEST:
+		state.scrapbook.ensure_id()
+	var kept := state.scrapbook.keep_photo(id, bytes)
+	if mode == Mode.GUEST:
+		_photo_file.rpc_id(1, id, bytes)
+	elif kept and mode == Mode.HOST:
+		for guest: int in _guests:
+			_photo_file.rpc_id(guest, id, bytes)
+	if kept:
+		_refresh_card(id)
+
+
+## A snapshot from the other PC: the host keeps a guest's and sends it back out (so a guest that could not keep its
+## own yet gets it once it has the scrapbook id); a guest keeps the host's.
+@rpc("any_peer", "call_remote", "reliable")
+func _photo_file(id: String, bytes: PackedByteArray) -> void:
+	if state == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if (mode == Mode.HOST and not _guests.has(sender)) or (mode == Mode.GUEST and sender != 1):
+		return
+	if not state.scrapbook.keep_photo(id, bytes):
+		return
+	if mode == Mode.HOST:
+		for guest: int in _guests:
+			_photo_file.rpc_id(guest, id, bytes)
+	_refresh_card(id)
+
+
+## Host: a guest PC that just came in gets every snapshot the camp has.
+func _send_photos(peer: int) -> void:
+	for row: Dictionary in CampScrapbook.pages():
+		var bytes := state.scrapbook.photo_bytes(str(row["id"]))
+		if not bytes.is_empty():
+			_photo_file.rpc_id(peer, str(row["id"]), bytes)
+
+
+func _refresh_card(id: String) -> void:
+	var card: Control = $Hud.get_node_or_null("PageCard")
+	if card and card.visible and str(card.get_meta("page", "")) == id:
+		card.get_node("Col/Picture").set("texture", page_picture(id))
+	_refresh_boards()

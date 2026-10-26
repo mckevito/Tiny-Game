@@ -606,6 +606,25 @@ afterwards, and the other PC sees him talk.
 | The guest PC takes a job through the host, and the host PC sees Burl talk to the guest and stand again after | `test_jobs.test_the_guest_pc_takes_a_job_and_the_host_sees_burl_talk` | Passing |
 | Review frames: the first job head on, the "!" once it is done, his thanks | `capture.gd --opening` frames 9 to 11 (`jobs-r1/` in the project files) | Looked at |
 
+### The scrapbook, round 1 (26 Oct 2026)
+The owner replaced the ranger stamp card with a scrapbook and picked the real snapshot taped in, Burl's rewards per
+category and its own felt book. Round 1 is the book: four tabs (Animals, Tools, Builds, Finds; 25 pages in
+`data/scrapbook.json`). An animal's page fills when a player photographs it with the camera tool: the picture is drawn
+from that player's camera turned toward the animal, without the HUD, kept as a small WebP on that PC
+(`user://photos/<book id>/`) and sent to the other PC. Tool pages fill the first time the tool is used, build pages
+when one stands in the camp, find pages when one is in a Pack or the camp box; each new page shows a card at the top
+left with its knitted picture. The clipboard's Field guide tab is gone: its photos live in the book now, and older
+saves find theirs there.
+
+| Proof | Test | Result |
+|---|---|---|
+| Items, builds and steps fill their pages once and say who filled them; only animals fill by a photo, which counts; older saves' field-guide photos are found | `test_scrapbook.test_pages_fill_by_themselves_and_animals_need_a_photo` | Passing |
+| A snapshot is a WebP at photo.width_px x height_px under max_bytes, kept in the camp's own folder; not-pictures, too-big files and non-animal pages are turned away | `test_scrapbook.test_a_snapshot_is_a_small_photo_kept_in_the_camps_folder` | Passing |
+| From the buttons: a new page's card, the scrapbook button opens the book and holds the player, tabs and picks turn, unknown pages show "?", the button closes it, the pages are saved | `test_scrapbook.test_the_book_opens_from_its_button_and_turns_its_tabs` | Passing |
+| A snapshot reaches the other PC both ways, including a guest's first photo before its PC has the book's id | `test_scrapbook.test_a_snapshot_reaches_the_other_pc_both_ways` | Passing |
+| The camera photo still fills the animal's page (the field guide's old proof) | `test_stage_b` (the camera step) | Passing |
+| Review frames: the snap with its card, then each tab with the rabbit snapshot taped in | `capture.gd --scrapbook` (`scrapbook-r1/` in the project files) | Looked at |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -622,7 +641,11 @@ afterwards, and the other PC sees him talk.
 ### Still open
 - **Proposed** (story jobs): the seven jobs, their order, lines and coins (5 to 10) in `data/ranger_jobs.json` and
   `data/text.json` `job.*`; the camera's turn while he talks (`camera.talk_side_deg` 55, `turn_rate` 5).
-- **Replaced** (owner, 26 Oct 2026): the ranger stamp card becomes a scrapbook; design options come before any build.
+- **Replaced** (owner, 26 Oct 2026): the ranger stamp card became the scrapbook (picks recorded in `docs/PLAN.md`).
+- **Proposed** (scrapbook round 1): the 25 pages and their words (`data/scrapbook.json`, `data/text.json` `scrap.*`),
+  the book's look, the K / L2 button, the photo's size (320 x 240 WebP, zoomed to 30% of the camera's view) and the
+  card's 3 s. Fish and meals have no knitted model yet, so their pages show a felt token in the Pack's colour; the
+  berries picture is small. Round 2 adds people and places, round 3 Burl's rewards per category.
 - **Proposed** (arrival evening): Burl's lines, the letter and the fire's needs (3 sticks, 1 wood) in
   `data/ranger.json` and `data/text.json`; Burl is Art's knitted `ranger_burl` (PR #49), raising an arm (`ranger_burl_talk`) and turning to the player while he talks; the walk
   in through the gate waits for Stage C's road; the ranger's own name is kept in the save but has no rename spot yet.
