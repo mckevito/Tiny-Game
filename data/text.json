@@ -196,7 +196,9 @@
     "project_board": "camp board",
     "coins": "%d coins",
     "in_kit": "%d in the kit",
-    "to_kit": "into the kit"
+    "to_kit": "into the kit",
+    "on_grid": "On the grid: pieces snap to the stitches.",
+    "free": "Free building: put pieces anywhere, turn in small steps."
   },
   "clock": {
     "line": "%s, day %d · %s · %d coins",
@@ -569,7 +571,8 @@
       "next_kind": "Next piece",
       "clipboard": "Clipboard",
       "next_tool": "Next tool",
-      "pack": "Open the Pack"
+      "pack": "Open the Pack",
+      "grid": "Grid or free (while building)"
     },
     "press_key": "Waiting for a key…",
     "press_button": "Waiting for a button…",
@@ -584,7 +587,7 @@
     "off": "Off"
   },
   "legend": {"move": "Walk", "interact": "Use", "camera": "Look", "clipboard": "Clipboard", "menu": "Menu", "rotate": "Turn",
-    "undo": "Undo", "build": "Done"},
+    "undo": "Undo", "build": "Done", "grid": "Grid"},
   "glyphs": {
     "join": " ",
     "key_pad": " ",

@@ -522,6 +522,22 @@ each other, sit on chairs". Round 3 (PR #37) was merged by the owner on 25 Oct 2
 | In the scene, guests walk off and settle with the right prop or on their seat, a frisbee flies between a pair, and the guest PC shows the same | `test_stage_b.test_guests_go_fishing_sit_and_play_frisbee_on_both_pcs` | Passing |
 | Review frames: three guests busy at three times of day, with close-ups | `capture.gd --guests` (`first-minutes-g4/` in the project files) | Looked at |
 
+### Build round: a stitched grid, or free building (26 Oct 2026)
+The owner's ask "a grid kind of system ... so if we want to place things in a sort of snap fashion then it fits and
+looks well but if we want a free build we get the option" (26 Oct 2026). Build mode already snapped to a hidden 1 m
+grid; now the grid shows as running stitches round the spot, every piece fills whole cells (a two-cell bench sits
+between grid points), and G (D-pad down) switches that player to free building: any spot, turns of 15 degrees. Each
+couch player has their own choice, and the choice rides with the build request so the host places exactly what the
+player saw. The grid's cell and origin come from `data/build.json`, so Stage C's build zones can reuse it. The cell
+size, the 15 degree turn, the 5 cm free step and the look are **Proposed**.
+
+| Proof | Test | Result |
+|---|---|---|
+| Pieces fill whole cells on the grid (odd sizes on a grid point, even sizes on a line), turned too; a free angle covers a wider box | `test_stage_a.test_grid_pieces_fill_whole_cells_and_free_build_goes_anywhere` | Passing |
+| The grid shows under the spot; the grid button switches to free (grid hidden, small turns), builds there and packs it again; back on the grid the turn goes to a quarter; the choice stays for the next build mode | `test_stage_a.test_grid_pieces_fill_whole_cells_and_free_build_goes_anywhere` | Passing |
+| A guest PC's free build is placed by the host exactly where the guest saw it | `test_stage_a.test_the_guest_pc_sees_the_day_and_builds_through_the_host` | Passing |
+| Review frames: the grid and a free pitch at an angle | `capture.gd --stage-a` (`day_11.png`, `free_11.png`; `grid-build/` in the project files) | Looked at (OpenGL fallback) |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -530,7 +546,8 @@ each other, sit on chairs". Round 3 (PR #37) was merged by the owner on 25 Oct 2
 3. Walk to the pond's edge and press E (Cross) to fish. Stand by the campfire with a fish and press E to grill it.
    Walk up to a guest with what they asked for and press E to hand it over. A chair carried next to their tent
    counts too.
-4. In build mode, C (D-pad right) switches between the tent pitch, the water point and the lantern post.
+4. In build mode, C (D-pad right) switches between the tent pitch, the water point and the lantern post. G (D-pad
+   down) switches between the stitched grid and free building; F (Square) turns a quarter on the grid, 15 degrees free.
 5. From 6 pm choose **Ready for bed**. The morning report says what the night earned, how each guest felt and why,
    the bookings, and three goals for the day. E (Cross) starts the day.
 

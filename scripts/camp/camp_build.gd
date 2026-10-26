@@ -182,10 +182,43 @@ func upgrade_fire(profile_id: String) -> String:
 	return ""
 
 
+## The camp's grid: cells grid_m wide, centred on grid points counted from grid_origin (data/build.json). A Stage C
+## build zone can pass its own cell and origin; the camp uses these.
+static func cell_m() -> float:
+	return maxf(Tuning.num("build", "grid_m", 1.0), 0.01)
+
+
+static func grid_origin() -> Vector2:
+	var o: Array = Tuning.value("build", "grid_origin", [0.0, 0.0])
+	return Vector2(float(o[0]), float(o[1]))
+
+
 ## The grid point nearest to a spot on the ground.
 static func snap(pos: Vector2) -> Vector2:
-	var g := maxf(Tuning.num("build", "grid_m", 1.0), 0.01)
-	return Vector2(roundf(pos.x / g) * g, roundf(pos.y / g) * g)
+	var g := cell_m()
+	var o := grid_origin()
+	return o + Vector2(roundf((pos.x - o.x) / g) * g, roundf((pos.y - o.y) / g) * g)
+
+
+## Where a building's centre goes on the grid so its footprint covers whole cells: an odd number of cells centres on
+## a grid point, an even number on the stitch line between two.
+static func snap_fit(kind: String, pos: Vector2, yaw_deg: float) -> Vector2:
+	var g := cell_m()
+	var size := footprint(kind, quarter(yaw_deg))
+	var half := Vector2(0.0 if int(roundf(size.x / g)) % 2 == 1 else g * 0.5,
+			0.0 if int(roundf(size.y / g)) % 2 == 1 else g * 0.5)
+	return snap(pos - half) + half
+
+
+## Free building: a spot kept to free.step_m so saves stay tidy, and turns in free.turn_deg steps.
+static func free_spot(pos: Vector2) -> Vector2:
+	var s := maxf(Tuning.num("build", "free.step_m", 0.05), 0.001)
+	return Vector2(roundf(pos.x / s) * s, roundf(pos.y / s) * s)
+
+
+static func free_turn(yaw_deg: float) -> float:
+	var t := maxf(Tuning.num("build", "free.turn_deg", 15.0), 1.0)
+	return fposmod(roundf(yaw_deg / t) * t, 360.0)
 
 
 ## A yaw in degrees turned to the nearest quarter turn, 0 to 270.
@@ -193,11 +226,15 @@ static func quarter(yaw_deg: float) -> float:
 	return fposmod(roundf(yaw_deg / 90.0) * 90.0, 360.0)
 
 
-## A building's footprint size [x, z] in metres at a quarter-turn yaw.
+## The box a building's footprint [x, z] in metres covers on the ground at any yaw (its size swapped at a quarter
+## turn, a little wider at a free angle).
 static func footprint(kind: String, yaw_deg: float) -> Vector2:
 	var s: Array = kinds().get(kind, {}).get("size", [1, 1])
 	var size := Vector2(float(s[0]), float(s[1]))
-	return Vector2(size.y, size.x) if int(quarter(yaw_deg)) % 180 == 90 else size
+	var a := deg_to_rad(yaw_deg)
+	var c := absf(cos(a))
+	var n := absf(sin(a))
+	return Vector2(size.x * c + size.y * n, size.x * n + size.y * c).snapped(Vector2(0.001, 0.001))
 
 
 func _rect(id: String) -> Rect2:
@@ -246,12 +283,13 @@ func check(kind: String, pos: Vector2, yaw_deg: float, ignore: String = "") -> S
 	return ""
 
 
-## Builds `kind` at the grid spot nearest `pos`, from the kit (or for coins, for a free kind). Returns "" or a text key.
-func build(profile_id: String, kind: String, pos: Vector2, yaw_deg: float) -> String:
+## Builds `kind` at the grid spot nearest `pos` (or, building free, at `pos` itself), from the kit (or for coins, for
+## a free kind). Returns "" or a text key.
+func build(profile_id: String, kind: String, pos: Vector2, yaw_deg: float, free: bool = false) -> String:
 	if not state.online.has(profile_id):
 		return "deny.not_here"
-	pos = snap(pos)
-	yaw_deg = quarter(yaw_deg)
+	pos = free_spot(pos) if free else snap_fit(kind, pos, yaw_deg)
+	yaw_deg = free_turn(yaw_deg) if free else quarter(yaw_deg)
 	var why := check(kind, pos, yaw_deg)
 	if why == "":
 		why = afford(kind)

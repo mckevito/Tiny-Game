@@ -177,7 +177,7 @@
     "_about": "Each player's legend, at the top of their dock (Camp.legend): the actions whose button icons it shows, by mode. first is day 1 (walking included), walk every other day, build while placing (turn, undo and done; the dock's build line has pick, and the build prompt says what Use does there). The dock's own lines already show the tool, build and Pack buttons. Words: data/text.json legend.<action>.",
     "first": ["move", "interact", "camera", "clipboard", "menu"],
     "walk": ["interact", "camera", "clipboard", "menu"],
-    "build": ["rotate", "undo", "build", "camera", "menu"]
+    "build": ["rotate", "grid", "undo", "build", "camera", "menu"]
   },
   "glyphs": {
     "_about": "Button glyphs in prompts (scripts/core/prompts.gd rich): controller icons icon_px tall; keyboard keys as keycaps in key_swatch with key_ink_swatch letters, or paper_key_swatch on a cream panel (the clipboard, Pack, workbench and report).",

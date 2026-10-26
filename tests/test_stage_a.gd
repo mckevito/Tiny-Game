@@ -1,6 +1,6 @@
 extends RefCounted
 ## Stage A in the real camp scene: build mode on the grid with undo, a guest who walks to the pitch and puts up a
-## tent, bed from the menu (both couch players), and over ENet a night that pays exactly once even when the guest PC
+## tent, grid or free building, bed from the menu (both couch players), and over ENet a night that pays exactly once even when the guest PC
 ## leaves and comes back.
 
 const DIR := "user://test_saves/stage_a"
@@ -109,6 +109,68 @@ func test_build_mode_builds_on_the_grid_and_undoes() -> String:
 		camp._unhandled_input(_key("build"))
 		if camp._building.has("p_host") or camp.find_children("Ghost_*", "", false, false).size() > 0:
 			why = "the build button should end build mode and take the ghost away"
+	await _done()
+	return why
+
+
+func test_grid_pieces_fill_whole_cells_and_free_build_goes_anywhere() -> String:
+	var g := CampBuild.cell_m()
+	var bench := CampBuild.snap_fit("log_bench", Vector2(0.3 * g, 0.2 * g), 0.0)
+	if not bench.is_equal_approx(Vector2(0.5 * g, 0.0)):
+		return "a two-cell bench should centre on the stitch line between two cells, got %s" % bench
+	if not CampBuild.snap_fit("log_bench", Vector2(0.3 * g, 0.2 * g), 90.0).is_equal_approx(Vector2(0.0, 0.5 * g)):
+		return "a turned bench should centre between two cells the other way"
+	if not CampBuild.snap_fit("pitch", OPEN, 0.0).is_equal_approx(CampBuild.snap(OPEN)):
+		return "a three-cell pitch should centre on a grid point"
+	if CampBuild.footprint("pitch", 15.0).x <= CampBuild.footprint("pitch", 0.0).x:
+		return "a pitch at a free angle should cover a wider box than square on"
+	_fresh()
+	var camp := _camp("FreeSide", "p_host", "Hana")
+	camp.start_solo(1)
+	var why := ""
+	camp._unhandled_input(_key("build"))
+	_face_spot(camp, "p_host", OPEN)
+	await _tree().process_frame
+	var grid: MeshInstance3D = camp._building["p_host"]["grid"]
+	if not grid.visible or not Vector2(grid.position.x, grid.position.z).is_equal_approx(CampBuild.snap(OPEN)):
+		why = "on the grid the stitched cell lines should show under the spot"
+	if why == "":
+		camp._unhandled_input(_key("grid"))
+		camp._unhandled_input(_key("rotate"))
+		camp.build_spot("p_host")
+		camp._refresh_docks()
+		await _tree().process_frame
+		var ghost: Node3D = camp._building["p_host"]["ghost"]
+		if not camp._free.has("p_host") or grid.visible:
+			why = "the grid button should switch to free building and hide the grid"
+		elif not Vector2(ghost.position.x, ghost.position.z).is_equal_approx(CampBuild.free_spot(OPEN)):
+			why = "building free, the ghost should sit right in front of the player, got %s" % ghost.position
+		elif float(camp._building["p_host"]["yaw"]) != Tuning.num("build", "free.turn_deg"):
+			why = "building free, rotate should turn by the small free step"
+	if why == "":
+		camp._unhandled_input(_key("interact"))
+		var id: String = camp.state.build.last_id
+		var row: Dictionary = camp.state.camp["objects"].get(id, {})
+		if row.is_empty() or not Vector2(row["pos"][0], row["pos"][1]).is_equal_approx(CampBuild.free_spot(OPEN)) \
+				or float(row["yaw"]) != Tuning.num("build", "free.turn_deg"):
+			why = "a free build should keep its spot and angle, got %s" % [row]
+		elif camp.state.build.building_at(CampBuild.free_spot(OPEN)) != id:
+			why = "a free-built pitch should be found under the spot to pack it away"
+		else:
+			camp._unhandled_input(_key("undo"))
+	if why == "":
+		camp._unhandled_input(_key("grid"))
+		if camp._free.has("p_host") or float(camp._building["p_host"]["yaw"]) != 0.0:
+			why = "back on the grid the turn should go to the nearest quarter, got %s" % camp._building["p_host"]["yaw"]
+		camp._unhandled_input(_key("build"))
+		if camp.find_children("Grid_*", "", false, false).size() > 0:
+			why = "leaving build mode should take the grid away"
+		camp.toggle_free("p_host")
+		camp._unhandled_input(_key("build"))
+		if why == "" and camp._building["p_host"]["grid"].visible:
+			why = "the free choice should stay for the player's next build mode"
+		camp.toggle_build("p_host")
+		camp.toggle_free("p_host")
 	await _done()
 	return why
 
@@ -235,6 +297,17 @@ func test_the_guest_pc_sees_the_day_and_builds_through_the_host() -> String:
 			guest._unhandled_input(_key("undo"))
 			if not await _until(func() -> bool: return host.state.build.building_at(spot) == "" and guest.state.build.building_at(spot) == ""):
 				why = "the guest PC's undo should take its pitch away on both PCs"
+	if why == "":
+		guest._unhandled_input(_key("grid"))
+		guest.campers["p_guest"].position.x += 0.3
+		var free_at: Vector2 = guest.build_spot("p_guest")
+		guest.build_here("p_guest")
+		if not await _until(func() -> bool: return host.state.build.building_at(free_at) != "" and guest.objects.size() == host.objects.size()):
+			why = "the guest PC's free build should be placed by the host"
+		else:
+			var row: Dictionary = host.state.camp["objects"][host.state.build.building_at(free_at)]
+			if not Vector2(row["pos"][0], row["pos"][1]).is_equal_approx(free_at) or free_at.is_equal_approx(CampBuild.snap(Vector2(-6, 5))):
+				why = "the host should place the guest's free build exactly where the guest saw it, got %s" % [row]
 	await _done()
 	return why
 

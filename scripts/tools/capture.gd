@@ -280,6 +280,13 @@ func _stage_a(out: String) -> void:
 		camp.state.camp["calendar"]["minute"] = (hour - start) * 60.0
 		await _settle()
 		_save(out + "/day_%02d.png" % int(hour))
+	# Free building: no grid, the ghost at an angle.
+	camp.toggle_free("p_capture_one")
+	camp._building["p_capture_one"]["yaw"] = 30.0
+	camp.state.camp["calendar"]["minute"] = (11.0 - start) * 60.0
+	await _settle()
+	_save(out + "/free_11.png")
+	camp.toggle_free("p_capture_one")
 	camp.stop("")
 	CampSave.dir = ""
 

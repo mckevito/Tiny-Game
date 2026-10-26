@@ -63,8 +63,11 @@ var _tents := {}
 ## air (pair key -> {"node", "t" (seconds into this throw), "from" (the thrower's stay id)}).
 var _doing := {}
 var _discs := {}
-## Local players in build mode: profile id -> {"kind", "yaw", "ghost" (Node3D), "tile" (MeshInstance3D)}.
+## Local players in build mode: profile id -> {"kind", "yaw", "ghost" (Node3D), "tile" (MeshInstance3D), "grid"
+## (MeshInstance3D, the stitched cell lines)}.
 var _building := {}
+## Local players building free instead of on the grid: profile id -> true. Kept between build modes this session.
+var _free := {}
 var _clock_send := 0.0
 var _light_t := -1.0
 var _night_left := 0.0
@@ -99,6 +102,8 @@ var _bundle_nodes := {}
 ## a piece up (bundle id -> profile id), so its node flies to them.
 var _airborne := {}
 var _sweeper := {}
+
+const STITCH_GRID := preload("res://scripts/art/stitch_grid.gdshader")
 
 @onready var clearing: Clearing = $Clearing
 @onready var camera: PlayCamera = $PlayCamera
@@ -764,7 +769,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _building.has(who) and event.is_action_pressed("next_kind"):
 		next_kind(who)
 	elif _building.has(who) and event.is_action_pressed("rotate"):
-		_building[who]["yaw"] = fposmod(float(_building[who]["yaw"]) + 90.0, 360.0)
+		var step := Tuning.num("build", "free.turn_deg", 15.0) if _free.has(who) else 90.0
+		_building[who]["yaw"] = fposmod(float(_building[who]["yaw"]) + step, 360.0)
+	elif _building.has(who) and event.is_action_pressed("grid"):
+		toggle_free(who)
 	elif _building.has(who) and event.is_action_pressed("undo"):
 		ask("undo", [], who)
 	elif _building.has(who) and event.is_action_pressed("interact"):
@@ -1148,9 +1156,9 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 	elif what == "place" and args.size() == 2 and args[0] is Vector2 and (args[1] is float or args[1] is int):
 		id = state.carried_by(profile_id)
 		why = state.place(profile_id, args[0], float(args[1]))
-	elif what == "build" and args.size() == 3 and args[0] is String and args[1] is Vector2 \
-			and (args[2] is float or args[2] is int):
-		why = state.build.build(profile_id, args[0], args[1], float(args[2]))
+	elif what == "build" and args.size() in [3, 4] and args[0] is String and args[1] is Vector2 \
+			and (args[2] is float or args[2] is int) and (args.size() == 3 or args[3] is bool):
+		why = state.build.build(profile_id, args[0], args[1], float(args[2]), args.size() == 4 and args[3])
 		id = state.build.last_id
 	elif what == "pack" and args.size() == 1 and args[0] is String:
 		why = state.build.pack(profile_id, args[0])
@@ -1915,10 +1923,11 @@ func _night(summary: Dictionary, data: Dictionary) -> void:
 ## step.
 func toggle_build(who: String, kind: String = "") -> void:
 	if _building.has(who):
-		var ghost: Node3D = _building[who]["ghost"]
-		if is_instance_valid(ghost):
-			remove_child(ghost)
-			ghost.queue_free()
+		for key in ["ghost", "grid"]:
+			var node: Node3D = _building[who][key]
+			if is_instance_valid(node):
+				remove_child(node)
+				node.queue_free()
 		_building.erase(who)
 		return
 	if state == null or not campers.has(who):
@@ -1946,8 +1955,49 @@ func toggle_build(who: String, kind: String = "") -> void:
 	tile.material_override = mat
 	ghost.add_child(tile)
 	add_child(ghost)
-	_building[who] = {"kind": kind, "yaw": 0.0, "ghost": ghost, "tile": tile}
+	_building[who] = {"kind": kind, "yaw": 0.0, "ghost": ghost, "tile": tile, "grid": _grid_view(who)}
 	_place_ghost(who)
+
+
+## The stitched cell lines under a building player's spot (scripts/art/stitch_grid.gdshader; data/build.json
+## grid_view), lined up with the camp's grid wherever the spot moves.
+func _grid_view(who: String) -> MeshInstance3D:
+	var view: Dictionary = Tuning.value("build", "grid_view", {})
+	var radius := float(view.get("radius_cells", 4.5)) * CampBuild.cell_m()
+	var grid := MeshInstance3D.new()
+	grid.name = "Grid_" + who
+	var plane := PlaneMesh.new()
+	plane.size = Vector2.ONE * radius * 2.0
+	grid.mesh = plane
+	grid.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var mat := ShaderMaterial.new()
+	mat.shader = STITCH_GRID
+	var tint := FeltBuilder.swatch(str(view.get("swatch", "warm_cream")))
+	mat.set_shader_parameter("color", Vector3(tint.r, tint.g, tint.b))
+	mat.set_shader_parameter("alpha", float(view.get("alpha", 0.75)))
+	mat.set_shader_parameter("cell", CampBuild.cell_m())
+	mat.set_shader_parameter("origin", CampBuild.grid_origin())
+	mat.set_shader_parameter("line_m", float(view.get("line_m", 0.06)))
+	mat.set_shader_parameter("stitches_per_m", float(view.get("stitches_per_m", 5.0)))
+	mat.set_shader_parameter("dash", float(view.get("dash", 0.6)))
+	mat.set_shader_parameter("radius_m", radius)
+	grid.material_override = mat
+	add_child(grid)
+	return grid
+
+
+## Grid or free building for a player: free puts pieces anywhere and turns them in small steps; back on the grid the
+## turn goes to the nearest quarter. The choice stays this player's own (each couch player has one).
+func toggle_free(who: String) -> void:
+	if _free.has(who):
+		_free.erase(who)
+	else:
+		_free[who] = true
+	if _building.has(who):
+		var yaw := float(_building[who]["yaw"])
+		_building[who]["yaw"] = CampBuild.free_turn(yaw) if _free.has(who) else CampBuild.quarter(yaw)
+	_toast(Tuning.text("build.free" if _free.has(who) else "build.on_grid"))
+	_refresh_docks()
 
 
 ## Build mode on the next kind of building the kit holds (data/build.json kinds, in order), keeping the turn.
@@ -1962,11 +2012,15 @@ func next_kind(who: String) -> void:
 	_building[who]["yaw"] = yaw
 
 
-## The grid spot in front of a building player.
+## The spot in front of a building player: on the grid where their piece's footprint fills whole cells, or free.
 func build_spot(who: String) -> Vector2:
 	var me: Camper = campers[who]
 	var ahead := me.position - me.transform.basis.z * Tuning.num("build", "ahead_m", 2.6)
-	return CampBuild.snap(Vector2(ahead.x, ahead.z))
+	var at := Vector2(ahead.x, ahead.z)
+	if _free.has(who):
+		return CampBuild.free_spot(at)
+	var b: Dictionary = _building.get(who, {})
+	return CampBuild.snap_fit(str(b.get("kind", "pitch")), at, float(b.get("yaw", 0.0)))
 
 
 ## Moves a player's ghost to their grid spot and tints it: ok to build (or a building to pack away), or blocked.
@@ -1983,6 +2037,9 @@ func _place_ghost(who: String) -> String:
 	ghost.position = Vector3(spot.x, 0.0, spot.y)
 	ghost.rotation.y = deg_to_rad(float(b["yaw"]))
 	ghost.get_child(0).visible = existing == ""
+	var grid: MeshInstance3D = b["grid"]
+	grid.visible = not _free.has(who)
+	grid.position = Vector3(spot.x, Tuning.num("build", "grid_view.lift_m", 0.05), spot.y)
 	var tint := FeltBuilder.swatch(str(Tuning.value("build", "ghost.ok" if why == "" else "ghost.blocked")))
 	tint.a = Tuning.num("build", "ghost.alpha", 0.45)
 	(b["tile"].material_override as StandardMaterial3D).albedo_color = tint
@@ -2011,7 +2068,7 @@ func build_here(who: String) -> void:
 	if existing != "":
 		ask("pack", [existing], who)
 	else:
-		ask("build", [str(_building[who]["kind"]), spot, float(_building[who]["yaw"])], who)
+		ask("build", [str(_building[who]["kind"]), spot, float(_building[who]["yaw"]), _free.has(who)], who)
 
 
 # --- Stage B round 2: gathering and animals ----------------------------------------------------------------------
