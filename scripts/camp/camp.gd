@@ -91,6 +91,8 @@ var _docks := {}
 var _held_toasts: Array[String] = []
 var _packs := {}
 var _tools := {}
+## Each local player's tool ring while their tool button is down (ToolRing).
+var _rings := {}
 var _kinds := {}
 var _bench := {}
 ## Round 5: players asleep in the camp's tent on this PC (who -> the sleeper shown in the bag), guests asleep in their
@@ -517,6 +519,7 @@ func _process(delta: float) -> void:
 	_tick_busy(delta)
 	_tick_wobble(delta)
 	_tick_wildlife(delta)
+	_tick_rings(delta)
 	_tick_tents()
 	_tick_guests(delta)
 	_story_cue()
@@ -527,14 +530,16 @@ func _process(delta: float) -> void:
 	var lines: PackedStringArray = []
 	if state and not menu.visible and not report.visible and not talk.visible:
 		for id in local_ids():
-			if _packs.has(id) or _bench.has(id):
-				continue
-			var line := _build_prompt(id) if _building.has(id) else _carry_prompt(id)
-			if line == "":
-				continue
-			line = Prompts.rich(line, _glyph(id))
-			lines.append(Tuning.text("prompt.for_player") % [state.camp["profiles"][id]["name"], line] \
-					if couch_id != "" else line)
+			var line := ""
+			if not (_packs.has(id) or _bench.has(id)):
+				line = _build_prompt(id) if _building.has(id) else _carry_prompt(id)
+			if line != "":
+				line = Prompts.rich(line, _glyph(id))
+			# On the couch each player's prompt is on their own dock (HudDock.show_prompt); the column keeps the bed line.
+			if couch_id != "" and _docks.has(id):
+				_docks[id].show_prompt(line, _building.has(id))
+			elif line != "":
+				lines.append(line)
 		var bed := _bed_line()
 		if bed != "":
 			lines.append(Prompts.rich(bed, _pad))
@@ -739,6 +744,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if state == null or who == "":
 		return
+	if not talk.visible and _ring_input(event, who):
+		get_viewport().set_input_as_handled()
+		return
 	if _bench.has(who) and not menu.visible:
 		if event.is_action_pressed("next_kind") or event.is_action_pressed("camera_right"):
 			_bench[who]["pick"] = posmod(int(_bench[who]["pick"]) + 1, state.build.known_recipes().size())
@@ -825,8 +833,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_kinds[who] = kinds[(kinds.find(piece(who)) + 1) % kinds.size()]
 		_refresh_boards()
 	elif event.is_action_pressed("next_tool"):
-		_tools[who] = posmod(int(_tools.get(who, 0)) + 1, tools().size())
-		_refresh_boards()
+		_start_ring(who)
 	elif not _building.has(who) and event.is_action_pressed("pack"):
 		open_pack(who)
 	elif event.is_action_pressed("interact"):
@@ -2527,6 +2534,86 @@ func tool_of(who: String) -> String:
 
 func has_tool(who: String, step: String) -> bool:
 	return tool_for(step) == "" or tool_of(who) == tool_for(step)
+
+
+# --- The tool ring -----------------------------------------------------------------------------------------------
+
+## The tool button went down: a ring starts timing (ToolRing). Let go soon and it steps to the next tool; hold on and
+## the ring opens round the camper.
+func _start_ring(who: String) -> void:
+	if _rings.has(who):
+		return
+	var ring := ToolRing.new()
+	ring.name = "Ring_" + who
+	ring.who = who
+	for t in tools():
+		ring.names.append(Tuning.text("tool." + str(t)))
+	ring.current = posmod(int(_tools.get(who, 0)), tools().size())
+	$Hud.add_child(ring)
+	_rings[who] = ring
+
+
+## The tool button's release takes the tool pointed at (or the next one after a tap), cancel closes the ring as it
+## was, and the mouse points in the ring of the player on the keyboard. True when the event was the ring's.
+func _ring_input(event: InputEvent, who: String) -> bool:
+	if event is InputEventMouseMotion:
+		var keys := couch_id if couch_id != "" and couch_pad == PlayerInput.KEYS else str(profile.get("id", ""))
+		var ring: ToolRing = _rings.get(keys)
+		if ring != null and ring.visible:
+			ring.point(ring.get_local_mouse_position(), Tuning.num("tuning", "ring.mouse_deadzone_px", 24.0))
+		return false
+	if not _rings.has(who):
+		return false
+	if event.is_action_released("next_tool"):
+		_end_ring(who, true)
+		return true
+	if event.is_action_pressed("cancel"):
+		_end_ring(who, false)
+		return true
+	return _rings[who].visible and event.is_action_pressed("next_tool")
+
+
+func _end_ring(who: String, take: bool) -> void:
+	var ring: ToolRing = _rings[who]
+	_rings.erase(who)
+	if take and not ring.visible:
+		_tools[who] = posmod(ring.current + 1, tools().size())
+	elif take and ring.hover >= 0:
+		_tools[who] = ring.hover
+	if ring.froze and campers.has(who):
+		campers[who].controlled = true
+	ring.queue_free()
+	_refresh_boards()
+
+
+## Opens each held ring once it has been held long enough, keeps it round its camper (in that player's own view on a
+## split couch) and points it with the sticks or the walking keys. The menu or a lost camper closes it as it was.
+func _tick_rings(delta: float) -> void:
+	for who: String in _rings.keys():
+		var ring: ToolRing = _rings[who]
+		if menu.visible or report.visible or not campers.has(who):
+			_end_ring(who, false)
+			continue
+		if ring.tick(delta):
+			ring.froze = campers[who].controlled
+			campers[who].controlled = false
+		if not ring.visible:
+			continue
+		ring.place(screen_of(who), get_viewport().get_visible_rect())
+		var input: PlayerInput = campers[who].input if campers[who].input != null else PlayerInput.new()
+		var dead := Tuning.num("tuning", "ring.stick_deadzone", 0.5)
+		var dir := input.aim()
+		ring.point(dir if dir.length() >= dead else input.move(), dead)
+
+
+## Where a local player's camper stands on the screen, in HUD pixels: in their own half on a split couch.
+func screen_of(who: String) -> Vector2:
+	var view := get_viewport().get_visible_rect()
+	var cam: PlayCamera = couch.second_camera() if couch.split and who == couch_id else camera
+	var body: Vector3 = campers[who].global_position + Vector3.UP * Tuning.num("tuning", "hud.keep_clear_height_m", 0.6)
+	if cam.is_position_behind(body):
+		return view.get_center()
+	return cam.unproject_position(body) * (view.size.y / cam.get_viewport().get_visible_rect().size.y)
 
 
 ## Takes a tool out for a player on this PC.

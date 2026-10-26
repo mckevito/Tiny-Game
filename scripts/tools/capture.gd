@@ -683,12 +683,16 @@ func _menus(out: String) -> void:
 
 
 ## The interface: alone, the dock and the open Pack; then on the couch, split, both docks, both clipboards and both
-## Packs, with the HUD as full as play makes it (guests' wishes, a build prompt each, the bed line).
+## Packs, with the HUD as full as play makes it (guests' wishes, a build prompt each, the bed line), then both docks
+## again at the biggest interface size (couch_docks_big.png). The tool ring held open alone (hud_ring.png) and both
+## players' rings on the couch (couch_rings.png).
 func _hud(out: String) -> void:
 	CampSave.dir = "user://captures_save"
 	DirAccess.make_dir_recursive_absolute(CampSave.dir)
 	for f in DirAccess.get_files_at(CampSave.dir):
 		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://captures_settings.json"))
+	Settings.use_file("user://captures_settings.json")
 	var camp: Node = load("res://scenes/camp.tscn").instantiate()
 	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
 	root.add_child(camp)
@@ -708,6 +712,13 @@ func _hud(out: String) -> void:
 	await _settle()
 	_save(out + "/hud_pack.png")
 	camp.close_pack("p_capture_one")
+	# The tool ring, held open and pointed at the fishing rod.
+	camp._start_ring("p_capture_one")
+	camp._tick_rings(Tuning.num("tuning", "ring.hold_s") + 0.1)
+	camp._rings["p_capture_one"].point(ToolRing.slot_offset(camp.tools().find("rod"), camp.tools().size(), 1.0), 0.5)
+	await _settle()
+	_save(out + "/hud_ring.png")
+	camp._end_ring("p_capture_one", false)
 	# Player one's own controller moves first, so the second one drops in (as in test_hud).
 	var stick := InputEventJoypadMotion.new()
 	stick.device = 0
@@ -737,6 +748,16 @@ func _hud(out: String) -> void:
 		await process_frame
 	await _settle()
 	_save(out + "/couch_docks.png")
+	# Both tool rings at once, each round its own camper.
+	for who in camp.local_ids():
+		camp._start_ring(who)
+	camp._tick_rings(Tuning.num("tuning", "ring.hold_s") + 0.1)
+	camp._rings["p_capture_one"].point(Vector2.RIGHT, 0.5)
+	camp._rings[two].point(Vector2.DOWN, 0.5)
+	await _settle()
+	_save(out + "/couch_rings.png")
+	for who in camp.local_ids():
+		camp._end_ring(who, false)
 	camp.toggle_clipboard("p_capture_one")
 	camp.toggle_clipboard(two)
 	camp._refresh_boards()
@@ -748,6 +769,15 @@ func _hud(out: String) -> void:
 	camp.open_pack(two)
 	await _settle()
 	_save(out + "/couch_packs.png")
+	# Playtest (PR #47): the same couch at the biggest interface size, both building with the docks showing.
+	camp.close_pack("p_capture_one")
+	camp.close_pack(two)
+	Settings.set_value("ui_scale", 150)
+	Settings.apply("ui_scale")
+	await _settle()
+	_save(out + "/couch_docks_big.png")
+	Settings.reset_page("access")
+	Settings.apply("ui_scale")
 	camp.stop("")
 	CampSave.dir = ""
 

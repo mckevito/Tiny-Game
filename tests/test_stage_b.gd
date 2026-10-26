@@ -144,9 +144,13 @@ func test_three_days_of_play_from_the_buttons() -> String:
 		var rod := Prompts.rich(Tuning.text("prompt.need_tool") % Tuning.text("tool.rod"), false)
 		if not camp.get_node("Hud/Prompt").text.contains(rod):
 			why = "by the pond with bare hands the prompt should ask for the rod, got " + camp.get_node("Hud/Prompt").text
-		# The next-tool button goes hands, axe, rod, and the corner dock shows it.
-		camp._unhandled_input(_key("next_tool"))
-		camp._unhandled_input(_key("next_tool"))
+		# A tap of the next-tool button (pressed and let go before the ring opens) goes hands, axe, rod, and the
+		# corner dock shows it.
+		for i in 2:
+			camp._unhandled_input(_key("next_tool"))
+			var up := _key("next_tool")
+			up.pressed = false
+			camp._unhandled_input(up)
 		await _tree().process_frame
 		if why != "":
 			pass

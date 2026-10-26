@@ -68,6 +68,18 @@ func strength(action: String) -> float:
 	return best
 
 
+## The pointing stick for this player (data/input.json aim_axes: the right stick), for the tool ring: (0, 0) inside
+## the deadzone, +x right and +y down.
+func aim() -> Vector2:
+	var axes: Array = Tuning.value("input", "aim_axes", [2, 3])
+	var best := Vector2.ZERO
+	for device in _pads():
+		var v := Vector2(Input.get_joy_axis(device, int(axes[0])), Input.get_joy_axis(device, int(axes[1])))
+		if v.length() > maxf(InputSetup.deadzone(), best.length()):
+			best = v.limit_length(1.0)
+	return best
+
+
 ## The walking stick for this player, like Input.get_vector.
 func move() -> Vector2:
 	var v := Vector2(strength("move_right") - strength("move_left"), strength("move_back") - strength("move_forward"))

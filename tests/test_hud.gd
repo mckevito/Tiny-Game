@@ -155,6 +155,33 @@ func _couch_fits(camp: Node, what: String, may_meet: Array = []) -> String:
 	return "" if why == "" else what + ": " + why
 
 
+## Playtest (PR #47): "" when each building player's prompt is on their own dock, the shared column holds only the
+## bed line, a dock is no taller than with its tool row, and the column stands clear of both campers.
+func _prompt_roomy(camp: Node, what: String) -> String:
+	var prompt: RichTextLabel = camp.get_node("Hud/Prompt")
+	for who: String in camp.local_ids():
+		var dock: HudDock = camp._docks[who]
+		if dock.prompt_text() == "":
+			return what + ": %s's prompt should be on their dock" % who
+		if prompt.text.contains(dock.prompt_text()):
+			return what + ": %s's prompt should not also be in the shared column" % who
+	if prompt.text != Prompts.rich(camp._bed_line(), camp._pad):
+		return what + ": the shared column should hold just the bed line, got " + prompt.text
+	# Playtest (PR #48): five lines of bed line sat over whoever stood mid-screen.
+	if prompt.get_line_count() > 3:
+		return what + ": the bed line should take at most 3 lines, got %d" % prompt.get_line_count()
+	camp._keep_in_view(10.0)
+	camp._keep_in_view(10.0)
+	var view: Rect2 = camp.get_viewport().get_visible_rect()
+	for who: String in camp.local_ids():
+		var cam: PlayCamera = camp.couch.second_camera() if camp.couch.split and who == camp.couch_id else camp.camera
+		var body: Vector3 = camp.campers[who].global_position + Vector3.UP * Tuning.num("tuning", "hud.keep_clear_height_m")
+		var at := cam.unproject_position(body) * (view.size.y / cam.get_viewport().get_visible_rect().size.y)
+		if prompt.get_global_rect().has_point(at):
+			return what + ": the bed line %s should not cover %s's camper at %s" % [prompt.get_global_rect(), who, at]
+	return ""
+
+
 ## Playtest: an open panel covered its own player's camper. "" when each player with an open panel stands clear of it
 ## once their view has slid (a long step lets the easing finish).
 func _campers_clear(camp: Node, what: String) -> String:
@@ -236,6 +263,19 @@ func test_couch_split_screen_hud_never_overlaps() -> String:
 			camp._boards[p1].flip(1)
 			camp._boards[p2].flip(1)
 			camp._refresh_boards()
+		# Playtest (PR #47): with the clipboards away and both players building, the docks squeezed the prompt column
+		# to a sliver, so the two prompts stacked 8 to 10 lines over both campers. Each now sits on its own dock.
+		if why == "":
+			camp.toggle_clipboard(p1)
+			camp.toggle_clipboard(p2)
+			for who in [p1, p2]:
+				if not camp._building.has(who):
+					camp.toggle_build(who)
+			# The F1 dev line may pass under a dock here; it is a dev tool, not part of play.
+			why = await _couch_fits(camp, "both building at the biggest interface size", [["Toast", "Prompt"],
+					["Dev", "Dock"]])
+		if why == "":
+			why = _prompt_roomy(camp, "both building at the biggest interface size")
 		Settings.reset_page("access")
 		Settings.apply("ui_scale")
 	_tree().root.size = was
@@ -485,4 +525,127 @@ func test_each_dock_has_a_legend_for_now() -> String:
 		if camp.state.day.today() == 2 and camp._docks[p1].legend_text().contains(walk_word):
 			why = "after day 1 the legend should leave walking out"
 	await _done()
+	return why
+
+
+func _key_event(action: String, pressed: bool) -> InputEventKey:
+	var ev := InputEventKey.new()
+	ev.physical_keycode = OS.find_keycode_from_string(str(Tuning.value("input", "actions.%s.keys" % action)[0]))
+	ev.pressed = pressed
+	return ev
+
+
+## The owner (26 Oct 2026, the opening case study): hold the tool button and every tool sits in a ring round the
+## camper; point and let go to take one. A tap still steps to the next tool, cancel leaves the tool as it was, and on
+## the couch each player's ring opens round their own camper in their own half.
+func test_holding_the_tool_button_opens_a_ring_round_each_camper() -> String:
+	_fresh()
+	var was := _tree().root.size
+	_tree().root.size = SCREEN
+	var camp := _camp("RingSide", "p_host", "Hana")
+	camp.start_solo(1)
+	var who: String = camp.local_ids()[0]
+	var hold := Tuning.num("tuning", "ring.hold_s", 0.25)
+	var count: int = camp.tools().size()
+	await _frames(2)
+	var why := ""
+	# A tap: let go before hold_s, and the next tool comes out with no ring.
+	camp._unhandled_input(_key_event("next_tool", true))
+	camp._tick_rings(hold * 0.5)
+	if camp._rings[who].visible:
+		why = "a short press should not open the ring yet"
+	camp._unhandled_input(_key_event("next_tool", false))
+	if why == "" and camp.tool_of(who) != str(camp.tools()[1]):
+		why = "a tap should step to the next tool, got " + camp.tool_of(who)
+	# A hold: the ring opens round the camper, the camper stands still, and pointing left with the walking keys then
+	# letting go takes out the tool on the ring's left.
+	if why == "":
+		camp._unhandled_input(_key_event("next_tool", true))
+		camp._tick_rings(hold + 0.05)
+		var ring: ToolRing = camp._rings.get(who)
+		var view: Rect2 = camp.get_viewport().get_visible_rect()
+		if ring == null or not ring.visible:
+			why = "holding the tool button should open the ring"
+		elif camp.campers[who].controlled:
+			why = "the camper should stand still while the ring is open"
+		elif ring.position.distance_to(camp.screen_of(who)) > 1.0:
+			why = "the ring should sit round the camper at %s, got %s" % [camp.screen_of(who), ring.position]
+		elif ring.names.size() != count:
+			why = "the ring should show every tool, got %s" % [ring.names]
+		if why == "":
+			# Input.parse_input_event takes effect on the next frame.
+			Input.parse_input_event(_key_event("move_left", true))
+			await _frames(1)
+			camp._tick_rings(0.02)
+			Input.parse_input_event(_key_event("move_left", false))
+			await _frames(1)
+			var left := ToolRing.slot_at(Vector2.LEFT, count)
+			if ring.hover != left:
+				why = "pointing left should pick slot %d, got %d" % [left, ring.hover]
+			camp._unhandled_input(_key_event("next_tool", false))
+			if why == "" and camp.tool_of(who) != str(camp.tools()[left]):
+				why = "letting go should take out the %s, got %s" % [camp.tools()[left], camp.tool_of(who)]
+			elif why == "" and (camp._rings.has(who) or not camp.campers[who].controlled):
+				why = "letting go should close the ring and let the camper walk"
+	# Cancel closes it as it was.
+	if why == "":
+		var before: String = camp.tool_of(who)
+		camp._unhandled_input(_key_event("next_tool", true))
+		camp._tick_rings(hold + 0.05)
+		camp._rings[who].point(Vector2.DOWN, 0.5)
+		var cancel := InputEventAction.new()
+		cancel.action = "cancel"
+		cancel.pressed = true
+		camp._unhandled_input(cancel)
+		camp._unhandled_input(_key_event("next_tool", false))
+		if camp._rings.has(who) or camp.tool_of(who) != before:
+			why = "cancel should close the ring and keep the %s, got %s" % [before, camp.tool_of(who)]
+	if why == "" and (ToolRing.slot_at(Vector2.UP, 5) != 0 or ToolRing.slot_at(Vector2(1, -0.2), 5) != 1):
+		why = "slot 0 should be at the top with the rest clockwise"
+	await _done()
+	# The couch: both rings open at once, each round its own camper in its own half, and the pad player points with the
+	# right stick.
+	if why == "":
+		var couch := _full_couch()
+		await _frames(3)
+		var p1: String = couch.profile["id"]
+		var p2: String = couch.couch_id
+		for id in [p1, p2]:
+			if couch._building.has(id):
+				couch.toggle_build(id)
+		couch._start_ring(p1)
+		var press := _pad_button(couch.couch_pad, 11)
+		couch._unhandled_input(press)
+		couch._tick_rings(hold + 0.05)
+		var view: Rect2 = couch.get_viewport().get_visible_rect()
+		var mid := view.get_center().x
+		for id in [p1, p2]:
+			var ring: ToolRing = couch._rings.get(id)
+			if why != "":
+				break
+			if ring == null or not ring.visible:
+				why = "on the couch %s's ring should open" % id
+			elif (ring.position.x > mid) == (id == p1):
+				why = "%s's ring should be on their own half, got %s" % [id, ring.position]
+			elif ring.position.distance_to(couch.screen_of(id)) > 1.0 and not couch.couch.split:
+				why = "%s's ring should sit round their camper" % id
+		if why == "":
+			var aim := InputEventJoypadMotion.new()
+			aim.device = couch.couch_pad
+			aim.axis = JOY_AXIS_RIGHT_X
+			aim.axis_value = 1.0
+			Input.parse_input_event(aim)
+			await _frames(1)
+			couch._tick_rings(0.02)
+			aim.axis_value = 0.0
+			Input.parse_input_event(aim)
+			await _frames(1)
+			var right := ToolRing.slot_at(Vector2.RIGHT, count)
+			if couch._rings[p2].hover != right:
+				why = "the couch player's right stick should point at slot %d, got %d" % [right, couch._rings[p2].hover]
+			elif couch._rings[p1].hover != -1:
+				why = "the couch player's stick should not point player one's ring"
+		_tree().root.size = was
+		await _done()
+	_tree().root.size = was
 	return why

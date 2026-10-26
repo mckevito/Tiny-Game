@@ -2,14 +2,15 @@
 
 1. **Owns:** everything the player reads and presses.
    - Scripts: `scripts/ui/options_screen.gd`, `ui_look.gd`; `scripts/camp/camp_menu.gd`, `clipboard.gd`,
-     `pack_panel.gd`, `hud_dock.gd`, `camp_report.gd`, `couch_view.gd`, `play_camera.gd`; `scripts/core/settings.gd`,
+     `pack_panel.gd`, `hud_dock.gd`, `tool_ring.gd`, `camp_report.gd`, `couch_view.gd`, `play_camera.gd`; `scripts/core/settings.gd`,
      `prompts.gd`, `input_setup.gd`, `player_input.gd`, `quality.gd`.
    - In `scripts/camp/camp.gd` (shared with Gameplay): the HUD (`_process` prompt and clock lines, `today_lines`,
      `guest_wants`, `_update_hint`, `_show_hud`, `_toast`, `_flash`), the docks and Pack panels (`_refresh_docks`,
-     `open_pack`, `close_pack`, `_refresh_packs`), the clipboard and workbench panels (`toggle_clipboard`,
+     `open_pack`, `close_pack`, `_refresh_packs`), the tool ring (`_start_ring`, `_ring_input`, `_end_ring`,
+     `_tick_rings`, `screen_of`), the clipboard and workbench panels (`toggle_clipboard`,
      `clipboard_text`, `field_guide`, `open_bench`, `bench_text`), `_hold_camera`, `_unhandled_input` routing.
    - `scenes/camp.tscn` (the Hud nodes), `project.godot` window and stretch settings.
-   - Data: `data/settings.json`, `input.json`, `graphics.json`, the `hud`, `clipboard`, `dock`, `pack_panel` and
+   - Data: `data/settings.json`, `input.json`, `graphics.json`, the `hud`, `clipboard`, `dock`, `ring`, `pack_panel` and
      `camera` sections of `data/tuning.json`; its keys in `data/text.json`.
    - Tests: `test_hud` (couch layout and the dock and Pack; its static `hud_fits` is shared), `test_settings`,
      `test_prompts`, `test_input_map`, `test_play_feel`, the HUD test in `test_stage_b`
@@ -17,7 +18,8 @@
 2. **State now:** the HUD has a top-left hint (it stops short of the clock), a top-right clock with guests' wishes
    then odd jobs (just the clock line while the couch player's clipboard or workbench is open: `_right_panel_open`),
    toasts, a bottom-centre prompt in a centre column (`hud.prompt_width_px`; a player's own line hides while their
-   Pack or workbench is open), and a corner dock per player: the tool and build piece in hand with the ones before and
+   Pack or workbench is open; on the couch each player's prompt is on their own dock instead, `HudDock.show_prompt`,
+   and the column keeps the bed line), and a corner dock per player: the tool and build piece in hand with the ones before and
    after either side (`HudDock.show_dock`, `tool_near`) and dots, then a Pack line. An open Pack, clipboard or
    workbench hides its player's dock. The Pack opens as a grid of rounded slots with kind-coloured tokens, counts and
    a name tag (I or D-pad down): low in the middle alone, in its player's bottom corner on the couch. Clipboards and
@@ -33,8 +35,7 @@
    4. The clipboard's map tab with plan marks both players see (with Gameplay), after the next gameplay round.
    5. Remaps: two actions can share a button only in different modes (D-pad left: undo in build mode). Settings
       swaps only an action's main binding.
-   6. Later ideas: item icons in the Pack (render each item's felt model once), per-player prompts inside each half
-      of the split; 2D panels use `FeltBuilder.swatch`, which is the linear colour (darker than the palette); the
+   6. Later ideas: item icons in the Pack (render each item's felt model once); 2D panels use `FeltBuilder.swatch`, which is the linear colour (darker than the palette); the
       Pack tokens convert back with `linear_to_srgb()`, the panels were left as the owner has seen them.
 4. **Owner decisions:** Animal Crossing is the model for the Pack and the tool and build cyclers; prompts show the
    glyph of the device used last, drawn as a DualSense icon or a keycap (`Prompts.rich`); never "Press A" (the prompt
