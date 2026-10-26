@@ -52,3 +52,7 @@ See `handoff/gameplay/LESSONS.md` "Who owns what". `camp.gd` and `data/text.json
   a key or moves a stick through it must await a frame before reading `PlayerInput`. A thick antialiased `draw_arc`
   leaves a seam where it starts; draw a band as one polygon (out round the outer edge, back round the inner). A tool
   button that now acts on release (tap or hold) needs tests to send the release too.
+- 26 Oct 2026, ring fixes: a held button whose release does the work (the tool ring) gets stuck when a panel opens
+  mid-hold and swallows the release; close the hold when a panel opens for that player, and leave the camper held so
+  the panel gives them back. A control in another CanvasLayer can't sit on top of a HUD label with `z_index`; give the
+  panel its own copy of the line instead. Large text (150%) is where a long list runs off the screen: test it there.

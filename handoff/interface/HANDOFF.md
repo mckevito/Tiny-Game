@@ -30,12 +30,13 @@
 3. **Open work, in order:**
    1. The owner plays round 5 and interface round 1; fix anything that overlaps or reads badly on their screen.
    2. Round 5: item icons in the Pack and picture wish bubbles.
-   3. Cosmetic (Playtest on #40): a one-letter keycap that starts a wrapped line loses its left padding (Godot trims
+   3. Small (Playtest on main, 26 Oct): at 150% on the couch, an open tool ring covers its own player's legend.
+   4. Cosmetic (Playtest on #40): a one-letter keycap that starts a wrapped line loses its left padding (Godot trims
       a line's leading space, even a figure space); try a word joiner (U+2060) before the padding.
-   4. The clipboard's map tab with plan marks both players see (with Gameplay), after the next gameplay round.
-   5. Remaps: two actions can share a button only in different modes (D-pad left: undo in build mode). Settings
+   5. The clipboard's map tab with plan marks both players see (with Gameplay), after the next gameplay round.
+   6. Remaps: two actions can share a button only in different modes (D-pad left: undo in build mode). Settings
       swaps only an action's main binding.
-   6. Later ideas: item icons in the Pack (render each item's felt model once); 2D panels use `FeltBuilder.swatch`, which is the linear colour (darker than the palette); the
+   7. Later ideas: item icons in the Pack (render each item's felt model once); 2D panels use `FeltBuilder.swatch`, which is the linear colour (darker than the palette); the
       Pack tokens convert back with `linear_to_srgb()`, the panels were left as the owner has seen them.
 4. **Owner decisions:** Animal Crossing is the model for the Pack and the tool and build cyclers; prompts show the
    glyph of the device used last, drawn as a DualSense icon or a keycap (`Prompts.rich`); never "Press A" (the prompt

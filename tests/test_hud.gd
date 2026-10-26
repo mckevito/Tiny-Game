@@ -649,3 +649,41 @@ func test_holding_the_tool_button_opens_a_ring_round_each_camper() -> String:
 		await _done()
 	_tree().root.size = was
 	return why
+
+
+## Talking to Burl with the ring open closes the ring (the release goes to the talk), and the camper walks again once
+## the talk ends.
+func test_a_talk_that_opens_over_the_ring_closes_it() -> String:
+	_fresh()
+	var was := _tree().root.size
+	_tree().root.size = SCREEN
+	var camp := _camp("RingTalk", "p_host", "Hana")
+	camp.start_solo(1)
+	var who: String = camp.local_ids()[0]
+	await _frames(2)
+	if camp.talk.visible:
+		camp._end_talk(true)
+	var before: String = camp.tool_of(who)
+	camp._unhandled_input(_key_event("next_tool", true))
+	camp._tick_rings(Tuning.num("tuning", "ring.hold_s", 0.25) + 0.05)
+	var why := "" if camp._rings.has(who) and camp._rings[who].visible else "holding the tool button should open the ring"
+	if why == "":
+		camp._open_talk(who, "idle")
+		camp._tick_rings(0.02)
+		if not camp.talk.visible:
+			why = "the talk should open"
+		elif camp._rings.has(who):
+			why = "a talk opening for the player should close their ring"
+		elif camp.campers[who].controlled:
+			why = "the camper should still stand still while the talk is open"
+	if why == "":
+		camp._unhandled_input(_key_event("next_tool", false))
+		if camp._rings.has(who) or camp.tool_of(who) != before:
+			why = "letting go during the talk should leave no ring and keep the %s" % before
+	if why == "":
+		camp._end_talk(true)
+		if not camp.campers[who].controlled:
+			why = "the camper should walk again once the talk ends"
+	await _done()
+	_tree().root.size = was
+	return why

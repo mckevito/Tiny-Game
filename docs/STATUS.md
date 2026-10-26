@@ -446,6 +446,8 @@ opens round their own camper in their own half, and only their own devices point
 | A tap steps to the next tool with no ring; a hold opens the ring round the camper with every tool and stops them walking; pointing left with the walking keys and letting go takes the left tool; cancel keeps the tool | `test_hud.test_holding_the_tool_button_opens_a_ring_round_each_camper` | Passing |
 | On the couch both rings open at once, each on its own player's half; the couch player's right stick points only their ring | same test | Passing |
 | The ring alone and both rings on the couch, to look at | `tools/capture.gd --hud` (hud_ring.png, couch_rings.png) | Looked at (cloud frames) |
+| A talk that opens while the ring is held (E next to Burl) closes the ring; the camper walks again when the talk ends (Playtest on main, 26 Oct) | `test_hud.test_a_talk_that_opens_over_the_ring_closes_it` | Passing |
+| At 150% text the dev menu fits the screen: its rows scroll to the chosen one and it shows the fps line at its own foot, off both players' docks (Playtest on main, 26 Oct) | `test_dev.test_at_150_percent_the_menu_fits_and_its_rows_scroll` | Passing |
 | Holding and pointing feels quick and clear on the owner's mouse and DualSense | Owner's play | Waiting on the owner |
 
 **Proposed** (data/tuning.json `ring`): the ring opens after 0.25 s held; slot 0 (Hands) at the top and the rest
