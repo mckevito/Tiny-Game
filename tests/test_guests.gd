@@ -341,3 +341,57 @@ func test_guests_ask_again_up_to_a_share_that_grows() -> String:
 		if i == CampGuests.per_day(1) - 1 and not fresh.is_empty():
 			return "after today's share the guest should be content till tomorrow"
 	return ""
+
+
+## First-minutes round 4: guests with nothing to ask go fishing, take photos, fly kites, sit or rest, and two of them
+## sometimes throw a frisbee together; never two on one spot, the same answer every time (so both PCs agree); a guest
+## with an open request or asleep stays by their tent; a carried chair is no seat and the grown fire adds its logs.
+func test_free_guests_find_something_to_do_and_wait_home_with_a_request() -> String:
+	var state := _camp()
+	for p: Vector2 in [Vector2(3, 5), Vector2(-4, 7), Vector2(-7.5, 5)]:
+		var why := state.build.build("p_host", "pitch", p, 0.0)
+		if why != "":
+			return "could not build a pitch at %s: %s" % [p, why]
+	_at_hour(state, Tuning.num("day", "stays.arrive_hour"))
+	for i in 3:
+		state.day.maybe_arrive()
+		state.camp["calendar"]["minute"] = float(state.camp["calendar"]["minute"]) + Tuning.num("day", "stays.gap_min")
+	if state.camp["stays"].size() != 3:
+		return "three guests should have come, got %d" % state.camp["stays"].size()
+	for id: String in state.camp["stays"]:
+		state.camp["stays"][id]["request"] = {"kind": "fish", "done": true}
+	var seen := {}
+	var slot_min := Tuning.num("guests", "activities.slot_min")
+	for day in 4:
+		state.camp["calendar"]["day"] = day + 1
+		for slot in int(CampDay.day_minutes() / slot_min):
+			state.camp["calendar"]["minute"] = slot * slot_min + 1.0
+			var plans := GuestPlans.plan(state, false)
+			if plans != GuestPlans.plan(state, false) or plans.size() != 3:
+				return "every guest should get one steady plan, got %s" % plans
+			var spots := {}
+			for id: String in plans:
+				var p: Dictionary = plans[id]
+				seen[p["kind"]] = true
+				if spots.has(p["at"]):
+					return "two guests should never share a spot: %s" % plans
+				spots[p["at"]] = true
+				if p["kind"] == "frisbee" and (plans[p["pair"]]["pair"] != id or plans[p["pair"]]["kind"] != "frisbee"):
+					return "a frisbee needs two players throwing to each other: %s" % plans
+	for kind in ["fish", "photo", "kite", "sit", "frisbee"]:
+		if not seen.has(kind):
+			return "over four days some guest should go %s, saw %s" % [kind, seen.keys()]
+	var first: String = state.camp["stays"].keys()[0]
+	state.camp["stays"][first]["request"] = {"kind": "fish", "done": false}
+	if GuestPlans.plan(state, false)[first] != GuestPlans.home(state, first):
+		return "a guest with an open request should wait by their tent"
+	if GuestPlans.plan(state, true).values().any(func(p: Dictionary) -> bool: return p["kind"] != "rest"):
+		return "asleep, every guest should be at their tent"
+	var seats := GuestPlans.seats(state).size()
+	state.carriers["chair_teal_1"] = "p_host"
+	if GuestPlans.seats(state).size() != seats - 1:
+		return "a chair someone carries should be no seat"
+	state.camp["fire"] = {"level": 1}
+	if GuestPlans.seats(state).size() != seats - 1 + (Tuning.value("guests", "activities.sit.fire_ring") as Array).size():
+		return "the stone ring should add its log seats"
+	return ""

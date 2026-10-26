@@ -34,6 +34,9 @@ var _walk_phase := 0.0
 ## A swing of the tool in hand: seconds into it (-1 when still) and its wind-up time.
 var _swing := -1.0
 var _wind := 0.0
+## How high a sitting guest's body is lifted onto its seat (0 standing), and the clock for a held model's sway.
+var _sit_y := 0.0
+var _sway_t := 0.0
 
 
 func _ready() -> void:
@@ -93,8 +96,21 @@ func swinging() -> bool:
 	return _swing >= 0.0
 
 
+## Sits a guest down with its body lifted `height` metres onto a seat, or stands it up again with 0. A guest (steered
+## by nobody) stays put between walks: nothing pushes it off its seat or its spot.
+func sit(height: float) -> void:
+	_sit_y = maxf(height, 0.0)
+	if _body:
+		_body.position.y = _sit_y
+
+
+func sitting() -> bool:
+	return _sit_y > 0.0
+
+
 func _process(delta: float) -> void:
 	if _swing < 0.0:
+		_sway(delta)
 		return
 	var row: Dictionary = Tuning.value("items", "tools.held.%s.swing" % held, {})
 	if _tool == null or row.is_empty():
@@ -127,6 +143,18 @@ func _process(delta: float) -> void:
 	_body.rotation.x = deg_to_rad(-bend)
 
 
+## Rocks a held model with a sway row (data/items.json tools.held.<tool>.sway), such as a guest's kite on the wind.
+func _sway(delta: float) -> void:
+	var row: Dictionary = Tuning.value("items", "tools.held.%s.sway" % held, {})
+	if _tool == null or row.is_empty():
+		return
+	_sway_t += delta * TAU * float(row.get("hz", 0.2))
+	var deg: Array = row.get("deg", [0, 0])
+	var rest: Array = Tuning.value("items", "tools.held.%s.rot" % held, [0, 0, 0])
+	_tool.rotation_degrees.x = float(rest[0]) + sin(_sway_t) * float(deg[0])
+	_tool.rotation_degrees.z = float(rest[2]) + sin(_sway_t * 0.63 + 1.0) * float(deg[1])
+
+
 ## The wanted ground velocity for a stick or key input, turned by the camera's yaw.
 static func wish_velocity(input: Vector2, camera_yaw: float) -> Vector3:
 	return Vector3(input.x, 0.0, input.y).rotated(Vector3.UP, camera_yaw) * Tuning.num("tuning", "movement.walk_speed_mps")
@@ -138,6 +166,8 @@ func _physics_process(delta: float) -> void:
 		return
 	if walk_target is Vector3:
 		_walk(delta)
+		return
+	if sitting() or (not controlled and remote_target == null):
 		return
 	var stick := Vector2.ZERO
 	if controlled:
@@ -201,4 +231,4 @@ func _waddle(delta: float) -> void:
 	_walk_phase += delta * TAU * Tuning.num("tuning", "movement.waddle_hz") * speed
 	var sway := sin(_walk_phase) * deg_to_rad(Tuning.num("tuning", "movement.waddle_deg")) * speed
 	_body.rotation.z = sway
-	_body.position.y = absf(sin(_walk_phase)) * Tuning.num("tuning", "movement.bob_m") * speed
+	_body.position.y = _sit_y + absf(sin(_walk_phase)) * Tuning.num("tuning", "movement.bob_m") * speed

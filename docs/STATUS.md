@@ -363,6 +363,38 @@ What changed: the hint, prompt and toast are RichTextLabels; `Prompts.rich` turn
 `data/input.json`; sizes and colours are `glyphs.*` in `data/tuning.json`. The Bookings "answer" line moved from the
 page to the clipboard's hint. **Proposed:** icon height 34 px, keycaps warm cream on ink brown.
 
+### Interface round 3: a knitted clipboard (25 Oct 2026)
+The owner (25 Oct 2026): "make the clipboard look like an actual knitted clip board" with "a literally knitted piece
+of paper that is used to have writing on". The clipboard (and the workbench, which shares its look) is now a knitted
+wood-felt board holding a knitted cream sheet, with a ribbed honey clip across the top and a stitched rule under each
+line of writing. The open tab is a honey felt tag. Keys on a cream panel are honey keycaps.
+
+| Proof | Test | Result |
+|---|---|---|
+| The board and sheet are knitted (`scripts/ui/knit.gdshader`); a rule runs under every line of the page, starting where the writing starts and stopping at its end; the board shows above the sheet for the clip; keys on the sheet are honey caps that stand out from it | `test_hud.test_the_clipboard_is_a_knitted_board_with_a_ruled_sheet` | Passing (fails with the rules off by the tab row) |
+| The couch layout still fits with the knitted board (the sheet's text is 16 px narrower so the whole board keeps its old width) | `test_hud.test_couch_split_screen_hud_never_overlaps` | Passing |
+| Review frames: both knitted clipboards on the couch | `tools/capture.gd --hud` (couch_clipboards.png) | Looked at |
+| The clipboard feels knitted on the owner's screen | Owner's play | Waiting on the owner |
+
+The camper holding a clipboard while it is open is Gameplay's (PR #37, a felt stand-in); Art is making the knitted
+prop to the same brief (wood-felt board, honey clip, cream sheet). **Proposed** (data/tuning.json `clipboard`, `glyphs`):
+board wood_felt, sheet warm_cream, clip and rules honey_thread, stitches 16 x 11 px on the board and 12 x 8 px on the
+sheet, paper keycaps honey_thread.
+
+Playtest's notes on round 2, fixed here: the D-pad icons' pressed arm is now filled honey, so up, down, left and right
+tell apart at prompt size; the Bookings line reads "Answer a new booking from the menu: Tab" (no gap inside brackets);
+the top hint parts its controls with a wide space (text: glyphs.gap) instead of a dot, so a wrapped line never ends on
+a lone dot (`test_hud.test_the_hint_wraps_between_controls_and_toasts_wait_for_the_report`). The hint crossing the
+couch split and showing only player one's keys waits on the owner's controls-line pick.
+
+Playtest's findings on round 3 (fixed in the same PR):
+
+| Proof | Test | Result |
+|---|---|---|
+| A morning or welcome report too tall for the screen (three guests, or the biggest interface size) splits into pages that fit: interact turns them ("Next page (1 of 2)"), the last page's interact closes it, and cancel or the menu button still close it at once | `test_hud.test_big_sizes_keep_prompts_clear_and_long_reports_turn_pages` | Passing (fails with paging off) |
+| At 120% and 150% interface size, alone on the PC, an open clipboard no longer covers the prompt: the prompt and toast column moves into the room beside it; toasts start below the hint and the clock, however many lines they wrap to; the clipboard moves down as soon as the hint grows | same test | Passing (fails without the column move) |
+| A one-letter key's cap is wider (text: glyphs.key_pad_one, a no-break figure space, so the hint never wraps between a key and its words) | same test | Passing (an en space let "E" end a line at 150%) |
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.
@@ -442,6 +474,17 @@ once, 2 nights each. Round 2 (PR #33) was merged by the owner on 25 Oct 2026.
 | A guest stays two nights, pays each night and heads home on the second morning; bookings stay two nights and pay their bonus once | `test_day.test_up_to_three_guests_come_one_by_one_and_stay_two_nights`, `test_day`, `test_guests` | Passing |
 | While a player reads the clipboard their camper holds it up, on both PCs (for the Interface round's clipboard) | `test_stage_b.test_felling_replanting_the_clipboard_and_the_long_log_from_the_buttons`, `test_stage_b.test_the_guest_pc_fishes_gives_and_books_through_the_host` | Passing |
 
+### First-minutes round 4: guests who fish, take photos, fly kites, sit and play frisbee (25 Oct 2026)
+The owner's ask "actively go fishing and take pictures of the animals and ... fly kites play fetch with a frisbee with
+each other, sit on chairs". Round 3 (PR #37) was merged by the owner on 25 Oct 2026.
+
+| Proof | Test | Result |
+|---|---|---|
+| Guests with nothing to ask go fishing, photographing, kite flying, sitting or resting, and two of them sometimes throw a frisbee to each other; never two on one spot; the same answer every time | `test_guests.test_free_guests_find_something_to_do_and_wait_home_with_a_request` | Passing |
+| A guest with an open request, or asleep, waits by their tent; a carried chair is no seat; the grown fire adds its log seats | `test_guests.test_free_guests_find_something_to_do_and_wait_home_with_a_request` | Passing |
+| In the scene, guests walk off and settle with the right prop or on their seat, a frisbee flies between a pair, and the guest PC shows the same | `test_stage_b.test_guests_go_fishing_sit_and_play_frisbee_on_both_pcs` | Passing |
+| Review frames: three guests busy at three times of day, with close-ups | `capture.gd --guests` (`first-minutes-g4/` in the project files) | Looked at |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -513,8 +556,16 @@ once, 2 nights each. Round 2 (PR #33) was merged by the owner on 25 Oct 2026.
 - **Proposed** first-minutes round 3 numbers and choices (data/day.json, data/guests.json, data/items.json): up to 3
   walk-in guests at once (bookings come on top, as before), each staying 2 nights; a second guest comes no sooner than
   40 game minutes after one arrived that day; the Fern family and the birdwatchers now stay 2 nights too. The
-  clipboard the camper reads is a plain felt stand-in (`clipboard_prop` in data/models.json) until the knitted one
-  from the Interface round replaces it. Three guests add three campers and three tents, no lights.
+  clipboard the camper reads is Art's knitted one (`knit_clipboard`, PR #38), held page toward the camper and tipped
+  back (data/items.json tools.held.clipboard). Three guests add three campers and three tents, no lights.
+- **Proposed** first-minutes round 4 numbers and choices (data/guests.json activities, data/items.json,
+  data/models.json): a guest changes activity every 60 game minutes (80 real seconds); 3 fishing spots on the pond's
+  bank, 3 photo spots facing where the rabbits, squirrels and deer live, 3 kite spots, seats on the two folding
+  chairs, log benches (2 each), stools and the stone ring's two logs; with two free guests, half of the hours have two
+  of them throwing a frisbee 5.2 m apart; a spot within 1.1 m of anything built is skipped. Guests still walk in
+  straight lines. Activities pay nothing and the frisbee is seen by each PC alone (a look, not a camp change).
+  The kite, raised camera and frisbee are plain felt stand-ins for Art. The cost is a disc and up to three held
+  props; no lights or physics.
 
 ## Title screen and settings (quality of life, 25 Oct 2026)
 Asked for by the owner alongside Stage B: a landing page with Start game, an Options screen and controls. Waits on the

@@ -54,3 +54,8 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   tests that slept one night to send a guest home had to loop over the nights (why: the stay length was assumed, not
   read from the table; read `nights` from data in tests); a build in an old test hit the new arrival gap (why: the
   clock minute carried over; set the minute in the test).
+- 25 Oct 2026: first-minutes round 4: guests fish, take photos, fly kites, sit and play frisbee. Faults: picks made
+  with `String.hash() & 0xFFFF` never chose one kind (why: similar keys hash to similar low bits; `GuestPlans.roll`
+  now mixes the hash first); a scene test's guests stayed home (why: they asked again on the camp's tick; set
+  `next_at` too when a test marks requests met); resting guests slid 5 cm off their spot (why: physics pushed them out
+  of the tent's collider; guests now skip physics between walks).

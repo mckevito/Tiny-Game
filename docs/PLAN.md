@@ -252,3 +252,9 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, owner merged first-minutes round 2 (PR #33, the growing fire and the camp board). Round 3 builds the
   owner's pick: up to 3 guests at once, 2 nights each. **Proposed**: guests arrive one by one, 40 game minutes apart;
   bookings stay 2 nights too; the camper holds the clipboard up while a player reads it, seen on both PCs.
+- 25 Oct 2026, owner merged first-minutes round 3 (PR #37). Round 4 builds guest activities from the owner's list
+  (fishing, photographing animals, kites, frisbee with each other, sitting on chairs). **Proposed**: a guest with an
+  open request waits by their tent so players can find them; activities change every game hour and are worked out
+  from the shared day, so both PCs agree without new netcode; they pay nothing yet (they show the camp being used).
+- 26 Oct 2026, owner merged first-minutes round 4 (PR #41, guest activities) and Art's knitted clipboard (PR #38). The
+  camper now reads the knitted clipboard; the felt stand-in is gone.

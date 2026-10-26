@@ -33,6 +33,7 @@
     "cooking": "Grilling…",
     "give": "{interact} Give %s your %s",
     "report_close": "{interact} Start the day",
+    "report_next": "{interact} Next page (%d of %d)",
     "chop": "{interact} Chop wood (%d left in this tree)",
     "chopping": "Chopping…",
     "dig": "{interact} Dig up the stump",
@@ -419,9 +420,8 @@
       "supplies": "Supplies",
       "guide": "Field guide"
     },
-    "open_tab": "[ %s ]",
     "hint": "{tabs} turn the page · {clipboard} put it away",
-    "answer": "Answer a new booking from the menu ({menu}).",
+    "answer": "Answer a new booking from the menu: {menu}",
     "staying": "Staying now",
     "nobody": "Nobody yet. Guests come to a free pitch in the afternoon.",
     "stay": "%s at the %s: would like %s",
@@ -587,6 +587,8 @@
   },
   "glyphs": {
     "join": " ",
-    "key_pad": " "
+    "key_pad": " ",
+    "key_pad_one": " ",
+    "gap": "  "
   }
 }
