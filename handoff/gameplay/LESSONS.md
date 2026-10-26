@@ -73,3 +73,7 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   keyboard E types a letter (why: a text field takes every key; a typing step needs its own glyph, now `type_done`,
   Enter or Cross); at 150% in couch play the docks covered Burl's bubble (why: two bottom panels never checked
   together; the docks and prompt line now step aside while he talks). Test with a real key press, not a set text.
+- 26 Oct 2026: a tent pitch could be built over the camp sign (Playtest, combined pass). New scenery needs a row in
+  data/build.json `blockers` (why: the build check only knows scenery listed there). The sign also sat inside the
+  spot every test pitches on, so it moved to the foot of the path, where guests arrive; check new scenery against
+  the test spots before placing it.

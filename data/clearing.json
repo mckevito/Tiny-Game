@@ -40,6 +40,6 @@
     {"model": "workbench", "pos": [-3.8, 1.4], "face": [0, 0]},
     {"model": "camp_box", "pos": [-2.4, -0.4], "face": [0, 0]},
     {"model": "sell_crate", "pos": [-0.4, -2.8], "face": [0, 0]},
-    {"model": "camp_sign", "pos": [2.1, 6.5], "face": [2.1, 12]}
+    {"model": "camp_sign", "pos": [1.5, 9.8], "face": [1.5, 14]}
   ]
 }
