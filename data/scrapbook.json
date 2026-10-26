@@ -1,5 +1,5 @@
 {
-  "_about": "The scrapbook (scripts/camp/camp_scrapbook.gd, scripts/ui/scrap_book.gd, scripts/ui/scrap_studio.gd; owner picks 26 Oct 2026: it replaces the ranger stamp card, with the players' real snapshots taped in, Burl's rewards per category and a felt book of its own). categories are the book's tabs, in order (text: scrap.cat.<id>). Each page has an id, its category, the model drawn for it (data/models.json; none: a felt token in its item's colour) and how it fills: photo (a player photographs it with the camera; the snapshot is kept on each PC under photo.dir and sent to the other PC), event (the first time the players take that step, data/tasks.json events), build (the first time one stands in the camp, data/build.json kinds) or item (the first time one is in a Pack or the camp box, data/items.json). Its words are scrap.page.<id>.name and .about in data/text.json. photo: the snapshot's size in pixels, how it is taken (drawn supersample times bigger from the player's camera, turned toward the animal aim_up_m above its feet with zoom_share of the camera's field of view), its WebP quality and the largest file a PC accepts from the other. card_s is how long each new-page card shows (several queue up); card: its picture size, font and where it sits (in from the top left corner, under the drop-in line, clear of the toasts in the middle). book: the felt book's sizes and swatches.",
+  "_about": "The scrapbook (scripts/camp/camp_scrapbook.gd, scripts/ui/scrap_book.gd, scripts/ui/scrap_studio.gd; owner picks 26 Oct 2026: it replaces the ranger stamp card, with the players' real snapshots taped in, Burl's rewards per category and a felt book of its own). categories are the book's tabs, in order (text: scrap.cat.<id>). Each page has an id, its category, the model drawn for it (data/models.json; none: a felt token in its item's colour) and how it fills: photo (a player photographs it with the camera; the snapshot is kept on each PC under photo.dir and sent to the other PC), event (the first time the players take that step, data/tasks.json events), build (the first time one stands in the camp, data/build.json kinds) or item (the first time one is in a Pack or the camp box, data/items.json). Its words are scrap.page.<id>.name and .about in data/text.json. photo: the snapshot's size in pixels, how it is taken (drawn supersample times bigger from the camper's eye, eye_m up and step_m toward the animal, looking at a point aim_up_m above its feet with a fov_deg field of view; zoom_share of the play camera's view if no animal is found), its WebP quality and the largest file a PC accepts from the other. card_s is how long each new-page card shows (several queue up); card: its picture size, font and where it sits (in from the top left corner, under the drop-in line, clear of the toasts in the middle). book: the felt book's sizes and swatches.",
   "categories": [
     "animals",
     "tools",
@@ -12,6 +12,9 @@
     "supersample": 2,
     "zoom_share": 0.3,
     "aim_up_m": 0.3,
+    "eye_m": 1.1,
+    "step_m": 0.6,
+    "fov_deg": 38,
     "quality": 0.8,
     "max_bytes": 200000,
     "dir": "user://photos"

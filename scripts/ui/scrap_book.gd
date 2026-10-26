@@ -20,6 +20,7 @@ var _footer := Label.new()
 var _hint := UiLook.rich_label(true)
 var _tile_box: StyleBoxFlat
 var _picked_box: StyleBoxFlat
+var _where := "centre"
 
 
 static func _n(key: String, fallback: float = 0.0) -> float:
@@ -42,6 +43,8 @@ static func _felt(colour: Color, edge: Color, edge_px: float, margin_px: float, 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Wrapped lines settle a frame after the text changes, so the fit is checked again whenever the size does.
+	resized.connect(_fit)
 	var ink := _colour("ink_swatch", "ink_brown")
 	var paper := _colour("page_swatch", "warm_cream")
 	var edge := _colour("edge_swatch", "honey_thread")
@@ -123,6 +126,7 @@ func _ready() -> void:
 
 ## Puts the book low in the middle of the screen ("centre"), or in the bottom "left" or "right" corner (couch).
 func dock(where: String) -> void:
+	_where = where
 	var at := {"left": 0.0, "centre": 0.5, "right": 1.0}.get(where, 0.5) as float
 	var gap := _n("corner_gap_px", 24)
 	anchor_left = at
@@ -177,6 +181,22 @@ func show_book(title: String, tabs: Array[String], open: int, tiles: Array, pick
 	_about.text = str(page.get("about", ""))
 	_footer.text = str(page.get("footer", ""))
 	_hint.text = hint
+	_fit.call_deferred()
+
+
+## Shrinks the book to fit its share of the screen (half of it each on the couch), so a big text size never pushes it
+## off the top or over the other player's book; it stays pinned at its bottom corner.
+func _fit() -> void:
+	var screen := get_viewport_rect().size
+	var gap := _n("corner_gap_px", 24)
+	var need := size
+	if need.x <= 0.0 or need.y <= 0.0:
+		return
+	var wide := screen.x * (1.0 if _where == "centre" else 0.5) - gap * 2.0
+	var tall := screen.y - gap - (_n("bottom_px", 60) if _where == "centre" else gap)
+	var fit := minf(1.0, minf(wide / need.x, tall / need.y))
+	pivot_offset = Vector2(need.x * ({"left": 0.0, "right": 1.0}.get(_where, 0.5) as float), need.y)
+	scale = Vector2(fit, fit)
 
 
 func _make_tile() -> PanelContainer:
@@ -212,6 +232,12 @@ func page_picture() -> Texture2D:
 
 func tabs_text() -> String:
 	return _tabs.get_parsed_text()
+
+
+## The book's box on screen after fitting, for tests.
+func shown_rect() -> Rect2:
+	var t := get_global_transform()
+	return Rect2(t.origin, size * t.get_scale())
 
 
 func tile_text(i: int) -> String:

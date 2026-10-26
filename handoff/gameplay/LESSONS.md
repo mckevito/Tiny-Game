@@ -86,3 +86,9 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   animal. A guest's first photo can arrive before its PC knows the book's id, so a guest always sends its snapshot
   to the host, which keeps it and sends it back. A new panel built visible counts as "showing" at once: hide it until
   it has something to show.
+- 26 Oct 2026: Playtest of the scrapbook (PR #62). The photo from the play camera was mostly the photographer's own
+  hat and name tag (why: the play camera sits behind the player, and you walk up to an animal to photograph it); it is
+  now taken from the camper's eye, a step toward the animal. At 150% the couch books overlapped and the solo book ran
+  off the top (why: a panel sized for 100% was never checked at 150% or on the couch); the book now scales itself to
+  its share of the screen, re-checked on every resize because wrapped text settles a frame late. Test every new panel
+  at 150% alone and on the couch.
