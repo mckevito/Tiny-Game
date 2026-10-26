@@ -66,6 +66,12 @@
     "file_slots": ["$board", "$sheet", "$clip", "$ink"],
     "slots": {"board": "wood_felt", "sheet": "warm_cream", "clip": "honey_thread", "ink": "ink_brown"}
   },
+  "ranger_burl": {
+    "file": "res://art/characters/ranger_burl/ranger_burl.glb",
+    "file_slots": ["$skin", "$shirt", "$pants", "$hat", "$hair", "$mitten", "$boots", "button_black", "blush_felt", "warm_cream", "$thread", "$hair_shade", "$trim", "wood_felt"],
+    "slots": {"skin": "skin_felt", "shirt": "ranger_khaki", "pants": "bark_brown", "mitten": "wood_felt", "hat": "ranger_olive", "hair": "snow_yarn", "boots": "boot_brown", "thread": "honey_thread", "hair_shade": "silver_shadow", "trim": "bark_brown"}
+  },
+  "ranger_burl_talk": {"base": "ranger_burl", "file": "res://art/characters/ranger_burl/ranger_burl_talk.glb"},
   "camper_a": {"base": "knit_camper"},
   "guest_a": {"base": "knit_guest_bea"},
   "guest_b": {"base": "knit_guest_olive"},

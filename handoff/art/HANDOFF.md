@@ -69,6 +69,14 @@
       a bucket hat, silver bob and round glasses with a cream cardigan; Walt (rounder, 3% taller) a flat cap, grey
       hair and a felt beard. Waits on the owner's verdict. The visitor names themselves come with Stage C (Gameplay);
       the looks are ready for them. `capture.gd --hero --line-up` shows them in camp (day, dusk and the play camera).
+      Merged in PR #42.
+   1b. Ranger Burl (Proposed, 26 Oct 2026), the camp's guide from the opening design: `ranger_burl` (standing, the
+      stick in his right mitten) and `ranger_burl_talk` (his left arm raised forward to show the way), both from
+      `art/characters/ranger_burl/build_ranger_burl.py` (`--pose=talk`) on the guests' body (`arm_poses` lifts an
+      arm). An olive campaign hat with four dents and a wide brim tipped back so his face shows from the play camera,
+      a white yarn beard over a felt mass, bushy brows, a khaki ranger sweater with a honey badge and pocket flaps,
+      a knobbly stick (a 14th, fixed slot, `wood_felt`). About 18k vertices, 1.43 m to the hat. Gameplay's opening
+      thread swaps between the two models to talk.
    2. The knitted clipboard prop (`knit_clipboard`, `art/props/knit_clipboard/`, 25 Oct 2026): built for the
       owner's "a clipboard that looks knitted" ask. Gameplay puts it in hand while that player's clipboard is
       open: at `camper.hand_pos`, turned 180° so the page faces the camper and tipped about 35° back. Interface

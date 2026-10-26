@@ -169,21 +169,23 @@ def collar():
     grid("collar", P, S, RIB_MAP, SHIRT, period=16, sharp=lambda j: range(0, len(P[0]), 4))
 
 
-def arm_matrix(sx, girth):
+def arm_matrix(sx, girth, pose=None):
+    """pose: (drop, forward) in radians for this arm, instead of hanging at the sides."""
     out = Matrix.Rotation(sx * math.radians(90.0), 4, "Y")
+    drop, forward = pose or (ARM_DROP, ARM_FORWARD)
     pose = Matrix.Identity(4)
     if not T_POSE:
-        pose = Matrix.Rotation(sx * ARM_FORWARD, 4, "Z") @ Matrix.Rotation(sx * ARM_DROP, 4, "Y")
+        pose = Matrix.Rotation(sx * forward, 4, "Z") @ Matrix.Rotation(sx * drop, 4, "Y")
     at = Vector((sx * SHOULDER.x * (1.0 + (girth - 1.0) * 0.8), SHOULDER.y, SHOULDER.z))
     return Matrix.Translation(at) @ pose @ out
 
 
-def arms(girth):
+def arms(girth, poses=None):
     cuff_from = 0.205
     for sx in (-1, 1):
         P, S = lathe(SLEEVE, SLEEVE_COLS, 4, 0.0445 * KNIT_ROW, v_from_end=True,
                 ribs=lambda j: 0.0065 if cuff_from < SLEEVE[j][0] < 0.275 else 0.002)
-        m = arm_matrix(sx, girth)
+        m = arm_matrix(sx, girth, (poses or {}).get(sx))
         vs, _ = grid("sleeves", transformed(P, m), S, lambda j: RIB_MAP if SLEEVE[j][0] >= cuff_from else KNIT_MAP,
                 SHIRT, period=SLEEVE_COLS, sharp=lambda j: range(0, len(P[0]), 4) if SLEEVE[j][0] >= cuff_from else [])
         cap("sleeves", vs[0], S[0], m @ Vector((0, 0, SLEEVE[0][0] - 0.012)), S[0][0][1] + 0.3, KNIT_MAP, SHIRT,
@@ -252,12 +254,13 @@ def side_seams(pants):
         running_stitch("seams", path, THREAD, dash=0.026, gap=0.013)
 
 
-def body(girth=1.0, smile=True, cheeks=False):
-    """Everything below the hair: head and face, sweater, sleeves and mittens, trousers and boots."""
+def body(girth=1.0, smile=True, cheeks=False, arm_poses=None):
+    """Everything below the hair: head and face, sweater, sleeves and mittens, trousers and boots. arm_poses
+    {side: (drop, forward)} lifts an arm (side 1 is the right, -1 the left) out of the hanging pose."""
     face_parts(smile, cheeks)
     torso(girth)
     collar()
-    arms(girth)
+    arms(girth, arm_poses)
     pants = trousers(girth)
     append_mesh("trousers", pants, PANTS)
     rolled_cuffs()

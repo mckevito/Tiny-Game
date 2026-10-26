@@ -67,3 +67,6 @@ All of `handoff/build/LESSONS.md` "Owner rules" apply. For art especially:
   board's back (the slab was inside out: its rings ran round the x-z plane, so they must be reversed); brown speckle
   over the page (the board's fuzz shells reached through the 2 to 5 mm page; the board's front is now a frame under
   the page's edge). Lesson: check a new shape's normals before judging its render.
+- 26 Oct 2026, Ranger Burl (the guide; one round plus a fix). Faults found by looking: a thin wide brim edge-on shows
+  ragged fuzz (thicker brim, 22 mm); the walking stick's foot went below the floor (keep held props above z 0).
+  From the play camera the wide brim still shows his face because it is tipped back 15 degrees and lifted 3.5 cm.

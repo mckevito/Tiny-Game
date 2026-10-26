@@ -239,6 +239,9 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   (`guest_a`), Olive Ashby (`guest_b`) and Walt Hollis (`guest_c`, a third look added to the walk-in and booking
   looks). A shared, lighter body keeps each near half a player's vertices. New swatches `plum_knit`, `ginger_yarn`,
   `ginger_shadow`, `silver_yarn`, `silver_shadow`, `pewter_yarn`, `cocoa_felt` and `cranberry_knit` are Proposed.
+- 26 Oct 2026: **Proposed** (built): Ranger Burl, the guide the owner picked for the opening, knitted by the recipe
+  (`ranger_burl` and a talking pose, `ranger_burl_talk`). New swatches `ranger_khaki`, `ranger_olive` and `snow_yarn`
+  are Proposed.
 - 25 Oct 2026, owner (after playing Stage B): "if you are not right away hooked and captivated it won't be any funner
   waiting for days": wants chop animations with wood visibly dropping, a shovel to dig up stumps, more stylized,
   icon-led UI with fewer blocks of text, a visual clipboard and Pack, more than one guest at a time who stay longer

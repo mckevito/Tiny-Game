@@ -72,6 +72,8 @@ and the recipe as the quality bar for the whole game (25 Oct 2026): both players
 | Player two, made by the recipe, matches player one's quality | Owner's verdict (side by side, against the sheet, in camp day and dusk) | Signed off (owner, 25 Oct 2026) |
 | Guests read apart from the players and each other (sweater, headwear, hair), and every guest look is a model | `test_felt_models.test_guests_read_apart_from_the_players_and_each_other`, `..._every_guest_look_is_a_model` | Passing |
 | A guest costs at most two thirds of a player's vertices (three guests and two players on the laptop floor) | `test_felt_models.test_guests_are_lighter_than_the_players` | Passing |
+| Ranger Burl (`ranger_burl`, `ranger_burl_talk`) reads apart from players and guests and stays within a guest's budget | `test_felt_models.test_guests_read_apart_from_the_players_and_each_other`, `..._are_lighter_than_the_players` | Passing |
+| Ranger Burl matches the knitted cast's quality | Owner's verdict (turnaround, in camp from the play camera) | Waiting |
 | The knitted guests (Bea, Olive, Walt) match the players' quality | Owner's verdict (turnaround sheet, in camp day, dusk and play camera) | Waiting |
 | The pilot matches the reference closely enough to roll out | Owner's verdict (sheet beside the reference, day and dusk, walk GIF) | Waiting |
 
