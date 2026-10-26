@@ -3,7 +3,7 @@
 # Add --pose=t for the review T-pose, or --pose=talk for his talking pose (his free hand raised, as if pointing the
 # way). The shared guest body (../knit_guests/guest_body.py), a little taller and rounder than the players, with Burl's
 # own top: a big olive campaign hat with a pinched crown and a wide brim, a grey knitted beard of yarn locks, bushy
-# brows, a felt badge (an avocado; --badge=cookie or shield for the others) on a khaki ranger sweater and a knobbly
+# brows, a felt badge (a round pine-tree patch; --badge= builds the others) on a khaki ranger sweater and a knobbly
 # walking stick. Made by following art/RECIPE.md; the game paints it from the palette (data/models.json "ranger_burl" file_slots). Original work, CC BY 4.0 (CREDITS.md).
 import math, os, random, sys
 from mathutils import Matrix, Vector
@@ -17,8 +17,8 @@ GIRTH, SCALE = 1.07, 1.05     # older, a little rounder and taller than the play
 TALK = "--pose=talk" in ARGS
 # talking: the left arm lifts forward and out, as if showing the way; the right hand keeps the stick
 POSES = {-1: (math.radians(10.0), math.radians(42.0))} if TALK else None
-# the badge on his chest: --badge=avocado (the default), cookie, shield, thimble, spool, button, pine or acorn
-BADGE = next((a.split("=", 1)[1] for a in ARGS if a.startswith("--badge=")), "avocado")
+# the badge on his chest: --badge=pine (the default), thimble, spool, button, acorn, avocado, cookie or shield
+BADGE = next((a.split("=", 1)[1] for a in ARGS if a.startswith("--badge=")), "pine")
 
 body(GIRTH, smile=True, cheeks=True, arm_poses=POSES)
 
@@ -154,10 +154,10 @@ def badge():
     def plate(shapes, lift, slot, thick=0.007):
         """Flat felt shapes [(x, y, rx, ry)] on the badge's face, fused into one piece."""
         blobs = [(p + n * lift + b @ Vector((x, y, 0.0)), (rx, ry, thick), b) for x, y, rx, ry in shapes]
-        append_mesh("badge", fused("badge", blobs, voxel=0.003, smooth=0.5, repeat=3, decimate=0.15), slot)
+        append_mesh("badge", fused("badge", blobs, voxel=0.003, smooth=0.5, repeat=3, decimate=0.1), slot)
 
     def dot(x, y, r, lift, slot, depth=0.004):
-        ellipsoid("badge", p + n * lift + b @ Vector((x, y, 0.0)), (r, r, depth), slot, cols=8, rings=5, basis=b,
+        ellipsoid("badge", p + n * lift + b @ Vector((x, y, 0.0)), (r, r, depth), slot, cols=6, rings=4, basis=b,
                 weave=BEAD)
 
     if BADGE == "thimble":
@@ -191,8 +191,8 @@ def badge():
         plate([(0.0, 0.0, 0.036, 0.036)], 0.004, THREAD)
         plate([(0.0, y, w, 0.009) for y, w in ((0.018, 0.009), (0.006, 0.015), (-0.008, 0.021))], 0.009, HAT, 0.005)
         plate([(0.0, -0.022, 0.0045, 0.006)], 0.008, TRIM, 0.004)
-        for k in range(16):
-            a = math.tau * k / 16
+        for k in range(14):
+            a = math.tau * k / 14
             dot(0.031 * math.cos(a), 0.031 * math.sin(a), 0.003, 0.011, TRIM, 0.002)
     elif BADGE == "acorn":
         # an acorn: a honey nut under a rough brown cap with a stalk
