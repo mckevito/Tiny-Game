@@ -262,3 +262,17 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   from the shared day, so both PCs agree without new netcode; they pay nothing yet (they show the camp being used).
 - 26 Oct 2026, owner merged first-minutes round 4 (PR #41, guest activities) and Art's knitted clipboard (PR #38). The
   camper now reads the knitted clipboard; the felt stand-in is gone.
+- 26 Oct 2026, owner's pick from the opening case study: a tool ring (hold the tool button, point, let go; a tap still
+  steps to the next tool), per player and per view on the couch. Built as Interface round 5.
+- 26 Oct 2026, owner: the game lacks the part that pulls you in (a story, a motive, a guide who hands out the goals);
+  asked for a case study of Animal Crossing and other cozy games. Picks from the study: **Ranger Burl**, a new senior
+  ranger, is the camp's guide, renamable like every name; Ranger Ada stays the district ranger who visits each season
+  with the star rating; a **ranger stamp card** as a second currency for personal upgrades, while coins stay for the
+  camp; the **arrival evening** is built first. **Proposed** (built): a camp started new from the menu opens with
+  Burl's letter; the fire is cold until the players bring it 3 sticks and 1 wood; when it catches he talks about
+  Lantern Night and asks for the camp's name, painted on a new camp sign by the path that can be repainted any time;
+  then he hands over his clipboard. Older saves skip it. Burl gives the daily star hint from now on.
+- 26 Oct 2026, owner asked for a developer menu for gameplay checks and QA (time of day, spawning guests and other
+  dev tools). **Proposed**: F1 or the DualSense's Create button opens it in a camp, only in a debug build (the editor)
+  or with `-- --dev`; elsewhere F1 still shows just the fps line. F1 no longer speeds the clock by itself: the menu's
+  clock speed row does (×1, ×10, ×30, ×120 on the host). Rows that change the camp go to the host, who decides.

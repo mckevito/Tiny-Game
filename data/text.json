@@ -47,7 +47,13 @@
     "deposit": "{interact} Put your wood and sticks in the camp box",
     "ship": "{interact} Put your %s (%d) in the sell crate: %d coins in the morning",
     "take_back": "{interact} Take your %s back out of the sell crate",
-    "project": "{interact} Bring what you have for the camp project: %s"
+    "project": "{interact} Bring what you have for the camp project: %s",
+    "talk": "{interact} Talk to Ranger %s",
+    "talk_next": "{interact} Next",
+    "talk_end": "{interact} Done",
+    "feed_fire": "{interact} Lay your sticks and wood on the fire",
+    "sign": "{interact} Repaint the camp sign",
+    "letter_close": "{interact} Head up the old road"
   },
   "menu": {
     "title": "Our Little Campground",
@@ -103,13 +109,59 @@
     "low": "Light, for laptops"
   },
   "dev": {
-    "stats": "%d fps · picture %s · %s at %d%% · clock ×%d"
+    "stats": "%d fps · picture %s · %s at %d%% · clock ×%d",
+    "title": "Developer tools",
+    "for": "for %s",
+    "hint": "{move} choose · {interact} do · {cancel} close",
+    "value": "‹ %s ›",
+    "on": "on",
+    "off": "off",
+    "speed": "×%d",
+    "coins": "+%d coins",
+    "item": "%s ×%d",
+    "clear": "put them away",
+    "done": "Dev: done.",
+    "denied": "Dev tools are off on the host's PC.",
+    "no_pitch": "Dev: no room for another tent pitch.",
+    "row": {
+      "hour": "Time of day",
+      "speed": "Clock speed",
+      "sleep": "Sleep now (next morning)",
+      "season": "Season",
+      "day": "Day of the season",
+      "guest": "Call a guest",
+      "coins": "Give coins",
+      "item": "Give an item",
+      "teleport": "Go to",
+      "preview": "Show a character beside me",
+      "story": "Arrival evening: go to",
+      "letter": "Show Ranger Burl's letter",
+      "welcome": "Show the welcome report",
+      "stats": "Keep the fps line on",
+      "hud": "Hide the HUD"
+    },
+    "story": {
+      "fire": "the cold fire",
+      "name": "naming the camp",
+      "done": "the clipboard handover"
+    },
+    "place": {
+      "fire": "the fire pit",
+      "pond": "the pond",
+      "bench": "the workbench",
+      "box": "the camp box",
+      "entry": "the camp entrance"
+    }
   },
   "save": {
     "too_new": "That camp was saved by a newer version of the game.",
     "unreadable": "That camp save could not be read, and neither could its backup."
   },
   "deny": {
+    "fire_cold": "The fire isn't lit yet. The ranger by the path knows what it needs.",
+    "nothing_for_fire": "You have nothing the fire needs yet.",
+    "fire_lit_already": "The fire is already burning.",
+    "name_empty": "A camp needs a name with at least one letter.",
     "nothing_to_sell": "Nothing in your Pack the sell crate takes.",
     "project_needs_it": "The camp project still needs those, so they stay in your Pack.",
     "crate_empty": "The sell crate is empty.",
@@ -150,6 +202,9 @@
     "nothing_to_box": "Only wood and sticks go in the camp box."
   },
   "toast": {
+    "fire_fed": "On the fire! It still needs %s.",
+    "fire_lit": "The camp's first fire is lit!",
+    "camp_named": "Welcome to %s!",
     "shipped": "Into the sell crate: %s (%d). It pays in the morning.",
     "took_back": "Back in your Pack: %s (%d).",
     "project_given": "Thank you! The camp project %s is coming along.",
@@ -345,6 +400,7 @@
   },
   "hud": {
     "today": "Odd jobs (for coins)",
+    "fire_job": "Light the fire: %s",
     "guests": "Guests",
     "guest_line": "%s: %s"
   },
@@ -390,6 +446,35 @@
     "squirrel": "squirrel",
     "deer": "deer",
     "bear": "bear"
+  },
+  "names": {
+    "camp": "Thimble Hollow Campground",
+    "ranger": "Burl"
+  },
+  "story": {
+    "letter": "Dear friends,\n\nThimble Hollow Campground has been closed for nine autumns now. The pitches are grown over and the fire ring is cold, but the valley is as pretty as it ever was.\n\nI'm getting too old to keep it up on my own, and I'd sooner hand the keys to somebody who'll love it. If you two want it, it's yours. Come up the old road. I'll be waiting by the fire.\n\nYours truly,\nRanger $ranger",
+    "need": "%d %s",
+    "and": " and ",
+    "name_title": "Name your campground",
+    "name_hint": "Type a name · {interact} paint it on the sign · {cancel} keep it as it is"
+  },
+  "ranger": {
+    "hello": "Well now, there you both are! I'm Ranger $ranger. I looked after this place for thirty-odd years.",
+    "closed": "Thimble Hollow's been shut nine autumns. The pitches are grown over, and nobody has sat by this fire in all that time.",
+    "fire_ask": "Let's fix that before dark. The fire needs %s. Sticks lie about the edge of the woods, and the trees give wood.",
+    "fire_lit": "Look at that! The first fire at Thimble Hollow in nine years. Smells like home.",
+    "lantern_night": "Back in my day the whole valley came up for Lantern Night at the end of the year. Bring the camp up to five stars and we'll light the lanterns again. I'd like to see that once more.",
+    "name_ask": "Now, a camp needs a name, and it's yours to give. What shall we paint on the sign?",
+    "named": "$camp. Now that's a fine name.",
+    "clipboard": "Here, take my old clipboard. Everything there is to do is on it, and it ticks things off as you go. {clipboard} opens it.",
+    "good_night": "Word will get round that the fire's lit, so expect guests. Rest in your tent whenever you're ready. I'll be right here by the path.",
+    "idle_1": "Sticks and berries come back to the edge of the woods every morning. Never hurts to look.",
+    "idle_2": "A guest who gets what they wished for tells their friends. That's how a camp fills up.",
+    "idle_3": "Plant a sapling where you cut a tree. The woods give back what you give them.",
+    "idle_4": "If the sign ever needs repainting, it's down by the path. Call the place whatever you like.",
+    "hint": "If you ask me, %s",
+    "tag": "Ranger %s",
+    "mark": "!"
   },
   "rating": {
     "line": "Camp rating: %d of %d stars.",
@@ -476,7 +561,7 @@
     }
   },
   "dock": {
-    "tool": "Tool · {next_tool}",
+    "tool": "Tool · {next_tool} next, hold for all",
     "build": "Build · {next_kind} pick · {build} place",
     "pack": "Pack %d/%d · {pack} open",
     "dot": "●",

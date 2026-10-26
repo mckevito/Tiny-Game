@@ -25,7 +25,18 @@
    (owner's pick; merged, PR #37, with the clipboard reading pose `Camp.held_by`); Gameplay 4 guests fish, photograph
    animals, fly kites, play frisbee with each other and sit on chairs, the bench and the fire ring's logs
    (`GuestPlans.plan`, `Camp._tick_guests`/`_tick_frisbees`, `Camper.sit`, `capture.gd --guests`). The Interface thread owns the icon and knitted-clipboard rounds (owner, 25 Oct 21:13). Stage B stays unsigned until the owner plays these.
+3b. **Arrival evening (owner, 26 Oct 2026).** The owner asked for the part that "sucks you in"; a case study
+   ("Welcome to Thimble Hollow", linked in project memory) ranked a guide, an opening story, stamps and a smoother UI.
+   Picks: Ranger Burl is the guide (Ada stays the seasonal district ranger), a ranger stamp card for personal upgrades,
+   the arrival evening first. Built: `CampStory` (`scripts/camp/camp_story.gd`, camp keys `story` and `names`,
+   `data/ranger.json`), Burl as an uncontrolled `Camper` (`Camp._spawn_ranger`, a recoloured stand-in until Art's
+   `ranger_burl`), his bubble `TalkBubble` (`scripts/ui/talk_bubble.gd`, which also takes the camp's name), the cold
+   fire (`fire_pit_cold`, `_sync_fire`), the camp sign (`_sync_sign`), `capture.gd --opening`.
 4. **Open work, in order:**
+   0. Next from the case study, one PR each: ranger jobs (Burl hands out one story job at a time, reusing the firsts,
+      plus his morning word in the report); then the ranger stamp card (stamps from odd jobs and tiered badges, a
+      clipboard page, Burl's shop of personal upgrades); renaming Burl himself (`names.ranger` is saved, no spot yet).
+      Interface owns the tool ring and the clipboard's home grid.
    1. The owner plays round 5 and signs off Stage B (chat sign-off plus the merged PR; record it in the next PR's
       `docs/STATUS.md` and the `docs/PLAN.md` decision log). Approve or change the **Proposed** numbers.
    2. Next: the clipboard's map tab with plan marks (with Interface). The star rating came in gameplay round 3
@@ -66,5 +77,11 @@
    - The fire's upgrade is the last action at the fire (after grilling, chairs, the box); `_sync_fire` stacks every
      reached level's model under the fire pit's "Upgrade" node and sets its light's "scale" meta for LightMoods.
    - `kit` is not deep-filled from new_camp on load (it would hand every old save a second camp board).
+   - The arrival evening plays only when the menu starts a NEW slot (`_fresh`, `_begin_story`); `new_camp` has
+     `story.step` "done", so tests and older saves skip it. A test that wants it calls `_on_menu("solo")` on an empty
+     slot, or sets `_fresh` and calls `_begin_story()`. Burl's lines play once per step per PC (`_heard`), after the
+     report closes. Line placeholders are `$camp` and `$ranger` (braces belong to button glyphs). While the fire is
+     cold, grilling and the fire upgrade are denied (`deny.fire_cold`) and `feed_fire` comes before them at the fire.
+     The name is typed anywhere while the step is "name", and only at the sign after that.
    - With the shovel in hand, dig beats taking the sapling and planting at a stump (the dig pops the sapling out); a
      hole takes a sapling whatever is in hand. A felled tree never tips toward the camera (it would fade unseen).

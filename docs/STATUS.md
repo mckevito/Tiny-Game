@@ -195,7 +195,7 @@ mentioned; they stay open under Milestone 3's "Still open".
 4. From 6 pm open the menu (Tab or Options) and choose **Ready for bed**. Alone, the night comes at once; with a friend
    (couch or online) it waits for both, and either can choose **Not ready for bed yet**. The night pays 15 coins for
    the guest, who heads home in the morning.
-5. To skip ahead, open the F1 panel on the host: the clock runs 30 times faster while it is open.
+5. To skip ahead, open the dev menu (F1) and set the time of day or the clock speed (see "Developer menu").
 
 ### Still open
 - Defaults the plan left open, **approved by the owner** on 25 Oct 2026 (data/day.json, data/build.json): bed opens at 6 pm and is chosen from the
@@ -432,6 +432,24 @@ so the build prompt is now one short line ("E Put a tent pitch here (2 wood)"), 
 Clipboard, Menu; building Turn, Undo, Done, Look and Menu (the dock's build line has pick, and the build prompt says
 what Use does there).
 
+### Interface round 5: the tool ring (26 Oct 2026)
+The owner's pick from the opening case study (26 Oct 2026): a tool ring like Animal Crossing's. Hold the tool button
+(T, or D-pad up) and every tool sits in a ring of felt buttons round the camper; point with the mouse, the right stick,
+the left stick or the walking keys, and let go to take the pointed tool out. A tap still steps to the next tool, and
+cancel closes the ring as it was. The camper stands still while the ring is open. On the couch each player's ring
+opens round their own camper in their own half, and only their own devices point it.
+
+| Proof | Test | Result |
+|---|---|---|
+| A tap steps to the next tool with no ring; a hold opens the ring round the camper with every tool and stops them walking; pointing left with the walking keys and letting go takes the left tool; cancel keeps the tool | `test_hud.test_holding_the_tool_button_opens_a_ring_round_each_camper` | Passing |
+| On the couch both rings open at once, each on its own player's half; the couch player's right stick points only their ring | same test | Passing |
+| The ring alone and both rings on the couch, to look at | `tools/capture.gd --hud` (hud_ring.png, couch_rings.png) | Looked at (cloud frames) |
+| Holding and pointing feels quick and clear on the owner's mouse and DualSense | Owner's play | Waiting on the owner |
+
+**Proposed** (data/tuning.json `ring`): the ring opens after 0.25 s held; slot 0 (Hands) at the top and the rest
+clockwise in the tools' order; tool names in the buttons until the item icons round; no empty "still to earn" slots
+yet (nothing is earned yet). The dock's tool line now reads "Tool · T next, hold for all".
+
 ### Gameplay round 1: tents and tools both PCs see (25 Oct 2026)
 Closes round 5's gaps: another player's tent visit and the tool in hand showed only on their own PC, and sleepers
 lay on top of their bag.
@@ -537,6 +555,20 @@ size, the 15 degree turn, the 5 cm free step and the look are **Proposed**.
 | The grid shows under the spot; the grid button switches to free (grid hidden, small turns), builds there and packs it again; back on the grid the turn goes to a quarter; the choice stays for the next build mode | `test_stage_a.test_grid_pieces_fill_whole_cells_and_free_build_goes_anywhere` | Passing |
 | A guest PC's free build is placed by the host exactly where the guest saw it | `test_stage_a.test_the_guest_pc_sees_the_day_and_builds_through_the_host` | Passing |
 | Review frames: the grid and a free pitch at an angle | `capture.gd --stage-a` (`day_11.png`, `free_11.png`; `grid-build/` in the project files) | Looked at (OpenGL fallback) |
+### The arrival evening with Ranger Burl (26 Oct 2026)
+The owner (26 Oct): the game lacks the part that "sucks you in": a story, a motive, and a guide like a cozy game's
+host. A case study (outside the repo, "Welcome to Thimble Hollow") ranked the ideas; the owner picked Ranger Burl as
+the guide (a new senior ranger; Ranger Ada stays the district ranger who visits each season), a ranger stamp card
+(next rounds), and the arrival evening first. Round 4 (PR #41) and the legend fixes (PR #47) were merged.
+
+| Proof | Test | Result |
+|---|---|---|
+| Only a camp started new from the menu plays the evening: any other camp, and every older save, opens with the fire burning and the default name | `test_story.test_only_a_new_camp_from_the_menu_starts_cold` | Passing |
+| The cold fire takes what it needs (data/ranger.json fire) from either player's Pack and the camp box, and only that; nothing grills on it and it can't be upgraded until it burns | `test_story.test_only_a_new_camp_from_the_menu_starts_cold`, `test_story.test_the_fire_lights_from_both_packs_and_the_box_then_the_camp_takes_a_name` | Passing |
+| The first name, typed wherever the players stand when the fire catches, finishes the evening; after that the sign repaints it; names are tidied, capped and saved | `test_story.test_the_fire_lights_from_both_packs_and_the_box_then_the_camp_takes_a_name` | Passing |
+| From the buttons: the letter, Burl's hello with the player held still, feeding the fire, the naming line, the sign showing the name, the clipboard handover, his everyday line, cancel at the sign keeps the name | `test_story.test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_buttons` | Passing |
+| The guest PC reads the letter, sees the cold fire, lights it and names the camp through the host | `test_story.test_the_guest_pc_reads_the_letter_and_lights_the_fire_through_the_host` | Passing |
+| Review frames: letter, hello, cold fire, fire lit at dusk, naming, handover, clipboard, sign | `capture.gd --opening` (`opening-r1/` in the project files) | Looked at |
 
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
@@ -552,6 +584,9 @@ size, the 15 degree turn, the 5 cm free step and the look are **Proposed**.
    the bookings, and three goals for the day. E (Cross) starts the day.
 
 ### Still open
+- **Proposed** (arrival evening): Burl's lines, the letter and the fire's needs (3 sticks, 1 wood) in
+  `data/ranger.json` and `data/text.json`; Burl is `ranger_stand_in` (a recoloured guest) until Art's knitted `ranger_burl` (PR #49); the walk
+  in through the gate waits for Stage C's road; the ranger's own name is kept in the save but has no rename spot yet.
 - **Proposed** numbers (data/guests.json, data/fishing.json, data/build.json): tips 4 for a fish, 6 for a grilled fish,
   3 for a chair, plus 2 coins per satisfaction point; things count as near within 6 m of a pitch (3.2 m for a chair,
   8 m for the pond); a water point costs 30 and a lantern post 20; the Fern family (2 pitches) is offered on day 1
@@ -652,3 +687,33 @@ owner's try. Research notes are outside the repo (project files, "Title screen a
   `data/settings.json` (in a window, vsync on, 60 frames a second, volumes 80/70/80/70, deadzone 20%, interface 100%).
 - There is no sound yet, so the volume sliders only set the buses that sound will use.
 - Remaps are per PC, so both couch controllers share them; walking on the controller stays on the left stick.
+
+## Developer menu (QA tool, 26 Oct 2026)
+Asked for by the owner: a dev menu to change the time of day, call guests and other checks, for gameplay and QA.
+Waits on the owner's try. F1 (or the DualSense's Create button) opens it in a camp, in a debug build (the editor) or
+with `-- --dev`; anywhere else F1 shows only the fps line, as before. Rows and numbers: `data/dev.json`; words:
+`data/text.json` dev.
+
+| Proof | Test | Result |
+|---|---|---|
+| Every row has words and every value a name; the preview list holds only models that exist | `test_dev.test_every_row_has_words_and_every_value_a_name` | Passing |
+| F1 and Create open and close it; the camper stands still while it is open; the fps line shows with it | `test_dev.test_f1_opens_the_menu_and_holds_the_camper_and_closes_again` | Passing |
+| Without dev tools F1 shows only the fps line, and the host refuses dev requests | `test_dev.test_without_dev_tools_f1_shows_only_the_fps_line` | Passing |
+| Time of day, clock speed, season, day and sleep now, from the keys | `test_dev.test_time_speed_season_day_and_sleep_from_the_keys` | Passing |
+| Call a guest (a pitch goes up when none is free), give coins and an item, go to a place, show and clear previews | `test_dev.test_a_guest_coins_an_item_a_teleport_and_previews` | Passing |
+| Hide the HUD (the menu stays) and keep the fps line on | `test_dev.test_hide_the_hud_and_keep_the_fps_line` | Passing |
+| On the couch each player opens their own with their own device (stick, D-pad); the other keeps playing | `test_dev.test_on_the_couch_each_player_opens_their_own_and_the_other_keeps_playing` | Passing |
+| A guest PC asks and the host decides (time, coins, a guest), and a host without dev tools refuses | `test_dev.test_a_guest_pc_asks_and_the_host_decides` | Passing |
+| Jump the arrival evening to the cold fire, naming the camp or the handover (Burl says that step again), and show his letter | `test_dev.test_jump_to_each_step_of_the_arrival_evening` | Passing |
+
+### How to try it
+1. Start a camp from the editor (F5) and press F1, or Create on the DualSense.
+2. Up and down choose a row (W/S, arrows, D-pad or stick), left and right change it (A/D, arrows, Q/R, D-pad or
+   stick), E or Cross runs it, Esc, Circle, Tab, Options or F1 again closes it. The mouse works too: point at a row,
+   the wheel changes it, a click runs it.
+3. Time of day, clock speed, season and day change as you step; the rest wait for E or Cross.
+
+### Still open
+- **Proposed** (docs/PLAN.md): F1 no longer speeds the clock by itself; the clock speed row does.
+- Ranger Burl's knitted model joins the preview row by itself once `ranger_burl` is in `data/models.json` (his
+  stand-in is there now). New opening steps add their values to the story row (`DevMenu.values`, `DevTools.run`).

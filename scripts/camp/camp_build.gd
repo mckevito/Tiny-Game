@@ -171,6 +171,8 @@ func upgrade_fire(profile_id: String) -> String:
 		return "deny.not_here"
 	if not CampPack.can_cook_at(state.player_pos(profile_id)):
 		return "deny.too_far"
+	if not state.story.lit():
+		return "deny.fire_cold"
 	var why := can_upgrade_fire(profile_id)
 	if why != "":
 		return why

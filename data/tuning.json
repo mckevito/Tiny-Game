@@ -56,8 +56,7 @@
     "seam_swatch": "warm_cream"
   },
   "dev": {
-    "fps_refresh_s": 0.5,
-    "clock_scale": 30
+    "fps_refresh_s": 0.5
   },
   "hud": {
     "toast_s": 3.5,
@@ -85,6 +84,28 @@
     "keep_clear_px": 60,
     "keep_clear_height_m": 0.6,
     "keep_clear_rate": 6.0
+  },
+  "talk": {
+    "_about": "Ranger Burl's speech bubble (scripts/ui/talk_bubble.gd): a honey name tag (tag_swatch, tag_font_px, tag_pad_px, tag_corner_px, set tag_inset_px in from the left and overlapping the bubble by -tag_overlap_px) over a cream felt bubble (bubble_swatch at alpha, edge_swatch edge_px thick, corner_px corners, margin_px inside plus tag_room_px under the tag) with lines width_px wide at font_px, the button line at hint_font_px, gap_px apart, bottom_px above the screen's bottom edge. Writing is ink_swatch.",
+    "bubble_swatch": "warm_cream",
+    "edge_swatch": "honey_thread",
+    "tag_swatch": "honey_thread",
+    "ink_swatch": "ink_brown",
+    "alpha": 0.96,
+    "edge_px": 4,
+    "corner_px": 30,
+    "margin_px": 24,
+    "tag_room_px": 8,
+    "tag_font_px": 24,
+    "tag_pad_px": 8,
+    "tag_corner_px": 14,
+    "tag_inset_px": 28,
+    "tag_overlap_px": -10,
+    "width_px": 860,
+    "font_px": 28,
+    "hint_font_px": 22,
+    "gap_px": 10,
+    "bottom_px": 40
   },
   "clipboard": {
     "_about": "The clipboard (scripts/camp/clipboard.gd): tabs in order (text: clipboard.tab.<name>), the sheet's text width, font, gap from the screen edge and from the top, and how often its text refreshes. It is a knitted felt board (board_swatch, board_px round the sheet, board_top_px above it for the clip, corner_px corners) holding a knitted sheet of paper (sheet_swatch, margin_px inside, sheet_corner_px corners, a shadow of sheet_shadow_px at sheet_shadow_alpha) with stitched rules under each written line (rule_swatch at rule_alpha, rule_px thick, dashes rule_dash_px long). The ribbed knitted clip (clip_swatch) is clip_size_px, with ribs every clip_rib_px and a ring clip_ring_px across. Knit stitches: [width px, height px, groove depth] for the board and the sheet. Writing is ink_swatch. The open tab is a honey felt tag (tab_swatch); the others are ink at tab_dim_alpha.",
@@ -172,6 +193,27 @@
     "near_px": 17,
     "near_alpha": 0.5,
     "centre_share": 1.6
+  },
+  "ring": {
+    "_about": "Each player's tool ring (scripts/camp/tool_ring.gd), like Animal Crossing's tool wheel: hold the tool button hold_s seconds and every tool sits round the camper in a felt ring radius_px across the middle of its buttons, each slot_px in radius with an edge_px edge (current_swatch on the tool in hand, hover_swatch and hover_scale on the one pointed at), font_px names, pad_px of the ring's felt (swatch at alpha) either side of the buttons, and the pointed tool's name under it at name_px with an outline_px outline. A stick or the walking keys point once past stick_deadzone (0 to 1), the mouse once mouse_deadzone_px from the middle. Let go to take the tool; a tap shorter than hold_s steps to the next one.",
+    "hold_s": 0.25,
+    "radius_px": 110,
+    "slot_px": 40,
+    "edge_px": 4,
+    "pad_px": 10,
+    "hover_scale": 1.2,
+    "font_px": 16,
+    "name_px": 22,
+    "outline_px": 6,
+    "alpha": 0.9,
+    "stick_deadzone": 0.5,
+    "mouse_deadzone_px": 24,
+    "swatch": "warm_cream",
+    "slot_swatch": "warm_cream",
+    "edge_swatch": "honey_thread",
+    "hover_swatch": "honey_thread",
+    "current_swatch": "rust_canvas",
+    "ink_swatch": "ink_brown"
   },
   "legend": {
     "_about": "Each player's legend, at the top of their dock (Camp.legend): the actions whose button icons it shows, by mode. first is day 1 (walking included), walk every other day, build while placing (turn, undo and done; the dock's build line has pick, and the build prompt says what Use does there). The dock's own lines already show the tool, build and Pack buttons. Words: data/text.json legend.<action>.",

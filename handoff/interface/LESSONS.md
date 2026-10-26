@@ -48,3 +48,7 @@ See `handoff/gameplay/LESSONS.md` "Who owns what". `camp.gd` and `data/text.json
   checked solo at 150% and on the couch at 150% only with clipboards open, never with both docks and both prompts.
   What stops it: the couch layout test now builds with both docks showing at 150%. Lifting the column above the docks
   does not work there either (the clock fills the top right); per-player things belong on the player's own dock.
+- 26 Oct 2026, round 5 (tool ring): `Input.parse_input_event` takes effect on the next frame, so a test that presses
+  a key or moves a stick through it must await a frame before reading `PlayerInput`. A thick antialiased `draw_arc`
+  leaves a seam where it starts; draw a band as one polygon (out round the outer edge, back round the inner). A tool
+  button that now acts on release (tap or hold) needs tests to send the release too.
