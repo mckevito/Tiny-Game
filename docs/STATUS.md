@@ -554,8 +554,8 @@ each other, sit on chairs". Round 3 (PR #37) was merged by the owner on 25 Oct 2
 - **Proposed** first-minutes round 3 numbers and choices (data/day.json, data/guests.json, data/items.json): up to 3
   walk-in guests at once (bookings come on top, as before), each staying 2 nights; a second guest comes no sooner than
   40 game minutes after one arrived that day; the Fern family and the birdwatchers now stay 2 nights too. The
-  clipboard the camper reads is a plain felt stand-in (`clipboard_prop` in data/models.json) until the knitted one
-  from the Interface round replaces it. Three guests add three campers and three tents, no lights.
+  clipboard the camper reads is Art's knitted one (`knit_clipboard`, PR #38), held page toward the camper and tipped
+  back (data/items.json tools.held.clipboard). Three guests add three campers and three tents, no lights.
 - **Proposed** first-minutes round 4 numbers and choices (data/guests.json activities, data/items.json,
   data/models.json): a guest changes activity every 60 game minutes (80 real seconds); 3 fishing spots on the pond's
   bank, 3 photo spots facing where the rabbits, squirrels and deer live, 3 kite spots, seats on the two folding
