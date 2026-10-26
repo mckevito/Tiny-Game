@@ -1,11 +1,54 @@
 class_name UiLook
 extends RefCounted
 ## The shared menu look: felt-coloured panels and buttons with a thick, clear focus ring, so the D-pad or the keyboard
-## always shows where it is. Sizes and swatches: data/settings.json "look".
+## always shows where it is. Sizes and swatches: data/settings.json "look". The fonts (Figtree for reading, Fredoka for
+## felt lettering) and the felt lettering's season colours: data/look.json.
+
+## The season the felt lettering is coloured for; "" until a camp sets it (data/look.json "title_season" until then).
+static var season := ""
+static var _fonts: Dictionary = {}
 
 
 static func num(key: String, fallback: float = 0.0) -> float:
 	return Tuning.num("settings", "look." + key, fallback)
+
+
+## A font from art/ui/fonts at the weight in data/look.json "fonts": "body" (Figtree) or "felt" (Fredoka).
+static func font(which: String) -> Font:
+	if not _fonts.has(which):
+		var row: Dictionary = Tuning.value("look", "fonts." + which, {})
+		var f := FontVariation.new()
+		f.base_font = load(str(row.get("file", ""))) as FontFile
+		f.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): int(row.get("weight", 400))}
+		_fonts[which] = f
+	return _fonts[which]
+
+
+## The felt lettering's colours now: this PC's preset (Options, data/settings.json "colours") in the camp's season.
+## {letters: [Color], back, seam: Color, pins: [Color]}.
+static func felt_colours() -> Dictionary:
+	var preset := str(Settings.value("colours"))
+	if not (Tuning.value("look", "presets", {}) as Dictionary).has(preset):
+		preset = str(Tuning.value("look", "default", ""))
+	var s := season if season != "" else str(Tuning.value("look", "title_season", "autumn"))
+	var row: Dictionary = Tuning.value("look", "presets.%s.%s" % [preset, s], {})
+	var html := func(list: Array) -> Array: return list.map(func(h: String) -> Color: return Color.html(h))
+	return {"letters": html.call(row.get("letters", ["#ffffff"])), "back": Color.html(str(row.get("back", "#000000"))),
+			"seam": Color.html(str(row.get("seam", "#ffffff"))), "pins": html.call(row.get("pins", ["#ffffff"]))}
+
+
+## The camp tells the look its season; felt lettering everywhere recolours when it changes.
+static func set_season(s: String) -> void:
+	if s != season:
+		season = s
+		refresh()
+
+
+## Recolours every felt lettering on screen (a new season or a new preset in Options).
+static func refresh() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree:
+		tree.call_group("felt_letters", "queue_redraw_all")
 
 
 static func swatch(key: String) -> Color:
@@ -56,6 +99,7 @@ static func row_focus() -> StyleBoxFlat:
 
 static func theme() -> Theme:
 	var t := Theme.new()
+	t.default_font = font("body")
 	t.default_font_size = int(num("font_px", 28))
 	var ink := swatch("ink_swatch")
 	var focus := StyleBoxFlat.new()

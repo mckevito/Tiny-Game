@@ -2543,9 +2543,11 @@ func _show_hud() -> void:
 
 
 ## The top right: the clock line, then guests' wishes and odd jobs (just the clock line under the couch player's
-## clipboard or workbench).
+## clipboard or workbench). Also tells the felt lettering the camp's season (UiLook.set_season).
 func _update_clock() -> void:
 	$Hud/Clock.text = (clock_line() + ("" if _right_panel_open() else today_lines())) if state else ""
+	if state:
+		UiLook.set_season(str(state.camp["calendar"].get("season", "")))
 
 
 ## Fits a clipboard or workbench panel between the hint (left) or the clock (right) and the bottom of the screen

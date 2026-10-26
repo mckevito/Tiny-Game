@@ -1,0 +1,161 @@
+{
+  "_about": "The felt lettering's colours (scripts/ui/felt_letters.gd, UiLook.felt_colours). The player picks a preset in Options (data/settings.json row \"colours\"); each preset has one scheme per season and the letters change when the season turns. A scheme: letters (colours that take turns letter by letter), back (the felt behind the letters), seam (the stitching), pins (push-pin colours). Preset names: data/text.json options.choice.colours.<preset>. title_season colours the title before a camp is loaded. fonts: the two fonts in art/ui/fonts (CREDITS.md) and their weights; body is the reading font everywhere (Boot sets it as the fallback), felt the lettering font. Approved by the owner 26 Oct 2026 (the three autumns marked new were drawn for the presets). felt sizes are fractions of the font size.",
+  "default": "harvest_camp",
+  "title_season": "autumn",
+  "fonts": {
+    "body": {
+      "file": "res://art/ui/fonts/Figtree.ttf",
+      "weight": 500
+    },
+    "felt": {
+      "file": "res://art/ui/fonts/Fredoka.ttf",
+      "weight": 650
+    }
+  },
+  "felt": {
+    "fat": 0.07,
+    "back": 0.2,
+    "seam_gap": 0.035,
+    "seam_px": 0.03,
+    "shadow": [0.03, 0.06],
+    "shadow_alpha": 0.35,
+    "edge_darken": 0.22,
+    "edge_px": 1.0,
+    "balance_slack": 1.1,
+    "jitter_deg": 3.0,
+    "jitter_y": 0.03,
+    "pin_r": 0.085,
+    "pin_every": 2,
+    "pin_face": 0.8,
+    "pin_shine": 0.3,
+    "pin_shine_alpha": 0.7,
+    "pin_drop": 6.0,
+    "pin_y": 0.62,
+    "stitch": 0.11,
+    "stitch_on": 0.6,
+    "line_gap": 1.08,
+    "margin": 0.3
+  },
+  "presets": {
+    "harvest_camp": {
+      "spring": {
+        "scheme": "blossom",
+        "letters": ["#e07d97", "#6fa64e", "#e9bf3c"],
+        "back": "#fff4f1",
+        "seam": "#fff4f1",
+        "pins": ["#ffffff", "#e07d97", "#f2c84b"]
+      },
+      "summer": {
+        "scheme": "lake_day",
+        "letters": ["#2f7fc4", "#f0b12c", "#e2603f"],
+        "back": "#fffbef",
+        "seam": "#fffbef",
+        "pins": ["#e2603f", "#ffffff", "#2f7fc4"]
+      },
+      "autumn": {
+        "scheme": "harvest",
+        "letters": ["#e9893a", "#5f7a4a", "#d9b04a"],
+        "back": "#f6e7c8",
+        "seam": "#f6e7c8",
+        "pins": ["#d64545", "#3b7dd8", "#f2c14e"]
+      },
+      "winter": {
+        "scheme": "snowy_pine",
+        "letters": ["#2f6b4f", "#b8433a", "#d4a83a"],
+        "back": "#f7f9fb",
+        "seam": "#f7f9fb",
+        "pins": ["#b8433a", "#ffffff", "#2f6b4f"]
+      }
+    },
+    "picnic_basket": {
+      "spring": {
+        "scheme": "fresh_shoots",
+        "letters": ["#7cb342", "#3f7d3a", "#e6c440"],
+        "back": "#f4f7e4",
+        "seam": "#f4f7e4",
+        "pins": ["#e6c440", "#ffffff", "#7cb342"]
+      },
+      "summer": {
+        "scheme": "watermelon",
+        "letters": ["#e4566a", "#5fa448", "#2c6a3a"],
+        "back": "#fff6ef",
+        "seam": "#fff6ef",
+        "pins": ["#2c6a3a", "#ffffff", "#e4566a"]
+      },
+      "autumn": {
+        "scheme": "apple_orchard",
+        "letters": ["#c8402f", "#e2a23a", "#6b8a3a"],
+        "back": "#fbf1de",
+        "seam": "#fbf1de",
+        "pins": ["#6b8a3a", "#ffffff", "#c8402f"]
+      },
+      "winter": {
+        "scheme": "cocoa_mittens",
+        "letters": ["#b8433a", "#7a4a2e", "#3e6e8e"],
+        "back": "#f4ecdf",
+        "seam": "#f4ecdf",
+        "pins": ["#b8433a", "#3e6e8e", "#ffffff"]
+      }
+    },
+    "sunny_days": {
+      "spring": {
+        "scheme": "robin_s_egg",
+        "letters": ["#5aa9c2", "#e9b52f", "#de7f9d"],
+        "back": "#fbf7ea",
+        "seam": "#fbf7ea",
+        "pins": ["#5aa9c2", "#f2c84b", "#ffffff"]
+      },
+      "summer": {
+        "scheme": "sunflower",
+        "letters": ["#efa921", "#cf5a26", "#4f8a34"],
+        "back": "#fff8e3",
+        "seam": "#fff8e3",
+        "pins": ["#4f8a34", "#cf5a26", "#efa921"]
+      },
+      "autumn": {
+        "scheme": "maple_leaf",
+        "letters": ["#d8552c", "#f0b23a", "#8a5a2e"],
+        "back": "#fff4e2",
+        "seam": "#fff4e2",
+        "pins": ["#d8552c", "#ffffff", "#f0b23a"]
+      },
+      "winter": {
+        "scheme": "frost",
+        "letters": ["#e9f2f7", "#9cc7e0", "#ffffff"],
+        "back": "#2c4a66",
+        "seam": "#2c4a66",
+        "pins": ["#ffffff", "#9cc7e0", "#c9d6e2"]
+      }
+    },
+    "twilight": {
+      "spring": {
+        "scheme": "lilac_daffodil",
+        "letters": ["#9a78c6", "#e9b52f", "#6fa64e"],
+        "back": "#fbf6fb",
+        "seam": "#fbf6fb",
+        "pins": ["#9a78c6", "#ffffff", "#e9b52f"]
+      },
+      "summer": {
+        "scheme": "campfire_sunset",
+        "letters": ["#ee8536", "#d4476a", "#e9b52f"],
+        "back": "#fff4e6",
+        "seam": "#fff4e6",
+        "pins": ["#6d4ab0", "#ee8536", "#ffffff"]
+      },
+      "autumn": {
+        "scheme": "plum_ember",
+        "letters": ["#7b3f78", "#e07a34", "#c9a23a"],
+        "back": "#f8eee6",
+        "seam": "#f8eee6",
+        "pins": ["#e07a34", "#ffffff", "#7b3f78"]
+      },
+      "winter": {
+        "scheme": "northern_lights",
+        "letters": ["#2fa38f", "#7a5cc0", "#3f7fd0"],
+        "back": "#f2f5fb",
+        "seam": "#f2f5fb",
+        "pins": ["#7a5cc0", "#2fa38f", "#ffffff"]
+      }
+    }
+  }
+}

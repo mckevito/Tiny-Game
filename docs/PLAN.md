@@ -279,3 +279,12 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   dev tools). **Proposed**: F1 or the DualSense's Create button opens it in a camp, only in a debug build (the editor)
   or with `-- --dev`; elsewhere F1 still shows just the fps line. F1 no longer speeds the clock by itself: the menu's
   clock speed row does (×1, ×10, ×30, ×120 on the host). Rows that change the camp go to the host, who decides.
+- 26 Oct 2026, owner (interface look, after six rounds of options): the "Ranger Station Wall" look (routed wood signs,
+  cards pinned to cork) with colours that change by season; the wood and cork stay, the pins, cards and letters
+  change. Lettering is **Pinned Felt**: fat felt letters taking turns in the season's colours on a felt back, stitched
+  just inside each letter's edge, with push pins. The owner then asked for player-chosen colour presets, each a full
+  year, and approved all four (data/look.json): Harvest Camp (default: Blossom, Lake Day, Harvest, Snowy Pine),
+  Picnic Basket (Fresh Shoots, Watermelon, Apple Orchard, Cocoa & Mittens), Sunny Days (Robin's Egg, Sunflower, Maple
+  Leaf, Frost) and Twilight (Lilac & Daffodil, Campfire Sunset, Plum & Ember, Northern Lights). Fonts: Fredoka for
+  felt lettering, Figtree for reading (both SIL OFL). **Proposed**: the title shows autumn before a camp is loaded;
+  the preset is a per-PC setting ("Sign colours", Accessibility page).

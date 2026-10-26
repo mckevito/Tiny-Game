@@ -17,7 +17,8 @@ var link_edit := LineEdit.new()
 var slot_pick := OptionButton.new()
 var status := Label.new()
 var options := OptionsScreen.new()
-var _heading := Label.new()
+## The game's name in felt lettering (FeltLetters): big with push pins on the title, smaller on other pages.
+var _heading := FeltLetters.new()
 var _tagline := Label.new()
 var _title := VBoxContainer.new()
 var _start := VBoxContainer.new()
@@ -46,7 +47,6 @@ func _ready() -> void:
 	box.custom_minimum_size.x = Tuning.num("tuning", "hud.menu_width_px", 560)
 	add_child(box)
 	_heading.text = Tuning.text("menu.title")
-	_heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_heading)
 	_tagline.text = Tuning.text("title.tagline")
 	_tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -128,8 +128,8 @@ func _show(which: Control, message: String, focus: Control) -> void:
 	for p in [_title, _start, _pause, _players, options]:
 		p.visible = p == which
 	var big := which == _title
-	_heading.add_theme_font_size_override("font_size", int(UiLook.num("title_font_px", 56)) if big
-			else int(Tuning.num("tuning", "hud.title_font_px", 40)))
+	_heading.font_px = int(UiLook.num("title_font_px", 56)) if big else int(UiLook.num("felt_menu_font_px", 52))
+	_heading.pins = big
 	_heading.visible = which != options
 	_tagline.visible = big
 	status.text = message
