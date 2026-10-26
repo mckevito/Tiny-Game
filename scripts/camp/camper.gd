@@ -22,7 +22,8 @@ var walk_speed := 1.5
 ## A player's walking pace as a share of the usual (a long log carried alone is slow; CampGather.carry_speed).
 var speed_scale := 1.0
 
-## The tool shown in the camper's mitten (data/items.json tools.order; "hands" shows none).
+## The tool shown in the camper's mitten (data/items.json tools.order; "hands" shows none), or "clipboard" while
+## the player reads their clipboard (held up in front of the chest).
 var held := "hands"
 
 signal arrived
@@ -72,7 +73,7 @@ func hold(tool: String) -> void:
 		return
 	_tool = FeltBuilder.build(str(row["model"]))
 	_tool.name = "Tool"
-	_tool.position = FeltBuilder.vec3(Tuning.value("tuning", "camper.hand_pos"))
+	_tool.position = FeltBuilder.vec3(row.get("pos", Tuning.value("tuning", "camper.hand_pos")))
 	_tool.rotation_degrees = FeltBuilder.vec3(row.get("rot", [0, 0, 0]))
 	_tool.scale = Vector3.ONE * Tuning.num("tuning", "camper.tool_scale", 1.0)
 	_body.add_child(_tool)

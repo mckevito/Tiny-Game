@@ -5,6 +5,7 @@
 #   python3 art/tools/compare.py colours RENDERS REF.json                  # median colour of each band, and the fix
 #   python3 art/tools/compare.py zoom    RENDERS REF.json VIEW X0,Y0,X1,Y1 [TIMES]   # both, cropped (render pixels)
 #   python3 art/tools/compare.py overlay RENDERS REF.json VIEW             # our outline drawn over the sheet
+#   python3 art/tools/compare.py siblings RENDERS REF.json OTHER_RENDERS   # siblings.png: OTHER's views beside ours
 # RENDERS is the folder of turn_<view>.png; images are written there. Needs Pillow and NumPy.
 import json, math, os, signal, sys
 import numpy as np
@@ -83,6 +84,7 @@ class Round:
         with open(layout) as f:
             self.cfg = json.load(f)
         self.dir = renders
+        self.ref_path = layout
         self.ref = Image.open(self.cfg["sheet"]).convert("RGB")
         self.bg = self.ref.getpixel(tuple(self.cfg["background_at"]))
         self.ppm = float(self.cfg["px_per_m"])
@@ -104,13 +106,39 @@ class Round:
         im.save(path)
         print("saved", path)
 
+    def laid_out(self):
+        """Our eight renders laid out exactly as the sheet's views."""
+        f = np.ones((self.ref.height, self.ref.width, 3))
+        for view, (cx, gy) in self.views.items():
+            self.placed(f, view, cx, gy)
+        return Image.fromarray(np.clip(f * np.array(self.bg, float), 0, 255).astype(np.uint8))
+
+    def siblings(self, other_dir, labels=("Player one", "Player two")):
+        """Two models' rounds side by side in each of the sheet's paired views (a sibling against the model it was
+        made beside): other_dir's renders on the left, this round's on the right."""
+        mine, theirs = self.laid_out(), Round(other_dir, self.ref_path).laid_out()
+        cells = []
+        for box in self.cfg.get("pairs", {}).values():
+            a, b = theirs.crop(box), mine.crop(box)
+            pair = Image.new("RGB", (a.width * 2, a.height + 40), self.bg)
+            pair.paste(a, (0, 40))
+            pair.paste(b, (a.width, 40))
+            draw = ImageDraw.Draw(pair)
+            for k, name in enumerate(labels):
+                x = a.width * k + a.width / 2 - draw.textlength(name, font=font(22)) / 2
+                draw.text((x, 8), name, fill=INK, font=font(22))
+            cells.append(pair)
+        strip = Image.new("RGB", (sum(c.width for c in cells), max(c.height for c in cells)), self.bg)
+        x = 0
+        for c in cells:
+            strip.paste(c, (x, 0))
+            x += c.width
+        self.save(strip, "siblings.png")
+
     def sheets(self):
         ref, bg = self.ref, self.bg
         # ours laid out exactly as the sheet, under it
-        f = np.ones((ref.height, ref.width, 3))
-        for view, (cx, gy) in self.views.items():
-            self.placed(f, view, cx, gy)
-        ours = Image.fromarray(np.clip(f * np.array(bg, float), 0, 255).astype(np.uint8))
+        ours = self.laid_out()
         draw = ImageDraw.Draw(ours)
         for view, (cx, gy) in self.views.items():
             name = view.replace("_", " ").capitalize()
@@ -265,6 +293,8 @@ def main(argv):
         r.zoom(argv[3], [int(v) for v in argv[4].split(",")], int(argv[5]) if len(argv) > 5 else 1)
     elif cmd == "overlay":
         r.overlay(argv[3])
+    elif cmd == "siblings":
+        r.siblings(argv[3])
     else:
         print("unknown command", cmd)
         return 1

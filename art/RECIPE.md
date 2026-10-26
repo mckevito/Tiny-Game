@@ -1,6 +1,8 @@
 # Recipe: knitted and felt models that match a reference
 
-The owner picked the max-effort camper (PR #29, 25 Oct 2026) as the target quality. This file is how that camper was
+**This is the standard for every model in the game** (owner, 25 Oct 2026, after player two was made by it at medium
+effort: "keep this art direction and formula because its the level of quality i want for the whole game"). The owner
+picked the max-effort camper (PR #29, 25 Oct 2026) as the target quality. This file is how that camper was
 made, so that a medium-effort thread can make the next character or prop just as well. It covers the order of work,
 the numbers, and the mistakes not to repeat. The worked example is `art/characters/knit_camper/`.
 
@@ -8,7 +10,8 @@ the numbers, and the mistakes not to repeat. The worked example is `art/characte
 - `art/tools/knit_kit.py` is the shared Blender kit. It holds the mesh, the shapes (below), the baked shade and the
   export. A build script imports it and ends with `finish("<id>")`. The camper's script uses it unchanged: it builds
   byte for byte the same GLB as before the split.
-- `art/tools/turnaround.sh DIR OUT` runs one review round. It builds the T-pose, renders eight studio views, and
+- `art/tools/turnaround.sh DIR OUT [ZOOM]` runs one review round. ZOOM brings the studio camera that many times
+  closer, for a model that many times smaller than the camper (about 4 for a hand-held prop). It builds the T-pose, renders eight studio views, and
   lays them beside the reference sheet. It takes about 2 minutes.
 - `art/tools/compare.py` measures the renders against the sheet:
   - `sheets` lays them out (`compare8.png`, `pairs.png`, and `versus.png`, the one to show the owner).
@@ -16,10 +19,15 @@ the numbers, and the mistakes not to repeat. The worked example is `art/characte
   - `colours` gives the median colour of each band and the swatch that would match it.
   - `zoom` makes crops for checking the stitches.
   - `overlay` draws our outline in red over the sheet.
+  - `siblings RENDERS REF.json OTHER_RENDERS` puts another model's round beside this one in each paired view
+    (`siblings.png`), for a sibling made beside an approved model.
 - `reference.json` sits beside each build script and gives the sheet's layout (see the camper's). The sheets stay
   in the project files under `tiny-game/reference/` and never go in git.
 - Cloud set-up: Blender 4.0.2 is Ubuntu's package (`apt-get install -y blender`). The start-up hook installs Godot
-  and the Vulkan software driver. The tools also need Pillow and NumPy.
+  and tries to install the Vulkan software driver, but that can fail quietly (apt's lock): check with
+  `dpkg -s mesa-vulkan-drivers` and install it yourself if it is missing. Without it the renders fall back to
+  OpenGL, whose colours are far more saturated, and `turnaround.sh` now stops with a message. The tools also need
+  Pillow and NumPy. On a fresh clone `turnaround.sh` imports the project first (it takes a minute or two).
 
 ## The loop, in order
 1. **Plan from the sheet.** Write `reference.json`:
@@ -29,7 +37,8 @@ the numbers, and the mistakes not to repeat. The worked example is `art/characte
 
    Run `compare.py outline` on each view and turn the widths into a proportions table before you write any shape.
    Leave the three-quarter views out: the sheet is a generated picture and they disagree with the front and side.
-2. **Declare the model.**
+2. **Declare the model before the first round:** the studio capture paints the T-pose from these slots, so
+   `turnaround.sh` needs them.
    - In `data/models.json`, add `"<id>": {"file": "res://art/<kind>/<id>/<id>.glb", "file_slots": [...], "slots": {...}}`.
    - A file slot is either `$name`, a part the model's `slots` (or a variant) colours, or a fixed swatch.
    - New swatches go in `data/palette.json` and are Proposed.
@@ -47,6 +56,62 @@ the numbers, and the mistakes not to repeat. The worked example is `art/characte
    - The hands must sit at `camper.hand_pos` in `data/tuning.json`. That file belongs to Gameplay, so ask them.
 6. **Tests and hand-off.** Run `--filter=felt`, then the whole suite. Then the PR with `versus.png` and the in-camp
    shots, plus a line in `handoff/art/LESSONS.md`.
+
+## A sibling or variant of a finished model (player two, 25 Oct 2026)
+When the new model is a sibling of an approved one, and there is no sheet of its own:
+- **Copy the approved script and change only the parts that make it distinct.** Player two's script keeps player
+  one's head, face, sweater, arms, trousers and boots line for line, so the hands land on the same
+  `camper.hand_pos`, and replaces the beanie and curls. Keep the same slot order in `file_slots`, so the game
+  and the tests treat the two alike.
+- **Use the approved model's `reference.json` for layout,** so `sheets` and `siblings` place the views the same
+  way. `outline` and `colours` then measure against the other model's sheet: use them for the shared parts only.
+- **Pick colours that differ in hue and value from the sibling,** from existing swatches where one fits. New
+  swatches are Proposed. Judge them in the studio first, then in the `--hero` shot with both models
+  (`--player=<one> --friend=<two>`), where they must read apart from the play camera.
+- **Change the silhouette's top, not only the colours.** Players see each other from far off, so the head and its hat
+  or hair carry most of the difference.
+- **Player two's numbers** (the same body, 1.42 m to the top of the bun; `art/characters/knit_camper_b/`):
+  - Hair cap: rings from a hairline (z 1.085 at the brow, 0.95 in front of the ears, 0.835 at the nape) over the
+    crown to a pole, 12 mm off the skin. Walk the head as an ellipsoid: a unit-sphere direction maps to the surface
+    (`on_head`), and directions are blended with a slerp, so paths never cut through the head.
+  - Swept locks: 34 two-ply yarn locks (radius 17 to 21 mm), each slerped from the hairline to a ring round the
+    bun's foot (21 degrees round the head from the bun's centre), on the same side as it started, so they never
+    meet at a point. A sideways wave of 0.55 lock radii every 9 cm. They start low against the cap, so they look
+    rooted.
+  - Bun: a felt core (0.118 × 0.118 × 0.09) on the head, in the direction (0, -0.42, 0.91), with one fat yarn
+    (radius 26 mm) wound 3.6 times from round its foot to near its top, like a cinnamon roll. A honey felt pin
+    goes through it.
+  - Headband: a latitude band round an axis leaning back 24 degrees, from 58 to 78 degrees off that axis. It is
+    24 mm off the skin (clearing the locks under it), 32 mm thick, with 46 ribs 12 mm deep. It is built like the
+    beanie's cuff (`ribbed`, sharp grooves on its outside).
+  - Two loose curls in front of the ears, and flat blush cheeks (`blush_felt`).
+  - Colours: sweater `mustard_knit` #B08743, headband and mittens `rust_canvas`, hair `bun_brown` #4B2D1D over
+    `ink_brown`, trousers `moss_felt`. The first try with `olive_felt` trousers read as a bright green, so they
+    were changed to `moss_felt`.
+  - About 31k vertices: the hair is 8k (the swept locks are longer than player one's curls), the headband 3.9k
+    and the bun 1.7k.
+
+## A hand-held prop (the knitted clipboard, 25 Oct 2026)
+The worked example is `art/props/knit_clipboard/` (about 4.1k vertices; props go in `art/props/<id>/`).
+- **Work from a brief when there is no sheet:** its size, swatches, budget, origin and how it is held. Put the
+  origin where the hands hold it, and face the part people read toward the model's front (+Y in Blender, -Z in the
+  game). Whoever puts it in a hand turns it from there.
+- **Review with `turnaround.sh DIR OUT 4`** and look at the front, a three-quarter view, the side and the back.
+  Without a `reference.json` there is nothing to measure against, so judge by eye against the knitted campers.
+- **Flat felt pieces are slabs:** rings of a rounded rectangle (`ring_points` with `n_exp` 5) from the back, round
+  the edge, to the front. Those rings run round the x-z plane, not round +Z as a lathe's do, so reverse each ring, or
+  every face looks inward. Check the normals of a new kind of shape before judging any render: an inside-out board
+  showed the writing through its back.
+- **Fuzz shells poke through thin layers.** Every face grows fibre tips 6 mm out (data/art.json "shells"), so a
+  face lying under a layer thinner than that (the board under the knitted page) speckles through it. Don't build the
+  hidden face: the board's front is a frame that stops 4 mm inside the page's edge, and the page closes it.
+- **A flat knit panel** is a `grid` with `closed=False` whose stitch map is (x / column width, height / row height).
+  It needs only 2 vertices per column, because the shader draws the stitches from the stitch map. Run x from right
+  to left so the faces look out of the front. The page's columns are 12.5 mm, finer than the sweater's, as small
+  knitting would be.
+- **Embroidered writing is a solid cord,** never a running stitch: at this size a running stitch reads as dots. Use
+  `tube` with the yarn weave (radius 2 mm, 2.8 mm for a heading line) on a slight double wave. Set it into the
+  surface by half its radius.
 
 ## How a model is made
 - **One mesh, one material.** Each vertex carries:
@@ -142,6 +207,9 @@ These ratios carry over to any figure in this style:
 - **Colours judged in the camp's light came out wrong.** Match in the studio first.
 - **A hat that sits at eye height hides the face from the play camera.** Keep the brow at least 9 cm above the eyes.
 - **`json.dump` on data/models.json reformatted the whole file.** Edit by hand.
+- **Renders judged under OpenGL.** If the Vulkan driver is missing, the capture falls back to OpenGL and every
+  swatch looks far too saturated (player two's first round looked black-haired and neon). `turnaround.sh` now stops
+  when this happens.
 - **The sheet's views disagree** (hat height and tilt). Fit the front and the side and split the difference. The
   camper's knot stands about 4 cm above the sheet's hat.
 

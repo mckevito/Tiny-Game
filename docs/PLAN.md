@@ -71,9 +71,13 @@ day, fireflies and stars at night and a deer by the trail as background life; up
 below zero (anything unpaid is skipped that night).
 
 ## Art direction: felt and fabric miniatures
-Everything looks like one handmade camping set. Readable silhouettes and cohesive matte materials first; no fibres,
-cloth simulation or translucent fuzz. Rounded campers with mitten hands and embroidered faces, stacked felt-cone pines,
-soft round crowns, thick stitched tent panels. One character rig; hats, hair, outfits and colours swap.
+Everything looks like one handmade camping set, knitted and felted: the whole world as if it were knitted together.
+**The quality bar for the whole game (owner, 25 Oct 2026):** the two knitted campers (`art/characters/knit_camper/` and
+`knit_camper_b/`) and the method that made them, `art/RECIPE.md` with `art/tools/`. Every new model is made by that
+recipe and held to that level: real knit stitches, ribs and two-ply yarn on a stitch map, felt masses, bead faces,
+baked shade, matched to a reference in the studio and checked in camp by day and dusk. Readable silhouettes still come
+first, and anything placed many times stays in the code builder with the same weaves. Cloth simulation stays out.
+The first pass at this paragraph (matte shapes, no fibres, one code-built rig) is superseded.
 
 | Swatch | Hex |
 |---|---|
@@ -225,6 +229,12 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
 - 25 Oct 2026, owner: try one camper made in Blender. **Proposed** (built): `knit_camper`, a sculpted model built by a
   script in `art/characters/knit_camper/` and painted from the palette, shaped from the owner's "Beanie Camper"
   turnaround (front, side and back); it sits beside the code camper until the owner decides.
+- 25 Oct 2026, owner: picked the max-effort camper (merged in PR #29) and asked for its method (`art/RECIPE.md`).
+  Then, after player two was made by that recipe at medium effort: "switch both and keep this art direction and
+  formula because its the level of quality i want for the whole game". **Decided:** both players use the knitted
+  campers (`camper_a` is now `knit_camper` and `camper_b` is `knit_camper_b`, so saves need no migration); the recipe
+  is the standard for every model; `camper.hand_pos` follows the knitted mitten; the swatches `beanie_teal`,
+  `mustard_knit` and `bun_brown` are approved with the campers.
 - 25 Oct 2026, owner (after playing Stage B): "if you are not right away hooked and captivated it won't be any funner
   waiting for days": wants chop animations with wood visibly dropping, a shovel to dig up stumps, more stylized,
   icon-led UI with fewer blocks of text, a visual clipboard and Pack, more than one guest at a time who stay longer
@@ -239,3 +249,6 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   **Proposed**: the board starts in the kit; the fire is upgraded at the fire itself, not crafted at the bench.
 - 25 Oct 2026, owner (Interface thread): button icons, a knitted clipboard and tidier UI; the Interface thread takes
   the icon and clipboard rounds from the first-minutes plan.
+- 25 Oct 2026, owner merged first-minutes round 2 (PR #33, the growing fire and the camp board). Round 3 builds the
+  owner's pick: up to 3 guests at once, 2 nights each. **Proposed**: guests arrive one by one, 40 game minutes apart;
+  bookings stay 2 nights too; the camper holds the clipboard up while a player reads it, seen on both PCs.

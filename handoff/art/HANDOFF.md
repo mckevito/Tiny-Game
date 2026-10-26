@@ -5,7 +5,7 @@
    (outside art such as a rigged camper pack) and the `--hero` mode of `scripts/tools/capture.gd`. It doesn't edit
    Gameplay or Interface files; it asks those threads instead. Placement (`data/clearing.json`) and hand and name
    positions (`data/tuning.json` "camper") belong to Gameplay; ask before moving them.
-2. **Method:** `art/RECIPE.md` is how to build a knitted or felt model that matches a reference (the owner's chosen
+2. **Method (the owner's standard for every model, 25 Oct 2026):** `art/RECIPE.md` is how to build a knitted or felt model that matches a reference (the owner's chosen
    camper is the worked example), with the shared Blender kit (`art/tools/knit_kit.py`), one review round per command
    (`art/tools/turnaround.sh`) and a measuring tool (`art/tools/compare.py`). Read it before any Blender model.
    **State now:** the art pilot (PR "Art pilot") brings the camper, the tent, the pine and the round broadleaf tree up
@@ -59,13 +59,18 @@
      bead eyes, a stitched smile, a nose, ribbed hem and collar, boots (`$boots`, `$strand` slots).
    - Sizes and colliders are unchanged; the mittens stay at `camper.hand_pos` so held tools still fit.
 3. **Open work, in order:**
-   1. The owner's verdict on the pilot and their pick between the two rebuilt campers; fix what they name. Then ask
-      Gameplay to move `camper.hand_pos` (data/tuning.json) to the rebuilt camper's mitten centre, about 6 cm higher
-      (the build prints it, in Blender axes).
-   2. Still plain: animals, tools, saplings, stumps, water point, lantern post, bag covers, bundles, the pitch.
-   3. Ideas from the reference not yet built: a stitched fence and sign, log-stump seats, mugs, a lantern on the
+   1. Done (25 Oct 2026): the owner signed off both knitted campers and made `art/RECIPE.md` the standard for the
+      whole game. Both players use them (`camper_a` and `camper_b` in data/models.json point at `knit_camper` and
+      `knit_camper_b`), and `camper.hand_pos` (data/tuning.json) sits at the knitted mitten's centre. Guests still
+      use the code camper (`guest_a`, `guest_b`); they are the next characters to bring up to the recipe.
+   2. The knitted clipboard prop (`knit_clipboard`, `art/props/knit_clipboard/`, 25 Oct 2026): built for the
+      owner's "a clipboard that looks knitted" ask. Gameplay puts it in hand while that player's clipboard is
+      open: at `camper.hand_pos`, turned 180° so the page faces the camper and tipped about 35° back. Interface
+      draws the matching screen.
+   3. Still plain: animals, tools, saplings, stumps, water point, lantern post, bag covers, bundles, the pitch.
+   4. Ideas from the reference not yet built: a stitched fence and sign, log-stump seats, mugs, a lantern on the
       table, a soft tilt-shift blur (the play camera belongs to Gameplay; ask first).
-   4. A timing check on the laptop floor: the scene is about 180k vertices (ground scatter 65k) and the shader runs
+   5. A timing check on the laptop floor: the scene is about 180k vertices (ground scatter 65k) and the shader runs
       about seven noises per pixel; if it costs, give the Light preset a lighter material.
 4. **Owner decisions:** the felt reference picture (25 Oct 2026) is the target look; pilot first (3 to 5 pieces), shown
    beside the reference in day and dusk, then roll out.
