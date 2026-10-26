@@ -323,6 +323,8 @@ func cook(profile_id: String) -> String:
 		return "deny.not_here"
 	if not can_cook_at(state.player_pos(profile_id)):
 		return "deny.no_fire"
+	if not state.story.lit():
+		return "deny.fire_cold"
 	var raw := first_of(profile_id, "fish")
 	if raw == "":
 		return "deny.no_fish"

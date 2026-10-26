@@ -1,0 +1,17 @@
+{
+  "_about": "Ranger Burl and the arrival evening (scripts/camp/camp_story.gd; owner picks 26 Oct 2026: a senior ranger guide like a cozy game's host, the arrival evening built first). A camp started new from the menu opens with his letter; he waits by the cold fire and asks for fire (items -> how many, from the Packs or the camp box) to light the camp's first fire; then the players name the camp and he hands over his clipboard. model is his look (ranger_stand_in, a recoloured guest, until Art's knitted ranger_burl lands); pos and face place him ([x, z] in metres); talk_m is how close a player stands to talk; mark_height_m lifts the '!' he shows while he has something new to say. name_max caps a camp name's letters. lines are the text keys (data/text.json ranger.*) he says at each step of the camp's story: fire (the greeting and his ask), name (the fire is lit: Lantern Night, then asking for a name), done (the clipboard handover, once), and idle (one each time a player talks to him after that, then the star hint). sign is the camp sign's model (a clearing placement) and label (its offset on the board, in the sign's space, the font size and pixel size of the painted name); reach_m is how close a player stands to repaint it.",
+  "model": "ranger_stand_in",
+  "pos": [2.4, 3.4],
+  "face": [0, 0],
+  "talk_m": 1.8,
+  "mark_height_m": 2.15,
+  "fire": {"stick": 3, "wood": 1},
+  "name_max": 28,
+  "lines": {
+    "fire": ["ranger.hello", "ranger.closed", "ranger.fire_ask"],
+    "name": ["ranger.fire_lit", "ranger.lantern_night", "ranger.name_ask"],
+    "done": ["ranger.named", "ranger.clipboard", "ranger.good_night"],
+    "idle": ["ranger.idle_1", "ranger.idle_2", "ranger.idle_3", "ranger.idle_4"]
+  },
+  "sign": {"model": "camp_sign", "reach_m": 1.6, "label": {"pos": [0, 0.97, -0.1], "font_px": 56, "pixel_size": 0.0032, "width_px": 440}}
+}

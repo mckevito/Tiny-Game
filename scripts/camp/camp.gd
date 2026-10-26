@@ -19,6 +19,10 @@ extends Node3D
 ## hand (cycled with next tool; chopping needs the axe, fishing the rod) and the build piece picked (next kind).
 ## First-minutes round: the camper swings the axe or shovel, the tree shudders and puffs, wood pops out onto the grass
 ## and flies into the Pack of whoever walks over it with a +N tag, a felled tree topples, and the shovel digs stumps.
+## Arrival evening (owner picks, 26 Oct 2026): a camp started new from the menu opens with Ranger Burl's letter; he waits
+## by the cold fire, asks for sticks and wood to light it, then the players name the camp and he hands over his
+## clipboard (CampStory, data/ranger.json). He stays by the path with a word and a star hint, and the camp sign by the
+## path can be repainted any time.
 ## Command line: -- --solo | --host | --join=ADDRESS [--link=CODE], plus --slot=N and --profile=NAME (a second local
 ## player file).
 
@@ -101,6 +105,17 @@ var _bundle_nodes := {}
 ## a piece up (bundle id -> profile id), so its node flies to them.
 var _airborne := {}
 var _sweeper := {}
+## Arrival evening: Ranger Burl's camper, his speech bubble (TalkBubble), the local player talking to him ("" when
+## nobody), which of his line sets is showing (data/ranger.json lines), the story step this PC last played his lines
+## for, how often he has been talked to since (his idle lines take turns), and whether the camp slot just opened was
+## new (only a new camp from the menu plays the arrival evening).
+var ranger: Camper
+var talk: TalkBubble
+var _talker := ""
+var _talk_kind := ""
+var _heard := ""
+var _chats := 0
+var _fresh := false
 
 @onready var clearing: Clearing = $Clearing
 @onready var camera: PlayCamera = $PlayCamera
@@ -122,6 +137,11 @@ func _ready() -> void:
 	couch.main = camera
 	camera.set_faders(clearing.faders)
 	menu.chose.connect(_on_menu)
+	talk = TalkBubble.new()
+	talk.name = "Talk"
+	$Hud.add_child(talk)
+	$Hud.move_child(talk, report.get_index())
+	talk.entry().text_submitted.connect(func(_text: String) -> void: _submit_name(false))
 	Input.joy_connection_changed.connect(_on_joy_connection)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	multiplayer.connected_to_server.connect(_on_connected)
@@ -167,9 +187,11 @@ func _on_menu(action: String) -> void:
 	match action:
 		"solo":
 			if start_solo(menu.slot()) == "":
+				_begin_story()
 				_welcome_report()
 		"host":
 			if start_host(menu.slot()) == "":
+				_begin_story()
 				_welcome_report()
 		"join": start_join(menu.address_edit.text.strip_edges(), 0, menu.link_edit.text)
 		"resume": _close_menu()
@@ -251,6 +273,7 @@ func _open_camp(slot_number: int) -> String:
 	if loaded["error"] != "":
 		menu.show_start(Tuning.text(loaded["error"]))
 		return loaded["error"]
+	_fresh = loaded["camp"] == null
 	var camp: Dictionary = loaded["camp"] if loaded["camp"] != null else CampSave.new_camp()
 	state = CampState.new(camp)
 	state.join(profile["id"], profile["name"])
@@ -311,6 +334,10 @@ func _build_world() -> void:
 	_sync_trees(false)
 	_sync_bundles(false)
 	_sync_fire()
+	_spawn_ranger()
+	_sync_sign()
+	_heard = "done" if state.story.step() == "done" else ""
+	_chats = 0
 	camera.target = campers.get(profile["id"])
 	camera.snap()
 	menu.visible = false
@@ -320,6 +347,11 @@ func _clear_world() -> void:
 	for who: String in _busy.keys():
 		_end_busy(who)
 	report.visible = false
+	_end_talk(true)
+	if ranger:
+		ranger.get_parent().remove_child(ranger)
+		ranger.queue_free()
+		ranger = null
 	_held_toasts.clear()
 	for id: String in _building.keys():
 		toggle_build(id)
@@ -490,12 +522,13 @@ func _process(delta: float) -> void:
 	_tick_rings(delta)
 	_tick_tents()
 	_tick_guests(delta)
+	_story_cue()
 	_board_clock -= delta
 	if _board_clock <= 0.0:
 		_refresh_boards()
 	_update_night(delta)
 	var lines: PackedStringArray = []
-	if state and not menu.visible and not report.visible:
+	if state and not menu.visible and not report.visible and not talk.visible:
 		for id in local_ids():
 			var line := ""
 			if not (_packs.has(id) or _bench.has(id)):
@@ -594,6 +627,12 @@ func _carry_prompt(id: String) -> String:
 			var stay: Dictionary = state.camp["stays"][act["arg"]]
 			var item := state.pack.first_of(id, CampGuests.gift_kind(state.guests.open_request(act["arg"])))
 			return Tuning.text("prompt.give") % [stay["name"], Tuning.text("items." + item)]
+		"talk":
+			return Tuning.text("prompt.talk") % state.story.ranger_name()
+		"feed_fire":
+			return Tuning.text("prompt.feed_fire")
+		"sign":
+			return Tuning.text("prompt.sign")
 	return ""
 
 
@@ -705,7 +744,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if state == null or who == "":
 		return
-	if _ring_input(event, who):
+	if not talk.visible and _ring_input(event, who):
 		get_viewport().set_input_as_handled()
 		return
 	if _bench.has(who) and not menu.visible:
@@ -747,6 +786,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _packs.has(who):
 			_packs[who]["pick"] = posmod(int(_packs[who]["pick"]) + step, count)
 		_refresh_boards()
+		get_viewport().set_input_as_handled()
+		return
+	if talk.visible and not menu.visible and not report.visible:
+		if talk.asking_name() and (event.is_action_pressed("interact") or event.is_action_pressed("cancel")):
+			_submit_name(event.is_action_pressed("cancel"))
+		elif talk.asking_name():
+			return
+		elif event.is_action_pressed("interact"):
+			if not talk.next_line():
+				_end_talk()
+		elif event.is_action_pressed("cancel") or event.is_action_pressed("menu"):
+			_end_talk(true)
+		else:
+			return
 		get_viewport().set_input_as_handled()
 		return
 	if report.visible and not menu.visible:
@@ -1001,10 +1054,14 @@ func action_for(who: String) -> Dictionary:
 			return {"what": "photo", "arg": kind}
 	var at := Vector2(me.position.x, me.position.z)
 	state.set_player_pos(who, at, rad_to_deg(me.rotation.y))
+	if ranger and CampStory.near_ranger(at):
+		return {"what": "talk"}
 	var guest := state.guests.guest_near(who)
 	if guest != "" and state.pack.first_of(who, CampGuests.gift_kind(state.guests.open_request(guest))) != "":
 		return {"what": "give", "arg": guest}
-	if CampPack.can_cook_at(at) and state.pack.first_of(who, "fish") != "":
+	if not state.story.lit() and CampPack.can_cook_at(at) and state.story.can_feed(who):
+		return {"what": "feed_fire"}
+	if state.story.lit() and CampPack.can_cook_at(at) and state.pack.first_of(who, "fish") != "":
 		return {"what": "cook", "arg": state.pack.first_of(who, "fish")}
 	if state.pack.bundle_near(at) != "":
 		return {"what": "pick_bundle", "arg": state.pack.bundle_near(at)}
@@ -1034,11 +1091,13 @@ func action_for(who: String) -> Dictionary:
 			return {"what": "take_back", "arg": str(state.projects.crate()[-1]["item"])}
 	if CampProjects.near_board(state, at):
 		return {"what": "project"} if state.projects.can_give(who) else {"what": "read_board"}
+	if state.story.lit() and CampStory.near_sign(at):
+		return {"what": "sign"}
 	if CampBuild.near_bench(at):
 		return {"what": "bench"}
 	if CampPack.near_box(at) and state.pack.has_boxable(who):
 		return {"what": "deposit"}
-	if CampPack.can_cook_at(at) and not state.build.next_fire().is_empty():
+	if state.story.lit() and CampPack.can_cook_at(at) and not state.build.next_fire().is_empty():
 		return {"what": "upgrade_fire"}
 	if CampPack.can_fish_at(at):
 		if has_tool(who, "fish"):
@@ -1066,8 +1125,12 @@ func interact(who: String = "") -> void:
 			ask("give", [act["arg"]], who)
 		"forage", "take_sapling", "plant", "pick_bundle":
 			ask(act["what"], [act["arg"]], who)
-		"deposit", "ship", "take_back", "project", "upgrade_fire":
+		"deposit", "ship", "take_back", "project", "upgrade_fire", "feed_fire":
 			ask(act["what"], [], who)
+		"talk":
+			_open_talk(who, "idle" if state.story.step() == "done" else state.story.step())
+		"sign":
+			_ask_name(who)
 		"read_board":
 			if not _boards.has(who):
 				toggle_clipboard(who)
@@ -1185,6 +1248,10 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 		why = state.gather.dig(profile_id, args[0])
 	elif what == "upgrade_fire" and args.is_empty():
 		why = state.build.upgrade_fire(profile_id)
+	elif what == "feed_fire" and args.is_empty():
+		why = state.story.feed_fire(profile_id)
+	elif what == "name_camp" and args.size() == 1 and args[0] is String:
+		why = state.story.name_camp(profile_id, args[0])
 	elif what == "drop" and args.size() == 1 and args[0] is int:
 		why = state.pack.drop(profile_id, args[0])
 	elif what == "pick_bundle" and args.size() == 1 and args[0] is String:
@@ -1208,7 +1275,7 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 			_denied.rpc_id(peer, why)
 		return
 	if what in ["sleep", "fish", "cook", "give", "booking", "chop", "dig", "upgrade_fire", "forage", "spot", "take_sapling", "plant", "drop",
-			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project"]:
+			"pick_bundle", "deposit", "craft", "photo", "ship", "take_back", "project", "feed_fire", "name_camp"]:
 		match what:
 			"fish":
 				_say(peer, "toast.caught", [Tuning.text("items." + state.pack.last_item)])
@@ -1232,6 +1299,15 @@ func _decide(profile_id: String, what: String, args: Array, peer: int) -> void:
 				_say_all("toast.fire_up", [state.camp["profiles"][profile_id]["name"], Tuning.text("fire." + str(level["id"]))])
 				_sync_fire()
 				_progress("fire")
+			"feed_fire":
+				if state.story.lit():
+					_say_all("toast.fire_lit", [])
+				else:
+					_say(peer, "toast.fire_fed", [CampStory.words(state.story.missing())])
+				_sync_fire()
+			"name_camp":
+				_say_all("toast.camp_named", [state.story.camp_name()])
+				_sync_sign()
 			"dig":
 				_strike(profile_id, "dig", args[0])
 				_say(peer, "toast.dug", [])
@@ -1376,6 +1452,8 @@ func _welcome(snap: Dictionary, your_id: String) -> void:
 		LocalProfile.save(profile, _profile_file)
 		_toast(Tuning.text("toast.linked") % profile["name"])
 	_build_world()
+	if state.story.step() == "fire":
+		_show_letter()
 	started.emit()
 
 
@@ -1550,6 +1628,8 @@ func clock_line() -> String:
 ## counts (data/tuning.json hud.today_max; the clipboard has them all).
 func today_lines() -> String:
 	var out := ""
+	if not state.story.lit():
+		out += "\n" + Tuning.text("hud.fire_job") % CampStory.words(state.story.missing())
 	var wants := guest_wants()
 	if not wants.is_empty():
 		out += "\n" + Tuning.text("hud.guests")
@@ -1707,7 +1787,7 @@ func project_line() -> String:
 
 ## The ranger's hint about what would raise the camp's rating (data/text.json rating.hint.<factor>).
 func ranger_hint(factor: String) -> String:
-	return Tuning.text("rating.ranger") % [str(Tuning.value("rating", "ranger", "Ada")), Tuning.text("rating.hint." + factor)]
+	return Tuning.text("rating.ranger") % [state.story.ranger_name(), Tuning.text("rating.hint." + factor)]
 
 
 ## What a camp project gives, in words (data/text.json project.<id>.reward, with its coins from data/projects.json).
@@ -1719,6 +1799,9 @@ static func project_reward(id: String) -> String:
 ## The first morning of a new camp, started from the menu: a welcome and the first Today list.
 func _welcome_report() -> void:
 	if state.day.today() != 1 or not (state.tasks.data()["done"] as Array).is_empty() or report.visible:
+		return
+	if state.story.step() == "fire":
+		_show_letter()
 		return
 	var lines: Array[String] = [Tuning.text("report.welcome"), ""]
 	lines.append_array(_today_report())
@@ -1897,6 +1980,7 @@ func _shared(data: Dictionary) -> void:
 		_sync_trees()
 		_sync_bundles()
 		_sync_fire()
+		_sync_sign()
 		_refresh_boards()
 
 
@@ -2621,6 +2705,15 @@ func _sync_fire() -> void:
 		if str(rows[i].get("model", "")) != str(Tuning.value("craft", "fire.model", "fire_pit")):
 			continue
 		var root := clearing.placed[i]
+		var model := str(rows[i]["model"])
+		var pit := root.get_child(0) as MeshInstance3D
+		var want := FeltBuilder.mesh(model if state.story.lit() else model + "_cold")
+		if pit and pit.mesh != want:
+			pit.mesh = want
+			_light_t = -1.0
+		for child in root.get_children():
+			if child is OmniLight3D:
+				child.visible = state.story.lit()
 		var old := root.get_node_or_null("Upgrade")
 		var level := mini(state.build.fire_level(), CampBuild.fire_levels().size())
 		if old and int(old.get_meta("level", -1)) == level:
@@ -2649,6 +2742,167 @@ func _sync_fire() -> void:
 							shape.set_meta("radius", shape.shape.radius)
 						shape.shape.radius = radius if radius > 0.0 else float(shape.get_meta("radius"))
 		_light_t = -1.0
+
+
+# --- Arrival evening: Ranger Burl, the cold fire and the camp's name ------------------------------------------------
+
+## A camp the menu just started new plays the arrival evening (CampStory.begin): the fire goes cold until it is lit.
+func _begin_story() -> void:
+	if not _fresh or mode == Mode.GUEST:
+		return
+	_fresh = false
+	state.story.begin()
+	_sync_fire()
+	_share()
+	save_camp()
+
+
+## Ranger Burl's letter, the first thing a new camp shows (data/text.json story.letter).
+func _show_letter() -> void:
+	report.show_report(story_text(Tuning.text("story.letter")),
+			Prompts.rich(Tuning.text("prompt.letter_close"), _pad, true))
+
+
+## A line with the names the players chose filled in: $camp and $ranger.
+func story_text(line: String) -> String:
+	return line.replace("$camp", state.story.camp_name()).replace("$ranger", state.story.ranger_name())
+
+
+## Ranger Burl stands by the path (data/ranger.json pos, face), with his name over him and a felt "!" while the
+## arrival evening still has a step for the players.
+func _spawn_ranger() -> void:
+	ranger = Camper.new()
+	ranger.name = "Ranger"
+	ranger.model_id = str(Tuning.value("ranger", "model", "ranger_stand_in"))
+	ranger.display_name = Tuning.text("ranger.tag") % state.story.ranger_name()
+	ranger.transform = Clearing.placement_transform({"pos": Tuning.value("ranger", "pos", [0, 0]),
+			"face": Tuning.value("ranger", "face", [0, 0])})
+	add_child(ranger)
+	var mark := Label3D.new()
+	mark.name = "Mark"
+	mark.text = Tuning.text("ranger.mark")
+	mark.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	mark.position.y = Tuning.num("ranger", "mark_height_m", 2.15)
+	mark.font_size = int(Tuning.num("tuning", "camper.name_font_px", 48)) * 2
+	mark.outline_size = int(Tuning.num("tuning", "camper.name_outline_px", 12))
+	mark.modulate = FeltBuilder.swatch("honey_thread")
+	mark.outline_modulate = FeltBuilder.swatch("ink_brown")
+	mark.pixel_size = 0.004
+	ranger.add_child(mark)
+
+
+## Plays Ranger Burl's lines for a story step this PC has not heard yet, once nothing else is on the screen: his
+## greeting after the letter, the lit fire and the naming, then the clipboard handover. A camp that is already done
+## when it opens plays nothing.
+func _story_cue() -> void:
+	if state == null or ranger == null:
+		return
+	var mark := ranger.get_node_or_null("Mark")
+	if mark:
+		mark.visible = state.story.step() != "done"
+	var step := state.story.step()
+	if step == _heard or report.visible or menu.visible or talk.visible or mode == Mode.MENU:
+		return
+	_heard = step
+	_open_talk(str(profile["id"]), step)
+
+
+## Opens Ranger Burl's speech bubble for a player on this PC with one of his line sets (data/ranger.json lines):
+## fire, name or done for the arrival evening, or idle (one of his everyday lines, taking turns, then a star hint).
+func _open_talk(who: String, kind: String) -> void:
+	var keys: Array = Tuning.value("ranger", "lines." + kind, [])
+	var lines: Array[String] = []
+	if kind == "idle":
+		if not keys.is_empty():
+			lines.append(Tuning.text(str(keys[_chats % keys.size()])))
+		_chats += 1
+		var hint := state.rating.hint()
+		if hint != "":
+			lines.append(Tuning.text("ranger.hint") % Tuning.text("rating.hint." + hint))
+	else:
+		for key in keys:
+			var line := Tuning.text(str(key))
+			lines.append(line % CampStory.words(state.story.missing()) if line.contains("%s") else line)
+	for i in lines.size():
+		lines[i] = Prompts.rich(story_text(lines[i]), _glyph(who))
+	if lines.is_empty() or not campers.has(who):
+		return
+	_end_talk(true)
+	_talker = who
+	_talk_kind = kind
+	campers[who].controlled = false
+	campers[who].velocity = Vector3.ZERO
+	talk.say(Tuning.text("ranger.tag") % state.story.ranger_name(), lines,
+			Prompts.rich(Tuning.text("prompt.talk_next"), _glyph(who)),
+			Prompts.rich(Tuning.text("prompt.talk_end"), _glyph(who)))
+
+
+## The bubble's last line was read (or `skip`: put away early). After the "name" lines it turns into the naming
+## line; after the handover it opens the clipboard.
+func _end_talk(skip: bool = false) -> void:
+	if talk == null or not talk.visible:
+		_talker = ""
+		return
+	var who := _talker
+	var kind := _talk_kind
+	if not skip and kind == "name" and state.story.step() == "name" and not talk.asking_name():
+		_ask_name(who)
+		return
+	talk.close()
+	_talker = ""
+	_talk_kind = ""
+	if campers.has(who) and _menu_for != who and not _busy.has(who):
+		campers[who].controlled = true
+	if not skip and kind == "done" and not _boards.has(who):
+		toggle_clipboard(who)
+
+
+## The bubble asks a player on this PC for the camp's name, starting from the one it has.
+func _ask_name(who: String) -> void:
+	if not campers.has(who):
+		return
+	if not talk.visible or _talker != who:
+		_talker = who
+		campers[who].controlled = false
+		campers[who].velocity = Vector3.ZERO
+	_talk_kind = "naming"
+	talk.ask_name(Tuning.text("story.name_title"), story_text(Tuning.text("ranger.name_ask")),
+			state.story.camp_name(), Prompts.rich(Tuning.text("story.name_hint"), _glyph(who)))
+
+
+## Paints the typed name on the sign through the host (`keep`: the name stays as it is, which still finishes the
+## arrival evening), then puts the bubble away.
+func _submit_name(keep: bool) -> void:
+	if not talk.asking_name():
+		return
+	var who := _talker if _talker != "" else str(profile["id"])
+	var text := talk.typed()
+	if keep or CampStory.clean(text) == "":
+		text = state.story.camp_name()
+	_end_talk(true)
+	ask("name_camp", [text], who)
+
+
+## The camp sign by the path shows the camp's name, painted on its board (data/ranger.json sign.label).
+func _sync_sign() -> void:
+	var i := CampStory.sign_index()
+	if state == null or i < 0 or i >= clearing.placed.size():
+		return
+	var root := clearing.placed[i]
+	var label: Label3D = root.get_node_or_null("Name")
+	if label == null:
+		label = Label3D.new()
+		label.name = "Name"
+		label.position = FeltBuilder.vec3(Tuning.value("ranger", "sign.label.pos"))
+		label.rotation.y = PI
+		label.font_size = int(Tuning.num("ranger", "sign.label.font_px", 56))
+		label.pixel_size = Tuning.num("ranger", "sign.label.pixel_size", 0.0032)
+		label.width = Tuning.num("ranger", "sign.label.width_px", 440)
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.modulate = FeltBuilder.swatch("ink_brown")
+		label.outline_size = 0
+		root.add_child(label)
+	label.text = state.story.camp_name()
 
 
 # --- First-minutes round: the swing, the drop and the sweep ---------------------------------------------------------

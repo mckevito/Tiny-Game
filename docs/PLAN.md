@@ -264,3 +264,11 @@ two players, a public release (itch.io or Steam), Steam's relay, consoles, voice
   camper now reads the knitted clipboard; the felt stand-in is gone.
 - 26 Oct 2026, owner's pick from the opening case study: a tool ring (hold the tool button, point, let go; a tap still
   steps to the next tool), per player and per view on the couch. Built as Interface round 5.
+- 26 Oct 2026, owner: the game lacks the part that pulls you in (a story, a motive, a guide who hands out the goals);
+  asked for a case study of Animal Crossing and other cozy games. Picks from the study: **Ranger Burl**, a new senior
+  ranger, is the camp's guide, renamable like every name; Ranger Ada stays the district ranger who visits each season
+  with the star rating; a **ranger stamp card** as a second currency for personal upgrades, while coins stay for the
+  camp; the **arrival evening** is built first. **Proposed** (built): a camp started new from the menu opens with
+  Burl's letter; the fire is cold until the players bring it 3 sticks and 1 wood; when it catches he talks about
+  Lantern Night and asks for the camp's name, painted on a new camp sign by the path that can be repainted any time;
+  then he hands over his clipboard. Older saves skip it. Burl gives the daily star hint from now on.

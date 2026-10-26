@@ -540,6 +540,21 @@ each other, sit on chairs". Round 3 (PR #37) was merged by the owner on 25 Oct 2
 | In the scene, guests walk off and settle with the right prop or on their seat, a frisbee flies between a pair, and the guest PC shows the same | `test_stage_b.test_guests_go_fishing_sit_and_play_frisbee_on_both_pcs` | Passing |
 | Review frames: three guests busy at three times of day, with close-ups | `capture.gd --guests` (`first-minutes-g4/` in the project files) | Looked at |
 
+### The arrival evening with Ranger Burl (26 Oct 2026)
+The owner (26 Oct): the game lacks the part that "sucks you in": a story, a motive, and a guide like a cozy game's
+host. A case study (outside the repo, "Welcome to Thimble Hollow") ranked the ideas; the owner picked Ranger Burl as
+the guide (a new senior ranger; Ranger Ada stays the district ranger who visits each season), a ranger stamp card
+(next rounds), and the arrival evening first. Round 4 (PR #41) and the legend fixes (PR #47) were merged.
+
+| Proof | Test | Result |
+|---|---|---|
+| Only a camp started new from the menu plays the evening: any other camp, and every older save, opens with the fire burning and the default name | `test_story.test_only_a_new_camp_from_the_menu_starts_cold` | Passing |
+| The cold fire takes what it needs (data/ranger.json fire) from either player's Pack and the camp box, and only that; nothing grills on it and it can't be upgraded until it burns | `test_story.test_only_a_new_camp_from_the_menu_starts_cold`, `test_story.test_the_fire_lights_from_both_packs_and_the_box_then_the_camp_takes_a_name` | Passing |
+| The first name, typed wherever the players stand when the fire catches, finishes the evening; after that the sign repaints it; names are tidied, capped and saved | `test_story.test_the_fire_lights_from_both_packs_and_the_box_then_the_camp_takes_a_name` | Passing |
+| From the buttons: the letter, Burl's hello with the player held still, feeding the fire, the naming line, the sign showing the name, the clipboard handover, his everyday line, cancel at the sign keeps the name | `test_story.test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_buttons` | Passing |
+| The guest PC reads the letter, sees the cold fire, lights it and names the camp through the host | `test_story.test_the_guest_pc_reads_the_letter_and_lights_the_fire_through_the_host` | Passing |
+| Review frames: letter, hello, cold fire, fire lit at dusk, naming, handover, clipboard, sign | `capture.gd --opening` (`opening-r1/` in the project files) | Looked at |
+
 ### How to try it
 1. Press F5 and start a camp (a new slot is best: Stage B starts on spring day 1). Build a tent pitch (B, then E). From
    9 am a guest comes; their request floats over their head.
@@ -553,6 +568,9 @@ each other, sit on chairs". Round 3 (PR #37) was merged by the owner on 25 Oct 2
    the bookings, and three goals for the day. E (Cross) starts the day.
 
 ### Still open
+- **Proposed** (arrival evening): Burl's lines, the letter and the fire's needs (3 sticks, 1 wood) in
+  `data/ranger.json` and `data/text.json`; Burl is `ranger_stand_in` (a recoloured guest) until Art's knitted `ranger_burl` (PR #49); the walk
+  in through the gate waits for Stage C's road; the ranger's own name is kept in the save but has no rename spot yet.
 - **Proposed** numbers (data/guests.json, data/fishing.json, data/build.json): tips 4 for a fish, 6 for a grilled fish,
   3 for a chair, plus 2 coins per satisfaction point; things count as near within 6 m of a pitch (3.2 m for a chair,
   8 m for the pond); a water point costs 30 and a lantern post 20; the Fern family (2 pitches) is offered on day 1
