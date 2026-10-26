@@ -474,7 +474,7 @@
     }
   },
   "dock": {
-    "tool": "Tool · {next_tool}",
+    "tool": "Tool · {next_tool} next, hold for all",
     "build": "Build · {next_kind} pick · {build} place",
     "pack": "Pack %d/%d · {pack} open",
     "dot": "●",
