@@ -58,6 +58,7 @@ func _run() -> void:
 	var guests := false
 	var chop := false
 	var fire := false
+	var opening := false
 	var line_up := false
 	var edge := false
 	var swap := {}
@@ -77,6 +78,7 @@ func _run() -> void:
 		guests = guests or arg == "--guests"
 		chop = chop or arg == "--chop"
 		fire = fire or arg == "--fire"
+		opening = opening or arg == "--opening"
 		line_up = line_up or arg == "--line-up"
 		edge = edge or arg == "--edge"
 		if arg.begins_with("--turn="):
@@ -108,6 +110,10 @@ func _run() -> void:
 		return
 	if fire:
 		await _fire(out)
+		quit(0)
+		return
+	if opening:
+		await _opening(out)
 		quit(0)
 		return
 	if chop:
@@ -517,6 +523,70 @@ func _fire(out: String) -> void:
 		_save(out + "/fire_%d.png" % level)
 
 
+## The arrival evening on a new camp, from the menu: the letter, Ranger Burl's hello, the cold fire, the fire lit at
+## dusk, naming the camp, the clipboard handover and the painted sign (opening_<n>_<what>.png).
+func _opening(out: String) -> void:
+	CampSave.dir = "user://captures_save"
+	DirAccess.make_dir_recursive_absolute(CampSave.dir)
+	for f in DirAccess.get_files_at(CampSave.dir):
+		DirAccess.remove_absolute(CampSave.dir + "/" + f)
+	var camp: Node = load("res://scenes/camp.tscn").instantiate()
+	camp.profile = {"id": "p_capture_one", "name": "Juniper", "last_address": ""}
+	root.add_child(camp)
+	await process_frame
+	camp.menu.slot_pick.select(0)
+	camp._on_menu("solo")
+	var s: CampState = camp.state
+	var me: Camper = camp.campers["p_capture_one"]
+	var press := InputEventAction.new()
+	press.action = "interact"
+	press.pressed = true
+	camp.camera._want_distance = Tuning.num("tuning", "camera.distance_m")
+	await _settle()
+	_save(out + "/opening_1_letter.png")
+	camp._unhandled_input(press)
+	var by_ranger := CampStory.ranger_pos() + Vector2(-1.2, -1.0)
+	me.position = Vector3(by_ranger.x, 0, by_ranger.y)
+	me.rotation.y = atan2(-(CampStory.ranger_pos().x - by_ranger.x), -(CampStory.ranger_pos().y - by_ranger.y))
+	camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m") + 1.5
+	await _settle()
+	_save(out + "/opening_2_hello.png")
+	for i in (Tuning.value("ranger", "lines.fire") as Array).size():
+		camp._unhandled_input(press)
+	me.position = Vector3(0.9, 0, -1.3)
+	s.set_player_pos("p_capture_one", Vector2(0.9, -1.3), 0.0)
+	camp.camera._want_distance = Tuning.num("tuning", "camera.distance_m")
+	await _settle()
+	_save(out + "/opening_3_cold_fire.png")
+	s.camp["calendar"]["minute"] = (19.0 - Tuning.num("day", "clock.start_hour")) * 60.0
+	s.pack.add("p_capture_one", "stick", 3)
+	s.pack.add("p_capture_one", "wood", 1)
+	camp.interact("p_capture_one")
+	camp.camera._want_distance = Tuning.num("tuning", "camera.min_distance_m") + 1.5
+	await _settle()
+	_save(out + "/opening_4_fire_lit.png")
+	for i in (Tuning.value("ranger", "lines.name") as Array).size():
+		camp._unhandled_input(press)
+	camp.talk.entry().text = "Pinecone Point"
+	await _settle()
+	_save(out + "/opening_5_naming.png")
+	camp._unhandled_input(press)
+	await _settle()
+	await _settle()
+	_save(out + "/opening_6_handover.png")
+	for i in (Tuning.value("ranger", "lines.done") as Array).size():
+		camp._unhandled_input(press)
+	await _settle()
+	_save(out + "/opening_7_clipboard.png")
+	camp.toggle_clipboard("p_capture_one")
+	var by_sign := CampStory.sign_pos() + Vector2(-1.0, 1.2)
+	me.position = Vector3(by_sign.x, 0, by_sign.y)
+	me.rotation.y = atan2(-(CampStory.sign_pos().x - by_sign.x), -(CampStory.sign_pos().y - by_sign.y))
+	s.camp["calendar"]["minute"] = (11.0 - Tuning.num("day", "clock.start_hour")) * 60.0
+	await _settle()
+	_save(out + "/opening_8_sign.png")
+
+
 func _guests(out: String) -> void:
 	CampSave.dir = "user://captures_save"
 	DirAccess.make_dir_recursive_absolute(CampSave.dir)
@@ -614,7 +684,8 @@ func _menus(out: String) -> void:
 
 ## The interface: alone, the dock and the open Pack; then on the couch, split, both docks, both clipboards and both
 ## Packs, with the HUD as full as play makes it (guests' wishes, a build prompt each, the bed line), then both docks
-## again at the biggest interface size (couch_docks_big.png).
+## again at the biggest interface size (couch_docks_big.png). The tool ring held open alone (hud_ring.png) and both
+## players' rings on the couch (couch_rings.png).
 func _hud(out: String) -> void:
 	CampSave.dir = "user://captures_save"
 	DirAccess.make_dir_recursive_absolute(CampSave.dir)
@@ -641,6 +712,13 @@ func _hud(out: String) -> void:
 	await _settle()
 	_save(out + "/hud_pack.png")
 	camp.close_pack("p_capture_one")
+	# The tool ring, held open and pointed at the fishing rod.
+	camp._start_ring("p_capture_one")
+	camp._tick_rings(Tuning.num("tuning", "ring.hold_s") + 0.1)
+	camp._rings["p_capture_one"].point(ToolRing.slot_offset(camp.tools().find("rod"), camp.tools().size(), 1.0), 0.5)
+	await _settle()
+	_save(out + "/hud_ring.png")
+	camp._end_ring("p_capture_one", false)
 	# Player one's own controller moves first, so the second one drops in (as in test_hud).
 	var stick := InputEventJoypadMotion.new()
 	stick.device = 0
@@ -670,6 +748,16 @@ func _hud(out: String) -> void:
 		await process_frame
 	await _settle()
 	_save(out + "/couch_docks.png")
+	# Both tool rings at once, each round its own camper.
+	for who in camp.local_ids():
+		camp._start_ring(who)
+	camp._tick_rings(Tuning.num("tuning", "ring.hold_s") + 0.1)
+	camp._rings["p_capture_one"].point(Vector2.RIGHT, 0.5)
+	camp._rings[two].point(Vector2.DOWN, 0.5)
+	await _settle()
+	_save(out + "/couch_rings.png")
+	for who in camp.local_ids():
+		camp._end_ring(who, false)
 	camp.toggle_clipboard("p_capture_one")
 	camp.toggle_clipboard(two)
 	camp._refresh_boards()

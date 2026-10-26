@@ -69,6 +69,12 @@ static func run(camp: Node, profile_id: String, id: String, value: Variant) -> S
 			if not (Tuning.value("day", "stays.looks", []) as Array).has(value):
 				return "dev.denied"
 			return _call_guest(camp, profile_id, str(value))
+		"story":
+			if not ["fire", "name", "done"].has(value):
+				return "dev.denied"
+			state.camp["story"] = {"step": str(value), "given": {}}
+			camp._sync_fire()
+			camp._sync_sign()
 		"coins":
 			state.camp["coins"] = int(state.camp.get("coins", 0)) + int(Tuning.num("dev", "coins_step", 100))
 		"item":
@@ -127,6 +133,8 @@ static func run_local(camp: Node, who: String, id: String, value: Variant) -> vo
 				clear_previews(camp)
 			else:
 				_preview(camp, who, str(value))
+		"letter":
+			camp._show_letter()
 		"welcome":
 			var lines: Array[String] = [Tuning.text("report.welcome"), ""]
 			lines.append_array(camp._today_report())

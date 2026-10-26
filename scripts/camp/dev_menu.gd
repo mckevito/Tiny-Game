@@ -90,6 +90,7 @@ func values(id: String) -> Array:
 		"guest": return Tuning.value("day", "stays.looks", [])
 		"item": return (Tuning.value("items", "items", {}) as Dictionary).keys()
 		"teleport": return (Tuning.value("dev", "places", {}) as Dictionary).keys()
+		"story": return ["fire", "name", "done"]
 		"preview": return DevTools.previews() + [""]
 		"stats", "hud": return [false, true]
 	return []
@@ -119,6 +120,7 @@ func value_text(id: String, v: Variant) -> String:
 		"day": return str(int(v))
 		"item": return Tuning.text("dev.item") % [Tuning.text("items." + str(v)), int(Tuning.num("dev", "give_n", 1))]
 		"teleport": return Tuning.text("dev.place." + str(v))
+		"story": return Tuning.text("dev.story." + str(v))
 		"preview": return str(v) if str(v) != "" else Tuning.text("dev.clear")
 		"stats", "hud": return Tuning.text("dev.on" if v else "dev.off")
 		"coins": return Tuning.text("dev.coins") % int(Tuning.num("dev", "coins_step", 100))

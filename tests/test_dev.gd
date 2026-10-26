@@ -402,3 +402,38 @@ func test_a_guest_pc_asks_and_the_host_decides() -> String:
 			why = "a host without dev tools gave coins"
 	await _done()
 	return why
+
+
+func test_jump_to_each_step_of_the_arrival_evening() -> String:
+	_fresh()
+	var camp := _camp("StorySide", "p_host", "Hana")
+	camp.start_solo(1)
+	var why := ""
+	_press(camp, _key("F1"))
+	why = _row(camp, "story")
+	for step: String in ["fire", "name", "done"]:
+		if why != "":
+			break
+		while str(camp.dev.current("story")) != step:
+			_press(camp, _key("Right"))
+		_press(camp, _key("E"))
+		if camp.state.story.step() != step:
+			why = "the arrival evening should jump to %s, got %s" % [step, camp.state.story.step()]
+		elif camp.state.story.lit() == (step == "fire"):
+			why = "the fire should be cold only at the fire step (at %s)" % step
+		else:
+			_press(camp, _key("Escape"))
+			if not await _until(func() -> bool: return camp.talk.visible):
+				why = "Ranger Burl should say the %s lines again" % step
+			camp._end_talk(true)
+			camp.talk.close()
+			_press(camp, _key("F1"))
+			_go_to(camp, "story", _key("Down"))
+	if why == "":
+		why = _row(camp, "letter")
+	if why == "":
+		_press(camp, _key("E"))
+		if not camp.report.visible:
+			why = "show the letter should open Ranger Burl's letter"
+	await _done()
+	return why
