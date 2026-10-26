@@ -69,3 +69,7 @@ shared: add, don't reshuffle, and say in the PR which sections you touched. One 
   first naming rule wanted the player beside Burl, but the fire catches wherever they stand (why: the rule was written
   before the flow; caught by the button test, so the name is taken anywhere during that step); the sign first faced
   the camp, so the play camera saw its back (seen in the review frame; it now faces the road south).
+- 26 Oct 2026: Playtest's faults on the arrival evening. The naming hint said the interact key finishes, but on
+  keyboard E types a letter (why: a text field takes every key; a typing step needs its own glyph, now `type_done`,
+  Enter or Cross); at 150% in couch play the docks covered Burl's bubble (why: two bottom panels never checked
+  together; the docks and prompt line now step aside while he talks). Test with a real key press, not a set text.

@@ -152,6 +152,18 @@ func _press(camp: Node, action: String) -> void:
 	camp._unhandled_input(press)
 
 
+## A real key press through Godot's input, as a player's keyboard sends it (with its letter).
+func _type(code: Key, letter: int) -> void:
+	for pressed in [true, false]:
+		var ev := InputEventKey.new()
+		ev.keycode = code
+		ev.physical_keycode = code
+		ev.unicode = letter
+		ev.pressed = pressed
+		Input.parse_input_event(ev)
+	Input.flush_buffered_events()
+
+
 func _fire_node(camp: Node) -> Node3D:
 	return camp.clearing.placed[Tuning.table("clearing")["placements"].map(
 			func(r: Dictionary) -> String: return r["model"]).find("fire_pit")]
@@ -216,8 +228,25 @@ func test_a_new_camp_opens_with_the_letter_and_the_evening_plays_from_the_button
 			elif camp.talk.typed() != Tuning.text("names.camp"):
 				why = "the name line should start from the default name"
 	if why == "":
+		if camp._docks.values().any(func(d: Control) -> bool: return d.visible) or camp.get_node("Hud/Prompt").visible:
+			why = "the docks and the prompt line should make way while Burl talks (Playtest, couch at 150%)"
+		elif not camp.talk._hint.text.contains("Enter") or camp.talk._hint.text.contains("[E]"):
+			why = "on the keyboard the name line should say Enter finishes it, since E types a letter: " + camp.talk._hint.text
+	if why == "":
+		# A real E key while the line has focus types a letter and keeps the line open (Playtest: "Pine Edgee").
+		await _tree().process_frame
+		camp.talk.entry().text = "Pine Edg"
+		camp.talk.entry().deselect()
+		camp.talk.entry().caret_column = camp.talk.entry().text.length()
+		await _tree().process_frame
+		_type(KEY_E, "e".unicode_at(0))
+		await _tree().process_frame
+		if camp.talk.typed() != "Pine Edge" or not camp.talk.asking_name():
+			why = "E should type a letter into the name, not finish it: " + camp.talk.typed()
+	if why == "":
 		camp.talk.entry().text = "Pinecone Point"
-		_press(camp, "interact")
+		_type(KEY_ENTER, 0)
+		await _tree().process_frame
 		if camp.state.story.camp_name() != "Pinecone Point" or camp.state.story.step() != "done":
 			why = "interact should paint the typed name and finish the evening"
 		elif str(camp.clearing.placed[CampStory.sign_index()].get_node("Name").text) != "Pinecone Point":
