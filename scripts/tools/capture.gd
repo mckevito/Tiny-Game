@@ -29,6 +29,7 @@ extends SceneTree
 ## a key light from the camera's upper left, eight views (turn_front.png, turn_front_right.png ... turn_front_left.png;
 ## data/art.json "turnaround"). --glb=PATH shows that .glb, painted as model ID, instead of the model's own file (a
 ## camper built with --pose=t to match a T-pose sheet; it needn't be imported).
+## --zoom=K brings that studio camera K times closer, for a model K times smaller than the camper (a prop: about 4).
 ## --player=ID and --friend=ID swap the two campers' models in the hero shots (to compare a new camper with the old).
 
 const SETTLE_FRAMES := 30
@@ -52,6 +53,7 @@ func _run() -> void:
 	var swap := {}
 	var turn := ""
 	var glb := ""
+	var zoom := 1.0
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
@@ -68,6 +70,8 @@ func _run() -> void:
 			turn = arg.trim_prefix("--turn=")
 		if arg.begins_with("--glb="):
 			glb = arg.trim_prefix("--glb=")
+		if arg.begins_with("--zoom="):
+			zoom = maxf(float(arg.trim_prefix("--zoom=")), 0.1)
 		for who in ["player", "friend"]:
 			if arg.begins_with("--%s=" % who):
 				swap[who] = arg.trim_prefix("--%s=" % who)
@@ -102,7 +106,7 @@ func _run() -> void:
 		quit(0)
 		return
 	if turn != "":
-		await _turn(out, turn, glb)
+		await _turn(out, turn, glb, zoom)
 		quit(0)
 		return
 	if hero:
@@ -603,7 +607,7 @@ func _hero(out: String, swap: Dictionary) -> void:
 
 ## A turnaround: the model alone in a studio, from eight sides, lit from the camera's upper right as the owner's sheet
 ## is. The light turns with the camera; the floor is a shadow catcher in the backdrop's colour, so there is no horizon.
-func _turn(out: String, id: String, glb: String) -> void:
+func _turn(out: String, id: String, glb: String, zoom := 1.0) -> void:
 	var cfg: Dictionary = Tuning.table("art").get("turnaround", {})
 	# Drawn larger and scaled down, as a photo would: felt fuzz comes out soft instead of single-pixel speckle.
 	root.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
@@ -661,15 +665,16 @@ void light() { DIFFUSE_LIGHT += vec3(1.0 - strength * (1.0 - ATTENUATION)); }
 	cam.fov = float(cfg.get("fov_deg", 16.0))
 	world.add_child(cam)
 	cam.current = true
-	var dist := float(cfg.get("camera_distance_m", 6.0))
-	var aim := Vector3(0, float(cfg.get("aim_height_m", 0.72)), 0)
+	# --zoom=K moves the whole studio camera K times closer, for a model K times smaller than a camper (a prop).
+	var dist := float(cfg.get("camera_distance_m", 6.0)) / zoom
+	var aim := Vector3(0, float(cfg.get("aim_height_m", 0.72)) / zoom, 0)
 	var key_az := deg_to_rad(float(cfg.get("key_azimuth_deg", 40.0)))
 	var key_el := deg_to_rad(float(cfg.get("key_elevation_deg", 40.0)))
 	var views := ["front", "front_right", "right", "back_right", "back", "back_left", "left", "front_left"]
 	for i in views.size():
 		# The front is -Z and the camper's right is +X: view i stands 45 degrees further round to its right.
 		var a := deg_to_rad(45.0 * i)
-		cam.look_at_from_position(Vector3(sin(a) * dist, float(cfg.get("camera_height_m", 1.6)), -cos(a) * dist), aim)
+		cam.look_at_from_position(Vector3(sin(a) * dist, float(cfg.get("camera_height_m", 1.6)) / zoom, -cos(a) * dist), aim)
 		var key := Vector3(sin(a + key_az) * cos(key_el), sin(key_el), -cos(a + key_az) * cos(key_el))
 		sun.look_at_from_position(key * 10.0, Vector3.ZERO)
 		await _settle()
